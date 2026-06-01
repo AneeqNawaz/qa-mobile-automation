@@ -1,0 +1,10 @@
+{
+  "toolbarTitle": "User access",
+  "accountPrefix": "Account for MCI valid until",
+  "testAccountWarningContains": "test account includes extended functionality",
+  "options": [
+    "Change Name",
+    "Change Email",
+    "Change Password"
+  ]
+}

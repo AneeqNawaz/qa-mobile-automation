@@ -1,0 +1,41 @@
+# Build
+target/
+*.class
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.project
+.classpath
+.settings/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test output
+allure-results/
+allure-report/
+test-output/
+
+# Apps
+*.apk
+*.ipa
+apps/
+
+# Debug artifacts
+screen-dumps/
+
+# Secrets
+.env
+*.env
+
+# Allure local data
+.allure/
+
+# Claude Code local settings
+.claude/settings.local.json
+
+# Internal docs (not for public repo)
+docs/

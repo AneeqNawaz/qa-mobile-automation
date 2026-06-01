@@ -1,0 +1,14 @@
+{
+  "title": "Comparison",
+  "description": "With which age group would you like to be compared?",
+  "options": [
+    "Age group 18-20",
+    "Age group 21-30",
+    "Age group 31-40",
+    "Age group 41-50",
+    "Age group 51-60",
+    "Age group 61-70",
+    "Age group 71-80",
+    "Age group 80+"
+  ]
+}

@@ -1,0 +1,190 @@
+{
+  "launch": {
+    "title": "Fitness For Your Brain",
+    "startButton": "Start now",
+    "continueButton": "Continue training",
+    "defaultLanguage": "English (United Kingdom)"
+  },
+  "appSelection": {
+    "toolbarTitle": "Welcome",
+    "headline": "Are you here because of our medical product?",
+    "medicalCardTitle": "Medical app",
+    "medicalCardSubtitle": "Your health insurance covers the cost",
+    "nonMedicalCardTitle": "Non-medical app",
+    "nonMedicalCardSubtitle": "Your health insurance does not cover the cost"
+  },
+  "digaCode": {
+    "toolbarTitle": "Activation",
+    "descriptionTitle": "Enter activation code",
+    "description": "If you have an activation code from your health insurance, please enter it here to unlock your training for free:",
+    "activateButton": "Activate",
+    "noCodeTitle": "Don't have an access code yet?",
+    "websiteButton": "Open info website",
+    "faqButton": "Informations, how to use the app securely"
+  },
+  "createAccount": {
+    "toolbarTitle": "Create account",
+    "emailButton": "Register via Email",
+    "healthIdButton": "Via Gesundheits-ID"
+  },
+  "emailConfirmDialog": {
+    "title": "Register via email",
+    "continueButton": "Continue",
+    "cancelButton": "Cancel"
+  },
+  "emailRegistration": {
+    "toolbarTitle": "Create account",
+    "emailPlaceholder": "Email address",
+    "termsCheckboxContains": "Terms of Use",
+    "privacyCheckboxContains": "Privacy Policy",
+    "dataRetainCheckboxContains": "30 days after expiration",
+    "dataProcessingCheckboxContains": "further development",
+    "trustTextContains": "trusted networks",
+    "requiredFieldInfo": "* indicates a required field",
+    "submitButton": "Create Account"
+  },
+  "passkey": {
+    "title": "Use Passwordless Login?",
+    "contentContains": ["Passkeys", "fingerprint", "encrypted", "only stored locally"],
+    "yesButton": "Yes",
+    "laterButton": "Later",
+    "noPasswordButton": "No, use password"
+  },
+  "setPassword": {
+    "toolbarTitle": "Set your password",
+    "description": "Please insert the new password you want to use for your account",
+    "passwordPlaceholder": "Set password",
+    "submitButton": "Create Account",
+    "trustTextContains": "trusted networks"
+  },
+  "emailVerification": {
+    "toolbarTitle": "Protect your account",
+    "contentContains": ["validate your email", "training is unlocked"],
+    "resendButton": "Resend email",
+    "changeEmailButton": "Change email address"
+  },
+  "deviceConnectedDialog": {
+    "title": "Your device is connected",
+    "contentContains": "codes for account recovery",
+    "okButton": "OK"
+  },
+  "doctorInfo": {
+    "toolbarTitle": "Who has prescribed you NeuroNation MED?",
+    "contactDetailsLabel": "Contact details of the doctor",
+    "postalCodePlaceholder": "Postal code",
+    "cityPlaceholder": "City",
+    "firstNamePlaceholder": "First name",
+    "lastNamePlaceholder": "Last name",
+    "noPrescriptionCheckbox": "I've received my current activation code without a prescription by a doctor.",
+    "continueButton": "Continue"
+  },
+  "newsletter": {
+    "toolbarTitle": "Stay informed",
+    "agreeButton": "I agree",
+    "disagreeButton": "I disagree"
+  },
+  "tips1": {
+    "toolbarTitle": "Tips",
+    "contentContains": ["quiet environment", "comfortable position"],
+    "understoodButton": "Understood"
+  },
+  "tips2": {
+    "toolbarTitle": "Important information",
+    "contentContains": ["uncomfortable", "pause at any time"],
+    "understoodButton": "Understood"
+  },
+  "tips3": {
+    "toolbarTitle": "Attention",
+    "contentContains": ["moderate or severe cognitive impairments", "minimum level"],
+    "understoodButton": "Understood"
+  },
+  "exerciseIntro": {
+    "contentContains": "Strength/Weakness Test",
+    "startButton": "Start"
+  },
+  "exercisePauseMenu": {
+    "succeedExercise": "Succeed exercise",
+    "failExercise": "Fail exercise",
+    "continue": "CONTINUE",
+    "quit": "QUIT",
+    "toggleBot": "Toggle bot",
+    "showTutorial": "Show tutorial"
+  },
+  "ageGroup": {
+    "title": "Comparison",
+    "description": "With which age group would you like to be compared?",
+    "options": ["Age group 18-20", "Age group 21-30", "Age group 31-40", "Age group 41-50", "Age group 51-60", "Age group 61-70", "Age group 71-80", "Age group 80+"]
+  },
+  "evaluation": {
+    "title": "Evaluation",
+    "weaknessPrefix": "Your area for improvement:",
+    "categories": ["Memory", "Attention", "Reasoning", "Speed"],
+    "createPlanButton": "Create Personalised Training Plan"
+  },
+  "trainingComplexity": {
+    "title": "Regular follow-up questions about adjusting training complexity?",
+    "activateButton": "Activate",
+    "deactivateButton": "Deactivate"
+  },
+  "specialNeeds": {
+    "toolbarTitle": "Personalise schedule",
+    "headline": "Special needs in training",
+    "options": {
+      "standard": "Standard",
+      "colorVision": "Color Vision Deficiency",
+      "arithmetic": "Arithmetic Impairment",
+      "both": "Both constraints"
+    }
+  },
+  "trainingTime": {
+    "toolbarTitle": "Personalise schedule",
+    "headline": "At what time of day would you like to train?",
+    "options": {
+      "morning": {"label": "In the morning", "time": "9:00 AM"},
+      "noon": {"label": "At noon", "time": "2:00 PM"},
+      "evening": {"label": "In the evening", "time": "6:00 PM"},
+      "night": {"label": "At night", "time": "9:00 PM"}
+    }
+  },
+  "scheduleReview": {
+    "toolbarTitle": "Personalise schedule",
+    "subtitle": "Review your settings",
+    "confirmButton": "Confirm",
+    "days": ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+  },
+  "notificationPermission": {
+    "message": "Allow NeuroNation MED to send you notifications?",
+    "allowButton": "Allow",
+    "denyButton": "Don't allow"
+  },
+  "neuroBooster": {
+    "toolbarTitle": "Personalise schedule",
+    "headline": "Jump start your mind and body with a NeuroBooster?",
+    "contentContains": "1 minute exercise",
+    "yesButton": "Yes, let me try it out",
+    "noButton": "No, I don't want to feel more focused"
+  },
+  "promise": {
+    "title": "Promise?",
+    "contentContains": "Promise to open our message",
+    "yesButton": "Yes",
+    "noButton": "No"
+  },
+  "finalTips": {
+    "toolbarTitle": "Tips",
+    "contentContains": ["font size", "accessibility"],
+    "understoodButton": "Understood"
+  },
+  "dashboard": {
+    "defaultLevel": "Level 1 - Newcomer",
+    "defaultSessionProgress": "Next level in 1 session",
+    "startButton": "Start",
+    "tabs": ["Training", "Extras", "Evaluation", "Profile"]
+  },
+  "profile": {
+    "toolbarTitle": "User access",
+    "accountPrefix": "Account for MCI valid until",
+    "testAccountWarningContains": "test account includes extended functionality",
+    "options": ["Change Name", "Change Email", "Change Password"]
+  }
+}

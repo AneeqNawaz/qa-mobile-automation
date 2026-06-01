@@ -1,0 +1,12 @@
+{
+  "title": "Use Passwordless Login?",
+  "contentContains": [
+    "Passkeys",
+    "fingerprint",
+    "encrypted",
+    "only stored locally"
+  ],
+  "yesButton": "Yes",
+  "laterButton": "Later",
+  "noPasswordButton": "No, use password"
+}

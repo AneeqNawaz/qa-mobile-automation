@@ -1,0 +1,49 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="MED-Android-EN" parallel="methods" thread-count="1">
+    <parameter name="language" value="en"/>
+    <listeners>
+        <listener class-name="com.neuronation.listeners.AllureScreenshotListener"/>
+        <listener class-name="io.qameta.allure.testng.AllureTestNg"/>
+    </listeners>
+
+    <!-- E2E Happy Path Flows (config-driven) -->
+    <test name="E2E Happy Path">
+        <classes>
+            <class name="com.neuronation.tests.med.e2e.MedFullE2EHappyPathTest"/>
+        </classes>
+    </test>
+
+    <!-- Full Regression (negative + positive at every screen) -->
+    <test name="Full Regression E2E">
+        <classes>
+            <class name="com.neuronation.tests.med.e2e.MedFullRegressionE2ETest"/>
+        </classes>
+    </test>
+
+    <!-- Per-Screen Registration Tests -->
+    <test name="Registration Screen Tests">
+        <classes>
+            <class name="com.neuronation.tests.med.registration.MedLaunchTest"/>
+            <class name="com.neuronation.tests.med.registration.MedAppSelectionTest"/>
+            <class name="com.neuronation.tests.med.registration.MedDiGACodeTest"/>
+            <class name="com.neuronation.tests.med.registration.MedEmailRegistrationTest"/>
+            <class name="com.neuronation.tests.med.registration.MedOnboardingVideoTest"/>
+            <class name="com.neuronation.tests.med.registration.MedPasskeyDialogTest"/>
+            <class name="com.neuronation.tests.med.registration.MedSetPasswordTest"/>
+        </classes>
+    </test>
+
+    <!-- Profile Verification -->
+    <test name="Profile Verification">
+        <classes>
+            <class name="com.neuronation.tests.med.profile.MedProfileVerificationTest"/>
+        </classes>
+    </test>
+
+    <!-- Common/Edge Cases -->
+    <test name="Edge Cases">
+        <classes>
+            <class name="com.neuronation.tests.common.EdgeCaseTests"/>
+        </classes>
+    </test>
+</suite>

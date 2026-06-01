@@ -1,0 +1,11 @@
+{
+  "toolbarTitle": "Create account",
+  "emailPlaceholder": "Email address",
+  "termsCheckboxContains": "Terms of Use",
+  "privacyCheckboxContains": "Privacy Policy",
+  "dataRetainCheckboxContains": "30 days after expiration",
+  "dataProcessingCheckboxContains": "further development",
+  "trustTextContains": "trusted networks",
+  "requiredFieldInfo": "* indicates a required field",
+  "submitButton": "Create Account"
+}

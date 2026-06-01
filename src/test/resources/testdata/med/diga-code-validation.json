@@ -1,0 +1,8 @@
+{
+  "invalidCodes": [
+    { "code": "INVALIDCODE999", "expectedError": "could not be found" },
+    { "code": "ABC", "expectedError": "could not be found" },
+    { "code": "12345", "expectedError": "could not" },
+    { "code": "", "expectedBehavior": "stays_on_screen" }
+  ]
+}

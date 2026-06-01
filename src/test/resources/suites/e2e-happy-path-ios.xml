@@ -1,0 +1,14 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="E2E Happy Path — iOS" parallel="methods" thread-count="1">
+    <parameter name="language" value="en"/>
+    <listeners>
+        <listener class-name="com.neuronation.listeners.AllureScreenshotListener"/>
+        <listener class-name="io.qameta.allure.testng.AllureTestNg"/>
+    </listeners>
+    <test name="MCI Full E2E to Dashboard + Profile (iOS)">
+        <classes>
+            <class name="com.neuronation.tests.med.e2e.MedFullE2EHappyPathTest"/>
+            <class name="com.neuronation.tests.med.profile.MedProfileVerificationTest"/>
+        </classes>
+    </test>
+</suite>

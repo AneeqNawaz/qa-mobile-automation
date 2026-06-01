@@ -1,0 +1,14 @@
+{
+  "toolbarTitle": "Personalise schedule",
+  "subtitle": "Review your settings",
+  "confirmButton": "Confirm",
+  "days": [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday"
+  ]
+}

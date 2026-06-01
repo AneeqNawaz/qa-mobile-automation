@@ -1,0 +1,28 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="Content Verification" parallel="tests" thread-count="3">
+    <listeners>
+        <listener class-name="com.neuronation.listeners.AllureScreenshotListener"/>
+        <listener class-name="io.qameta.allure.testng.AllureTestNg"/>
+    </listeners>
+
+    <test name="Content — Samsung">
+        <parameter name="language" value="en"/>
+        <parameter name="config.profile" value="med-android"/>
+        <groups><run><include name="content"/></run></groups>
+        <packages><package name="com.neuronation.tests.med"/></packages>
+    </test>
+
+    <test name="Content — Emulator">
+        <parameter name="language" value="en"/>
+        <parameter name="config.profile" value="med-android-emulator"/>
+        <groups><run><include name="content"/></run></groups>
+        <packages><package name="com.neuronation.tests.med"/></packages>
+    </test>
+
+    <test name="Content — iOS">
+        <parameter name="language" value="en"/>
+        <parameter name="config.profile" value="med-ios"/>
+        <groups><run><include name="content"/></run></groups>
+        <packages><package name="com.neuronation.tests.med"/></packages>
+    </test>
+</suite>

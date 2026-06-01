@@ -1,0 +1,9 @@
+{
+  "toolbarTitle": "Protect your account",
+  "contentContains": [
+    "validate your email",
+    "training is unlocked"
+  ],
+  "resendButton": "Resend email",
+  "changeEmailButton": "Change email address"
+}

@@ -1,0 +1,10 @@
+{
+  "toolbarTitle": "Personalise schedule",
+  "headline": "Special needs in training",
+  "options": {
+    "standard": "Standard",
+    "colorVision": "Color Vision Deficiency",
+    "arithmetic": "Arithmetic Impairment",
+    "both": "Both constraints"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "title": "Use Passwordless Login?",
+  "contentText": "With Passkeys, you don’t need to remember complex passwords. Instead you can use your fingerprint, face, or screen lock to sign in.\n\nBiometric information used by the Passkey feature is encrypted and only stored locally on your device and in your Password Manager. It is never revealed to the website or the app.",
+  "yesButton": "Yes",
+  "laterButton": "Later",
+  "noUsePasswordButton": "No, use password"
+}

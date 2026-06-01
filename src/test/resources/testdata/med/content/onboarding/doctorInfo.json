@@ -1,0 +1,10 @@
+{
+  "toolbarTitle": "Who has prescribed you NeuroNation MED?",
+  "contactDetailsLabel": "Contact details of the doctor",
+  "postalCodePlaceholder": "Postal code",
+  "cityPlaceholder": "City",
+  "firstNamePlaceholder": "First name",
+  "lastNamePlaceholder": "Last name",
+  "noPrescriptionCheckbox": "I've received my current activation code without a prescription by a doctor.",
+  "continueButton": "Continue"
+}

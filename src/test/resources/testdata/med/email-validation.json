@@ -1,0 +1,15 @@
+{
+  "invalidEmails": [
+    { "email": "notanemail", "expectedBehavior": "stays_on_screen" },
+    { "email": "missing@", "expectedBehavior": "stays_on_screen" },
+    { "email": "@nodomain", "expectedBehavior": "stays_on_screen" }
+  ],
+  "submitWithoutCheckboxes": {
+    "expectedBehavior": "red_indicator_on_unchecked",
+    "staysOnScreen": true
+  },
+  "submitWithoutEmail": {
+    "expectedBehavior": "stays_on_screen",
+    "staysOnScreen": true
+  }
+}

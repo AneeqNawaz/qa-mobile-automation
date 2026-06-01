@@ -1,0 +1,11 @@
+{
+  "defaultLevel": "Level 1 - Newcomer",
+  "defaultSessionProgress": "Next level in 1 session",
+  "startButton": "Start",
+  "tabs": [
+    "Training",
+    "Extras",
+    "Evaluation",
+    "Profile"
+  ]
+}

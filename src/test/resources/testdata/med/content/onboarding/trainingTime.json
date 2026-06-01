@@ -1,0 +1,22 @@
+{
+  "toolbarTitle": "Personalise schedule",
+  "headline": "At what time of day would you like to train?",
+  "options": {
+    "morning": {
+      "label": "In the morning",
+      "time": "9:00 AM"
+    },
+    "noon": {
+      "label": "At noon",
+      "time": "2:00 PM"
+    },
+    "evening": {
+      "label": "In the evening",
+      "time": "6:00 PM"
+    },
+    "night": {
+      "label": "At night",
+      "time": "9:00 PM"
+    }
+  }
+}

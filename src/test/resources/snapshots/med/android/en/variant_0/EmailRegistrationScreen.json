@@ -1,0 +1,10 @@
+{
+  "toolbarTitle": "Create account",
+  "emailPlaceholder": "Email address",
+  "termsCheckbox": "I have accepted the Terms of Use (link). My use follows a medical diagnosis / decision. *",
+  "privacyCheckbox": "I agree to the processing of my personal data and health data. This takes place in accordance with the Privacy Policy (link), for the purpose of the intended use of the application, to prove positive supply effects and to provide evidence to payers. I can withdraw my consent at any time via the app settings, which will delete all my data. *",
+  "dataRetainCheckbox": "I would like my access to remain active for an additional 30 days after expiration. Otherwise, it must be deleted immediately after this period due to legal requirements. This extended period gives me time, without obligation, to save my results and data or to obtain a new activation code to renew my access. I understand that this storage is voluntary and that I can revoke it at any time in the app settings.",
+  "dataProcessingCheckbox": "In order to support the further development of the programme as well as the permanent technical functionality and user-friendliness, I consent to the optional processing of my data. I can withdraw my consent at any time via the app settings.",
+  "trustText": "Please make sure that only you have access to your end device and use trusted networks. Security problems that could otherwise arise cannot be fully addressed by us.",
+  "requiredFieldInfo": "* indicates a required field"
+}

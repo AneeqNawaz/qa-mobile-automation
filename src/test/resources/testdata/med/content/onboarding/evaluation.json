@@ -1,0 +1,11 @@
+{
+  "title": "Evaluation",
+  "weaknessPrefix": "Your area for improvement:",
+  "categories": [
+    "Memory",
+    "Attention",
+    "Reasoning",
+    "Speed"
+  ],
+  "createPlanButton": "Create Personalised Training Plan"
+}

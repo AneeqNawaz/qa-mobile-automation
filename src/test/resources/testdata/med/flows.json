@@ -1,0 +1,62 @@
+{
+  "flow1_password_morning_skip": {
+    "description": "Password auth, standard needs, morning, doctor skip, newsletter agree, booster yes, promise yes",
+    "authMethod": "password",
+    "doctorInfo": "skip",
+    "newsletterConsent": true,
+    "trainingComplexity": "activate",
+    "specialNeeds": "standard",
+    "trainingTime": "morning",
+    "trainingDays": "default",
+    "notificationPermission": "allow",
+    "neuroBooster": true,
+    "promise": true,
+    "dataRetainConsent": false,
+    "dataProcessingConsent": false
+  },
+  "flow2_password_evening_doctor": {
+    "description": "Password auth, standard, evening, doctor fill, newsletter disagree, booster no, promise no",
+    "authMethod": "password",
+    "doctorInfo": "fill",
+    "newsletterConsent": false,
+    "trainingComplexity": "activate",
+    "specialNeeds": "standard",
+    "trainingTime": "evening",
+    "trainingDays": "default",
+    "notificationPermission": "allow",
+    "neuroBooster": false,
+    "promise": false,
+    "dataRetainConsent": true,
+    "dataProcessingConsent": false
+  },
+  "flow3_nopassword_noon_colorvision": {
+    "description": "No-use-password, color vision, noon, doctor skip, all consents, deny notifications",
+    "authMethod": "nopassword",
+    "doctorInfo": "skip",
+    "newsletterConsent": true,
+    "trainingComplexity": "activate",
+    "specialNeeds": "colorVision",
+    "trainingTime": "noon",
+    "trainingDays": "default",
+    "notificationPermission": "deny",
+    "neuroBooster": true,
+    "promise": true,
+    "dataRetainConsent": true,
+    "dataProcessingConsent": true
+  },
+  "flow4_password_night_arithmetic": {
+    "description": "Password, arithmetic, night, doctor fill, deactivate complexity",
+    "authMethod": "password",
+    "doctorInfo": "fill",
+    "newsletterConsent": false,
+    "trainingComplexity": "deactivate",
+    "specialNeeds": "arithmetic",
+    "trainingTime": "night",
+    "trainingDays": "default",
+    "notificationPermission": "allow",
+    "neuroBooster": false,
+    "promise": false,
+    "dataRetainConsent": false,
+    "dataProcessingConsent": true
+  }
+}
