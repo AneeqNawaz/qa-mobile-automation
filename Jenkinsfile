@@ -27,9 +27,9 @@ pipeline {
             description: 'Mobile platform — selects driver capabilities'
         )
         string(
-            name: 'BROWSERSTACK_APP_URL_OVERRIDE',
-            defaultValue: '',
-            description: 'Optional bs://... URL to override the BROWSERSTACK_APP_URL credential. Leave blank for nightly default.'
+            name: 'BROWSERSTACK_APP_URL',
+            defaultValue: 'bs://med-android-latest',
+            description: 'BrowserStack app URL. Use a custom_id for a stable URL (e.g. bs://med-android-latest, bs://med-ios-latest). Re-upload the APK/IPA with the same custom_id to refresh — URL stays valid forever.'
         )
         string(
             name: 'ACTIVATION_CODE',
@@ -81,13 +81,10 @@ pipeline {
                 withCredentials([
                     string(credentialsId: 'BROWSERSTACK_USERNAME',   variable: 'BROWSERSTACK_USERNAME'),
                     string(credentialsId: 'BROWSERSTACK_ACCESS_KEY', variable: 'BROWSERSTACK_ACCESS_KEY'),
-                    string(credentialsId: 'BROWSERSTACK_APP_URL',    variable: 'BS_APP_URL_DEFAULT'),
                     string(credentialsId: 'IMAP_PASSWORD',           variable: 'IMAP_PASSWORD')
                 ]) {
                     script {
-                        def appUrl = params.BROWSERSTACK_APP_URL_OVERRIDE?.trim()
-                        if (!appUrl) { appUrl = env.BS_APP_URL_DEFAULT }
-                        env.BROWSERSTACK_APP_URL = appUrl
+                        env.BROWSERSTACK_APP_URL = params.BROWSERSTACK_APP_URL
 
                         sh """
                             mvn -B -e -ntp test \
