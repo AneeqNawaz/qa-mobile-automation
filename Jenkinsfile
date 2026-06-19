@@ -56,7 +56,7 @@ pipeline {
     }
 
     environment {
-        JAVA_HOME  = "${tool name: 'JDK-17',    type: 'jdk'}"
+        JAVA_HOME  = "${tool name: 'JDK-21',    type: 'jdk'}"
         MAVEN_HOME = "${tool name: 'Maven-3.9', type: 'maven'}"
         PATH       = "${env.MAVEN_HOME}/bin:${env.JAVA_HOME}/bin:${env.PATH}"
         MAVEN_OPTS = '-Xmx2g -Dfile.encoding=UTF-8'
@@ -79,9 +79,10 @@ pipeline {
         stage('Test') {
             steps {
                 withCredentials([
-                    string(credentialsId: 'BROWSERSTACK_USERNAME',   variable: 'BROWSERSTACK_USERNAME'),
-                    string(credentialsId: 'BROWSERSTACK_ACCESS_KEY', variable: 'BROWSERSTACK_ACCESS_KEY'),
-                    string(credentialsId: 'IMAP_PASSWORD',           variable: 'IMAP_PASSWORD')
+                    usernamePassword(credentialsId: '7cbd9287-54b7-4997-b1e9-925819d7f6ac',
+                                     usernameVariable: 'BROWSERSTACK_USERNAME',
+                                     passwordVariable: 'BROWSERSTACK_ACCESS_KEY'),
+                    string(credentialsId: 'IMAP_PASSWORD', variable: 'IMAP_PASSWORD')
                 ]) {
                     script {
                         env.BROWSERSTACK_APP_URL = params.BROWSERSTACK_APP_URL
