@@ -29,8 +29,8 @@ pipeline {
         )
         string(
             name: 'BROWSERSTACK_APP_URL',
-            defaultValue: 'bs://med-android-latest',
-            description: 'BrowserStack app URL. Use a custom_id for a stable URL (e.g. bs://med-android-latest, bs://med-ios-latest). Re-upload the APK/IPA with the same custom_id to refresh — URL stays valid forever.'
+            defaultValue: 'med-android-latest',
+            description: 'BrowserStack app reference — accepts BOTH forms: (1) a bare custom_id for the always-latest build, e.g. med-android-latest (NO bs:// prefix); or (2) a hashed app_url for a specific build, e.g. bs://66552da01496cf88c003dc93a681daab065005a5. Default is the custom_id; re-upload with the same custom_id to refresh.'
         )
         string(
             name: 'ACTIVATION_CODE',
