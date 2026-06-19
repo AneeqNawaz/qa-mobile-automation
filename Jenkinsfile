@@ -37,11 +37,6 @@ pipeline {
             defaultValue: '77AAAAAAAAAAAAAX',
             description: 'DiGA activation code (reusable test code — overrides Mock HI API call, no VPN needed)'
         )
-        booleanParam(
-            name: 'PUBLISH_ALLURE',
-            defaultValue: true,
-            description: 'Publish Allure report (requires Allure Jenkins plugin)'
-        )
     }
 
     options {
@@ -74,24 +69,25 @@ pipeline {
 
         stage('Test') {
             steps {
-                withCredentials([
-                    usernamePassword(credentialsId: '7cbd9287-54b7-4997-b1e9-925819d7f6ac',
-                                     usernameVariable: 'BROWSERSTACK_USERNAME',
-                                     passwordVariable: 'BROWSERSTACK_ACCESS_KEY'),
-                    string(credentialsId: 'IMAP_PASSWORD', variable: 'IMAP_PASSWORD')
-                ]) {
-                    script {
-                        env.BROWSERSTACK_APP_URL = params.BROWSERSTACK_APP_URL
+                // The AppDev credential is a BrowserStack-typed credential — the
+                // browserstack{} wrapper injects BROWSERSTACK_USERNAME / BROWSERSTACK_ACCESS_KEY.
+                browserstack(credentialsId: '7cbd9287-54b7-4997-b1e9-925819d7f6ac') {
+                    withCredentials([
+                        string(credentialsId: 'IMAP_PASSWORD', variable: 'IMAP_PASSWORD')
+                    ]) {
+                        script {
+                            env.BROWSERSTACK_APP_URL = params.BROWSERSTACK_APP_URL
 
-                        sh """
-                            mvn -B -e -ntp test \
-                              -Dbrowserstack.enabled=true \
-                              -Dapp.type=med \
-                              -Dplatform=${params.PLATFORM} \
-                              -DsuiteFile=src/test/resources/suites/${params.SUITE}.xml \
-                              -Dactivation.code=${params.ACTIVATION_CODE} \
-                              -Dbrowserstack.build.name='Jenkins-${env.BUILD_NUMBER}-${params.SUITE}-${params.PLATFORM}'
-                        """
+                            sh """
+                                mvn -B -e -ntp test \
+                                  -Dbrowserstack.enabled=true \
+                                  -Dapp.type=med \
+                                  -Dplatform=${params.PLATFORM} \
+                                  -DsuiteFile=src/test/resources/suites/${params.SUITE}.xml \
+                                  -Dactivation.code=${params.ACTIVATION_CODE} \
+                                  -Dbrowserstack.build.name='Jenkins-${env.BUILD_NUMBER}-${params.SUITE}-${params.PLATFORM}'
+                            """
+                        }
                     }
                 }
             }
@@ -103,16 +99,11 @@ pipeline {
             // TestNG / Surefire results
             junit allowEmptyResults: true, testResults: 'target/surefire-reports/junitreports/*.xml,target/surefire-reports/*.xml'
 
-            // Raw artifacts (screenshots, allure json, surefire xml) for debugging
+            // Raw artifacts (screenshots, allure json, surefire xml) for debugging.
+            // Allure report publishing is disabled until the Allure Jenkins plugin is
+            // installed — raw results are archived here so the report can be generated later.
             archiveArtifacts allowEmptyArchive: true, fingerprint: false,
                 artifacts: 'target/allure-results/**, target/surefire-reports/**'
-
-            // Allure report (requires Allure Jenkins plugin)
-            script {
-                if (params.PUBLISH_ALLURE) {
-                    allure includeProperties: false, jdk: '', results: [[path: 'target/allure-results']]
-                }
-            }
         }
         failure {
             echo "Pipeline FAILED. BrowserStack session: build name 'Jenkins-${env.BUILD_NUMBER}-${params.SUITE}-${params.PLATFORM}'."
