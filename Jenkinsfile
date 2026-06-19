@@ -69,9 +69,10 @@ pipeline {
 
         stage('Test') {
             steps {
-                // The AppDev credential is a BrowserStack-typed credential — the
-                // browserstack{} wrapper injects BROWSERSTACK_USERNAME / BROWSERSTACK_ACCESS_KEY.
-                browserstack(credentialsId: '7cbd9287-54b7-4997-b1e9-925819d7f6ac') {
+                // BrowserStack-typed credential — the browserstack{} wrapper injects
+                // BROWSERSTACK_USERNAME / BROWSERSTACK_ACCESS_KEY. Using aneeqnawaz's
+                // account so it matches the account the MED app is uploaded under.
+                browserstack(credentialsId: 'c380e328-98ad-4aa9-9360-b930ee6db5bf') {
                     withCredentials([
                         string(credentialsId: 'IMAP_PASSWORD', variable: 'IMAP_PASSWORD')
                     ]) {
