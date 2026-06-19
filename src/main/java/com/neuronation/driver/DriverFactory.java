@@ -152,6 +152,15 @@ public class DriverFactory {
         bsOptions.put("buildName", config.getString("browserstack.build.name"));
         bsOptions.put("networkLogs", true);
         bsOptions.put("deviceLogs", true);
+        // App Automate requires a target device + OS version, else BROWSERSTACK_MISSING_CAPS.
+        String deviceName = config.getString("browserstack.device.name");
+        String osVersion = config.getString("browserstack.os.version");
+        if (deviceName != null && !deviceName.isEmpty()) {
+            bsOptions.put("deviceName", deviceName);
+        }
+        if (osVersion != null && !osVersion.isEmpty()) {
+            bsOptions.put("osVersion", osVersion);
+        }
         options.setCapability("bstack:options", bsOptions);
     }
 }
