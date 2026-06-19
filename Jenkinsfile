@@ -38,8 +38,8 @@ pipeline {
         )
         string(
             name: 'AGENT_LABEL',
-            defaultValue: 'linux && jdk17',
-            description: 'Jenkins agent label (the runner needs JDK 17 + Maven, NOT a real device since tests run on BrowserStack)'
+            defaultValue: 'built-in',
+            description: 'Jenkins node label. Single Mac Mini setup runs on the built-in controller node. Tests execute on BrowserStack, so no local device is needed.'
         )
         booleanParam(
             name: 'PUBLISH_ALLURE',
