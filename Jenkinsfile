@@ -1,5 +1,6 @@
 pipeline {
-    agent { label params.AGENT_LABEL }
+    // Single-node setup (Mac Mini built-in node has no labels) — run on any available node.
+    agent any
 
     triggers {
         // Nightly at ~2am (H = Jenkins-jittered minute, prevents thundering-herd)
@@ -35,11 +36,6 @@ pipeline {
             name: 'ACTIVATION_CODE',
             defaultValue: '77AAAAAAAAAAAAAX',
             description: 'DiGA activation code (reusable test code — overrides Mock HI API call, no VPN needed)'
-        )
-        string(
-            name: 'AGENT_LABEL',
-            defaultValue: 'built-in',
-            description: 'Jenkins node label. Single Mac Mini setup runs on the built-in controller node. Tests execute on BrowserStack, so no local device is needed.'
         )
         booleanParam(
             name: 'PUBLISH_ALLURE',
