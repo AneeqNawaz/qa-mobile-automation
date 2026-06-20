@@ -2,7 +2,6 @@ package com.neuronation.tests.med.e2e;
 
 import com.neuronation.base.BaseTest;
 import com.neuronation.config.AppType;
-import com.neuronation.listeners.AllureScreenshotListener;
 import com.neuronation.pages.med.profile.TrainingReminderScreen;
 import com.neuronation.testdata.Features;
 import com.neuronation.testdata.FlowConfig;
@@ -10,7 +9,6 @@ import com.neuronation.testdata.ProfileData;
 import com.neuronation.utils.ScreenDumper;
 import com.neuronation.utils.TestDataLoader;
 import io.qameta.allure.*;
-import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
 import java.util.Map;
@@ -22,7 +20,6 @@ import static org.testng.Assert.*;
  * for auth method, training options, consents, etc.
  * All choices are driven by testdata/med-en.json → flows.{flowName}
  */
-@Listeners(AllureScreenshotListener.class)
 @Epic("NeuroNation MED App")
 @Feature("Full E2E Happy Path")
 public class MedFullE2EHappyPathTest extends BaseTest {

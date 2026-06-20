@@ -2,16 +2,13 @@ package com.neuronation.tests.common;
 
 import com.neuronation.base.BaseTest;
 import com.neuronation.driver.DriverManager;
-import com.neuronation.listeners.AllureScreenshotListener;
 import com.neuronation.testdata.Features;
 import io.qameta.allure.*;
-import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
 import static org.testng.Assert.*;
 import static org.testng.Assert.assertEquals;
 
-@Listeners(AllureScreenshotListener.class)
 @Epic("NeuroNation MED App")
 @Feature("Edge Cases")
 public class EdgeCaseTests extends BaseTest {

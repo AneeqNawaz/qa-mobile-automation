@@ -3,18 +3,15 @@ package com.neuronation.tests.med.registration;
 import com.neuronation.base.BaseTest;
 import com.neuronation.driver.DriverManager;
 import com.neuronation.helpers.ContentTestHelper;
-import com.neuronation.listeners.AllureScreenshotListener;
 import com.neuronation.testdata.Features;
 import io.qameta.allure.*;
 import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
 import java.util.Map;
 
 import static org.testng.Assert.*;
 
-@Listeners(AllureScreenshotListener.class)
 @Epic("NeuroNation MED App")
 @Feature("Create Account")
 public class MedCreateAccountTest extends BaseTest {

@@ -1,11 +1,9 @@
 package com.neuronation.tests.med.e2e;
 
 import com.neuronation.base.BaseTest;
-import com.neuronation.listeners.AllureScreenshotListener;
 import com.neuronation.testdata.Features;
 import io.qameta.allure.*;
 import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
 import static org.testng.Assert.*;
@@ -18,7 +16,6 @@ import static org.testng.Assert.*;
  * Uses medFlow.logout() and medFlow.loginWithCurrentCredentials() which are reusable
  * by any test that needs a logged-in state without going through registration.
  */
-@Listeners(AllureScreenshotListener.class)
 @Epic("NeuroNation MED App")
 @Feature("Logout & Login")
 public class MedLogoutLoginTest extends BaseTest {

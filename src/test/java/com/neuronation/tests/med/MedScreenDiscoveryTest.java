@@ -3,13 +3,11 @@ package com.neuronation.tests.med;
 import com.neuronation.base.BaseTest;
 import com.neuronation.config.AppType;
 import com.neuronation.driver.DriverManager;
-import com.neuronation.listeners.AllureScreenshotListener;
 import com.neuronation.testdata.ActivationData;
 import com.neuronation.testdata.Features;
 import com.neuronation.utils.ScreenDumper;
 import com.neuronation.utils.TestDataLoader;
 import io.qameta.allure.*;
-import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
 /**
@@ -20,7 +18,6 @@ import org.testng.annotations.Test;
  * Activation code: 77AAAAAAAAAAAAAX (reusable, unlimited redemptions)
  * Override in CI: DIGA_ACTIVATION_CODE env var
  */
-@Listeners(AllureScreenshotListener.class)
 @Epic("NeuroNation MED App")
 @Feature("Screen Discovery")
 public class MedScreenDiscoveryTest extends BaseTest {

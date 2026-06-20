@@ -2,19 +2,16 @@ package com.neuronation.tests.med.registration;
 
 import com.neuronation.base.BaseTest;
 import com.neuronation.config.AppType;
-import com.neuronation.listeners.AllureScreenshotListener;
 import com.neuronation.testdata.ActivationData;
 import com.neuronation.testdata.Features;
 import com.neuronation.utils.ScreenDumper;
 import com.neuronation.utils.TestDataLoader;
 import io.qameta.allure.*;
 import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
 import static org.testng.Assert.*;
 
-@Listeners(AllureScreenshotListener.class)
 @Epic("NeuroNation MED App")
 @Feature("Onboarding Video")
 public class MedOnboardingVideoTest extends BaseTest {

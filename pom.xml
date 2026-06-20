@@ -128,12 +128,9 @@
                     <systemPropertyVariables>
                         <allure.results.directory>${project.build.directory}/allure-results</allure.results.directory>
                     </systemPropertyVariables>
-                    <properties>
-                        <property>
-                            <name>listener</name>
-                            <value>io.qameta.allure.testng.AllureTestNg</value>
-                        </property>
-                    </properties>
+                    <!-- AllureTestNg is registered via the suite XML <listeners> blocks
+                         (single source of truth). Do NOT also add it as a surefire
+                         listener property — double registration duplicates report entries. -->
                 </configuration>
                 <dependencies>
                     <dependency>

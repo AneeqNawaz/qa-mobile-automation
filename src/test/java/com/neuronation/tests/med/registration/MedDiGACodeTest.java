@@ -3,18 +3,15 @@ package com.neuronation.tests.med.registration;
 import com.neuronation.base.BaseTest;
 import com.neuronation.config.AppType;
 import com.neuronation.driver.DriverManager;
-import com.neuronation.listeners.AllureScreenshotListener;
 import com.neuronation.testdata.ActivationData;
 import com.neuronation.testdata.Features;
 import com.neuronation.utils.TestDataLoader;
 import io.qameta.allure.*;
 import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
 import static org.testng.Assert.*;
 
-@Listeners(AllureScreenshotListener.class)
 @Epic("NeuroNation MED App")
 @Feature("DiGA Activation")
 public class MedDiGACodeTest extends BaseTest {

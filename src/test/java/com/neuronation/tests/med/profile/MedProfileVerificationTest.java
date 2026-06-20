@@ -2,12 +2,10 @@ package com.neuronation.tests.med.profile;
 
 import com.neuronation.base.BaseTest;
 import com.neuronation.config.AppType;
-import com.neuronation.listeners.AllureScreenshotListener;
 import com.neuronation.testdata.Features;
 import com.neuronation.utils.ScreenDumper;
 import com.neuronation.utils.TestDataLoader;
 import io.qameta.allure.*;
-import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
 import java.time.LocalDate;
@@ -15,7 +13,6 @@ import java.time.format.DateTimeFormatter;
 
 import static org.testng.Assert.*;
 
-@Listeners(AllureScreenshotListener.class)
 @Epic("NeuroNation MED App")
 @Feature("Profile")
 public class MedProfileVerificationTest extends BaseTest {

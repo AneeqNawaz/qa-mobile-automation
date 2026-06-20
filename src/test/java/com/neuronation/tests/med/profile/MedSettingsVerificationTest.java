@@ -2,7 +2,6 @@ package com.neuronation.tests.med.profile;
 
 import com.neuronation.base.BaseTest;
 import com.neuronation.config.AppType;
-import com.neuronation.listeners.AllureScreenshotListener;
 import com.neuronation.pages.med.profile.TrainingReminderScreen;
 import com.neuronation.testdata.Features;
 import com.neuronation.testdata.FlowConfig;
@@ -10,7 +9,6 @@ import com.neuronation.testdata.ProfileData;
 import com.neuronation.utils.TestDataLoader;
 import io.qameta.allure.*;
 import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
 import java.util.Map;
@@ -24,7 +22,6 @@ import static org.testng.Assert.*;
  * Expectations are derived from the FlowConfig that drove registration —
  * no hardcoded literals — so the same test class covers all flows.
  */
-@Listeners(AllureScreenshotListener.class)
 @Epic("NeuroNation MED App")
 @Feature("Settings Verification")
 public class MedSettingsVerificationTest extends BaseTest {

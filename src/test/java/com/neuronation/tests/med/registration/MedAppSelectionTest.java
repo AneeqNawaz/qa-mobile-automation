@@ -1,16 +1,13 @@
 package com.neuronation.tests.med.registration;
 
 import com.neuronation.base.BaseTest;
-import com.neuronation.listeners.AllureScreenshotListener;
 import com.neuronation.testdata.Features;
 import io.qameta.allure.*;
 import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
 import static org.testng.Assert.*;
 
-@Listeners(AllureScreenshotListener.class)
 @Epic("NeuroNation MED App")
 @Feature("App Selection")
 public class MedAppSelectionTest extends BaseTest {

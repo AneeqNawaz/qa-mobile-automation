@@ -3,7 +3,6 @@ package com.neuronation.tests.med.e2e;
 import com.neuronation.base.BaseTest;
 import com.neuronation.config.AppType;
 import com.neuronation.driver.DriverManager;
-import com.neuronation.listeners.AllureScreenshotListener;
 import com.neuronation.testdata.RegistrationData;
 import com.neuronation.utils.BugReporter;
 import com.neuronation.utils.TestDataLoader;
@@ -12,7 +11,6 @@ import io.qameta.allure.*;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.annotations.DataProvider;
-import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
 import java.time.Duration;
@@ -31,7 +29,6 @@ import static org.testng.Assert.*;
  *   - 30 screens navigated end-to-end
  *   - Profile MCI + 90-day validity assertion
  */
-@Listeners(AllureScreenshotListener.class)
 @Epic("NeuroNation MED")
 public class MedFullRegressionE2ETest extends BaseTest {
 

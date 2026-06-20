@@ -2,16 +2,13 @@ package com.neuronation.tests.med.onboarding;
 
 import com.neuronation.base.BaseTest;
 import com.neuronation.helpers.ContentTestHelper;
-import com.neuronation.listeners.AllureScreenshotListener;
 import com.neuronation.testdata.Features;
 import io.qameta.allure.*;
 import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
 import java.util.Map;
 
-@Listeners(AllureScreenshotListener.class)
 @Epic("NeuroNation MED App")
 @Feature("Evaluation")
 public class MedEvaluationTest extends BaseTest {

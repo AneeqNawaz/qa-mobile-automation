@@ -100,9 +100,30 @@ pipeline {
             // TestNG / Surefire results
             junit allowEmptyResults: true, testResults: 'target/surefire-reports/junitreports/*.xml,target/surefire-reports/*.xml'
 
+            // Seed Allure CI metadata (Environment widget + build-link) before generating
+            // the report. Written into allure-results so the Allure plugin picks them up.
+            script {
+                if (fileExists('target/allure-results')) {
+                    writeFile file: 'target/allure-results/environment.properties', text: """
+Platform=${params.PLATFORM}
+Suite=${params.SUITE}
+App=${params.BROWSERSTACK_APP_URL}
+ActivationCode=${params.ACTIVATION_CODE}
+BrowserStack.Build=Jenkins-${env.BUILD_NUMBER}-${params.SUITE}-${params.PLATFORM}
+""".stripIndent().trim()
+                    writeFile file: 'target/allure-results/executor.json', text: """
+{"name":"Jenkins","type":"jenkins","buildName":"#${env.BUILD_NUMBER}","buildUrl":"${env.BUILD_URL}","reportUrl":"${env.BUILD_URL}allure"}
+""".stripIndent().trim()
+                }
+            }
+
+            // Generate + publish the Allure report (link on the build page + cross-build
+            // trend). 'commandline' matches the Allure Commandline tool name in
+            // Manage Jenkins -> Tools.
+            allure commandline: 'Allure', includeProperties: false,
+                results: [[path: 'target/allure-results']]
+
             // Raw artifacts (screenshots, allure json, surefire xml) for debugging.
-            // Allure report publishing is disabled until the Allure Jenkins plugin is
-            // installed — raw results are archived here so the report can be generated later.
             archiveArtifacts allowEmptyArchive: true, fingerprint: false,
                 artifacts: 'target/allure-results/**, target/surefire-reports/**'
         }
