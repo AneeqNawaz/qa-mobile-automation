@@ -51,6 +51,8 @@ pipeline {
         MAVEN_HOME = "${tool name: 'Maven-3.9', type: 'maven'}"
         PATH       = "${env.MAVEN_HOME}/bin:${env.JAVA_HOME}/bin:${env.PATH}"
         MAVEN_OPTS = '-Xmx2g -Dfile.encoding=UTF-8'
+        // Slack target channel — change this to your channel name (keep the leading '#').
+        SLACK_CHANNEL = '#qa-automation-nightly'
     }
 
     stages {
@@ -126,13 +128,26 @@ BrowserStack.Build=Jenkins-${env.BUILD_NUMBER}-${params.SUITE}-${params.PLATFORM
             // Raw artifacts (screenshots, allure json, surefire xml) for debugging.
             archiveArtifacts allowEmptyArchive: true, fingerprint: false,
                 artifacts: 'target/allure-results/**, target/surefire-reports/**'
-        }
-        failure {
-            echo "Pipeline FAILED. BrowserStack session: build name 'Jenkins-${env.BUILD_NUMBER}-${params.SUITE}-${params.PLATFORM}'."
-            // TODO add slack/email notify once destination is decided
-        }
-        success {
-            echo 'Pipeline PASSED.'
+
+            // Slack summary: compact, color-coded, links straight to the Allure report.
+            // We post here (not in success/failure) so there is exactly one message per run.
+            script {
+                def t       = currentBuild.rawBuild.getAction(hudson.tasks.junit.TestResultAction.class)
+                def total   = t ? t.totalCount : 0
+                def failed  = t ? t.failCount  : 0
+                def skipped = t ? t.skipCount  : 0
+                def passed  = total - failed - skipped
+                def result  = currentBuild.currentResult                 // SUCCESS / UNSTABLE / FAILURE
+                def color   = result == 'SUCCESS' ? 'good' : (result == 'FAILURE' ? 'danger' : 'warning')
+                def icon    = result == 'SUCCESS' ? ':white_check_mark:' : ':x:'
+                def mention = result == 'SUCCESS' ? '' : '<!here> '       // ping only when not green
+                def dur     = currentBuild.durationString.replace(' and counting', '')
+
+                slackSend channel: env.SLACK_CHANNEL, color: color,
+                    message: """${mention}${icon} *MED ${params.SUITE} / ${params.PLATFORM}* — ${result}
+:white_check_mark: ${passed}   :x: ${failed}   :fast_forward: ${skipped}   (total ${total})   •   :stopwatch: ${dur}
+:bar_chart: <${env.BUILD_URL}allure|Allure report>   •   :bricks: <${env.BUILD_URL}|Jenkins #${env.BUILD_NUMBER}>   •   :scroll: <${env.BUILD_URL}console|Console>"""
+            }
         }
     }
 }
