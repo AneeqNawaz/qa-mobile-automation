@@ -80,16 +80,32 @@ pipeline {
                     ]) {
                         script {
                             env.BROWSERSTACK_APP_URL = params.BROWSERSTACK_APP_URL
+                            env.BS_BUILD_NAME = "Jenkins-${env.BUILD_NUMBER}-${params.SUITE}-${params.PLATFORM}"
 
-                            sh """
-                                mvn -B -e -ntp test \
-                                  -Dbrowserstack.enabled=true \
-                                  -Dapp.type=med \
-                                  -Dplatform=${params.PLATFORM} \
-                                  -DsuiteFile=src/test/resources/suites/${params.SUITE}.xml \
-                                  -Dactivation.code=${params.ACTIVATION_CODE} \
-                                  -Dbrowserstack.build.name='Jenkins-${env.BUILD_NUMBER}-${params.SUITE}-${params.PLATFORM}'
-                            """
+                            try {
+                                sh """
+                                    mvn -B -e -ntp test \
+                                      -Dbrowserstack.enabled=true \
+                                      -Dapp.type=med \
+                                      -Dplatform=${params.PLATFORM} \
+                                      -DsuiteFile=src/test/resources/suites/${params.SUITE}.xml \
+                                      -Dactivation.code=${params.ACTIVATION_CODE} \
+                                      -Dbrowserstack.build.name='${env.BS_BUILD_NAME}'
+                                """
+                            } finally {
+                                // Resolve the BrowserStack App Automate dashboard URL here, where the
+                                // BS credentials are in scope (post{} runs outside this wrapper). Stash
+                                // it to a file for the Slack step. Best-effort — never fails the build.
+                                try {
+                                    sh '''
+                                        mkdir -p target
+                                        curl -s -u "$BROWSERSTACK_USERNAME:$BROWSERSTACK_ACCESS_KEY" \
+                                          "https://api-cloud.browserstack.com/app-automate/builds.json?limit=50" \
+                                        | python3 -c "import sys,json,os; name=os.environ.get('BS_BUILD_NAME',''); d=json.load(sys.stdin); print(next(('https://app-automate.browserstack.com/dashboard/v2/builds/'+b['automation_build']['hashed_id'] for b in d if b.get('automation_build',{}).get('name')==name),''))" \
+                                          > target/bs_build_url.txt 2>/dev/null || true
+                                    '''
+                                } catch (ignored) { /* link is optional */ }
+                            }
                         }
                     }
                 }
@@ -129,29 +145,36 @@ BrowserStack.Build=Jenkins-${env.BUILD_NUMBER}-${params.SUITE}-${params.PLATFORM
             archiveArtifacts allowEmptyArchive: true, fingerprint: false,
                 artifacts: 'target/allure-results/**, target/surefire-reports/**'
 
-            // Slack summary: compact, color-coded, links straight to the Allure report.
+            // Slack summary: clean, color-coded, deep links to Allure + BrowserStack.
             // Sandbox-safe by design — uses only whitelisted RunWrapper props (no rawBuild,
-            // which script-security blocks). Test counts are parsed from surefire in the
-            // shell and wrapped in try/catch so the message ALWAYS sends, counts or not.
+            // which script-security blocks). Counts are parsed from surefire in the shell
+            // and everything optional is wrapped so the message ALWAYS sends.
             script {
                 def result  = currentBuild.currentResult                 // SUCCESS / UNSTABLE / FAILURE
                 def color   = result == 'SUCCESS' ? 'good' : (result == 'FAILURE' ? 'danger' : 'warning')
-                def icon    = result == 'SUCCESS' ? ':white_check_mark:' : ':x:'
+                def icon    = result == 'SUCCESS' ? ':large_green_circle:' : (result == 'FAILURE' ? ':red_circle:' : ':large_yellow_circle:')
                 def mention = result == 'SUCCESS' ? '' : '<!here> '       // ping only when not green
+                def dur     = currentBuild.durationString.replace(' and counting', '')
 
-                def counts = ':grey_question: counts unavailable'
+                // Test counts (passed, failed+errors, skipped) parsed from surefire.
+                def passed = '–', failed = '–', skipped = '–'
                 try {
-                    counts = sh(returnStdout: true, script: '''
-                        awk -F'[ ,]+' '/^Tests run:/{r+=$3; f+=$5; e+=$7; s+=$9}
-                          END{printf ":white_check_mark: %d   :x: %d   :warning: %d   :fast_forward: %d", r-f-e-s, f, e, s}' \
-                          target/surefire-reports/*.txt 2>/dev/null
-                    ''').trim()
-                } catch (ignored) { /* keep placeholder; never block the Slack message */ }
+                    def c = sh(returnStdout: true, script: '''awk -F'[ ,]+' '/^Tests run:/{r+=$3;f+=$5;e+=$7;s+=$9} END{printf "%d,%d,%d", r-f-e-s, f+e, s}' target/surefire-reports/*.txt 2>/dev/null''').trim()
+                    def p = c.tokenize(',')
+                    if (p.size() == 3) { passed = p[0]; failed = p[1]; skipped = p[2] }
+                } catch (ignored) { }
+
+                // Optional BrowserStack dashboard link (resolved in the Test stage).
+                def bsLink = ''
+                if (fileExists('target/bs_build_url.txt')) {
+                    def u = readFile('target/bs_build_url.txt').trim()
+                    if (u) { bsLink = ":iphone: <${u}|BrowserStack>      " }
+                }
 
                 slackSend channel: env.SLACK_CHANNEL, color: color,
-                    message: """${mention}${icon} *MED ${params.SUITE} / ${params.PLATFORM}* — ${result}
-${counts}
-:bar_chart: <${env.BUILD_URL}allure|Allure report>   •   :bricks: <${env.BUILD_URL}|Build #${env.BUILD_NUMBER}>   •   :scroll: <${env.BUILD_URL}console|Console>"""
+                    message: """${mention}${icon}  *MED*   ·   ${params.SUITE}   ·   ${params.PLATFORM}   —   *${result}*
+:white_check_mark: ${passed} passed      :x: ${failed} failed      :fast_forward: ${skipped} skipped      :stopwatch: ${dur}
+:bar_chart: <${env.BUILD_URL}allure|Allure Report>      ${bsLink}:bricks: <${env.BUILD_URL}|Build #${env.BUILD_NUMBER}>      :scroll: <${env.BUILD_URL}console|Console>"""
             }
         }
     }
