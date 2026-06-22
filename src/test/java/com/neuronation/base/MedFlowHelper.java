@@ -694,6 +694,23 @@ public class MedFlowHelper {
     }
 
     /**
+     * Common end-of-flow logout. Assumes the Profile screen is already visible
+     * (caller navigates there first), taps Log out, and VERIFIES the app returns
+     * to the Launch screen. Call at the end of each flow so the next test starts fresh.
+     * Throws if logout does not land on the Launch screen.
+     */
+    @Step("Log out from Profile and verify the app returns to the Launch screen")
+    public void logoutAndVerify() {
+        screens.profile().waitForScreen();   // ensure we are on Profile
+        screens.profile().tapLogout();
+        screens.launch().waitForScreen();
+        if (!screens.launch().isStartNowDisplayed()) {
+            throw new AssertionError("Logout did not land on the Launch screen (Start Now not visible)");
+        }
+        log.info("Logout verified — back on Launch screen");
+    }
+
+    /**
      * Login with email and password via the returning user flow.
      * Assumes app is on Launch screen (after logout or fresh start).
      * Flow: Launch → Continue Training → Login Choice → Log In Via Email → Login Form → Dashboard
@@ -782,7 +799,12 @@ public class MedFlowHelper {
                 ? org.openqa.selenium.By.xpath("//XCUIElementTypeButton[@name=\"Profile\" and @value=\"1\"]")
                 : AppiumBy.id("nn.mobile.app.med:id/navigation_profile");
 
-        long deadline = System.currentTimeMillis() + 20_000;
+        // Interstitials appear SEQUENTIALLY and login is slow: on a real run the
+        // login-form → Passkey transition alone took ~21s, after which the Tips popup
+        // ("Understood") renders. A 20s budget expired before Tips appeared, leaving it
+        // un-dismissed and blocking the Dashboard. Poll long enough to clear BOTH; the
+        // loop returns the instant the Dashboard tab bar shows, so the happy path is unaffected.
+        long deadline = System.currentTimeMillis() + 90_000;
         while (System.currentTimeMillis() < deadline) {
             if (isAnyDisplayed(d, dashboardSignal)) {
                 log.info("Dashboard tab bar visible — no interstitials");

@@ -54,6 +54,12 @@ public class BaseTest {
             resetAppData();
         }
 
+        // Clear the BSI per-IP rate-limit block before each flow so back-to-back
+        // registrations don't get throttled (LOCAL-only — see RateLimitService).
+        if ("true".equals(ConfigManager.getInstance().getString("clear.rate.limit"))) {
+            com.neuronation.api.RateLimitService.clearRestriction();
+        }
+
         // Driver creates session — app launches with noReset=true (pre-installed)
         AppiumDriver driver = DriverFactory.createDriver();
         DriverManager.setDriver(driver);

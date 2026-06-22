@@ -11,6 +11,8 @@ import com.neuronation.utils.TestDataLoader;
 import io.qameta.allure.*;
 import org.testng.annotations.Test;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
 import static org.testng.Assert.*;
@@ -47,7 +49,7 @@ public class MedFullE2EHappyPathTest extends BaseTest {
         screens.dashboard().tapProfileTab();
         screens.profile().waitForScreen();
         String validity = screens.profile().getAccountValidity();
-        assertTrue(validity.contains("MCI"), "Should be MCI account: " + validity);
+        assertMciNinetyDayValidity(validity);
 
         // ── 3. Profile → Settings → verify each onboarding element step by step ──
         log.info("=== Tapping Profile → Settings ===");
@@ -170,8 +172,28 @@ public class MedFullE2EHappyPathTest extends BaseTest {
         assertEquals(currentEmail, email,
                 "Change Email should show the email used at login");
 
+        // ── 8. Back to Profile → common verified logout (leaves app on Launch for next flow) ──
+        // tapBack: system back on Android, nav-bar back icon on iOS (cross-platform helper).
+        screens.changeEmail().tapBack();
+        screens.profile().waitForScreen();
+        medFlow.logoutAndVerify();
+
         log.info("Flow 1 full journey complete — {}", validity);
         softAssert.assertAll();
+    }
+
+    /**
+     * Verify the Profile account-validity label shows an MCI account valid for exactly
+     * 90 days from today. Merged in from the former standalone testMciProfileAccountValidity
+     * so every flow checks it right after registration (no separate test needed).
+     */
+    private void assertMciNinetyDayValidity(String validity) {
+        assertMciNinetyDayValidity(validity);
+        String expected = LocalDate.now().plusDays(90)
+                .format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
+        assertTrue(validity.contains(expected),
+                "MCI account should be valid 90 days (until " + expected + "): " + validity);
+        log.info("MCI 90-day validity confirmed — valid until {}", expected);
     }
 
     private static String slotToReminderTime(String slot) {
@@ -241,8 +263,11 @@ public class MedFullE2EHappyPathTest extends BaseTest {
         screens.dashboard().tapProfileTab();
         Thread.sleep(2000);
         String validity = screens.profile().getAccountValidity();
-        assertTrue(validity.contains("MCI"), "Should be MCI account: " + validity);
+        assertMciNinetyDayValidity(validity);
         log.info("Flow 2 complete — {}", validity);
+
+        // On Profile already → common verified logout (leaves app on Launch for next flow)
+        medFlow.logoutAndVerify();
     }
 
     @Test(
@@ -262,8 +287,11 @@ public class MedFullE2EHappyPathTest extends BaseTest {
         screens.dashboard().tapProfileTab();
         Thread.sleep(2000);
         String validity = screens.profile().getAccountValidity();
-        assertTrue(validity.contains("MCI"), "Should be MCI account: " + validity);
+        assertMciNinetyDayValidity(validity);
         log.info("Flow 3 complete — {}", validity);
+
+        // On Profile already → common verified logout (leaves app on Launch for next flow)
+        medFlow.logoutAndVerify();
     }
 
     @Test(
@@ -283,7 +311,10 @@ public class MedFullE2EHappyPathTest extends BaseTest {
         screens.dashboard().tapProfileTab();
         Thread.sleep(2000);
         String validity = screens.profile().getAccountValidity();
-        assertTrue(validity.contains("MCI"), "Should be MCI account: " + validity);
+        assertMciNinetyDayValidity(validity);
         log.info("Flow 4 complete — {}", validity);
+
+        // On Profile already → common verified logout (leaves app on Launch for next flow)
+        medFlow.logoutAndVerify();
     }
 }

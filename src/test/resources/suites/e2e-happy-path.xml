@@ -7,8 +7,18 @@
     </listeners>
     <test name="MCI Full E2E to Dashboard + Profile">
         <classes>
-            <class name="com.neuronation.tests.med.e2e.MedFullE2EHappyPathTest"/>
-            <class name="com.neuronation.tests.med.profile.MedProfileVerificationTest"/>
+            <!-- Only the 4 happy-path flows run here. Each asserts MCI + 90-day validity
+                 inline (assertMciNinetyDayValidity), so the standalone profile test is dropped;
+                 testPostLogin is excluded too (its Tips dismissal is already covered by flow1's
+                 re-login). The class still exposes those methods to the other suites. -->
+            <class name="com.neuronation.tests.med.e2e.MedFullE2EHappyPathTest">
+                <methods>
+                    <include name="testFlow1_PasswordMorningSkip"/>
+                    <include name="testFlow2_PasswordEveningDoctor"/>
+                    <include name="testFlow3_NoPasswordNoonColorVision"/>
+                    <include name="testFlow4_PasswordNightArithmetic"/>
+                </methods>
+            </class>
         </classes>
     </test>
 </suite>
