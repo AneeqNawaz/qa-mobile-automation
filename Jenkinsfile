@@ -11,11 +11,11 @@ pipeline {
         choice(
             name: 'SUITE',
             choices: [
+                'e2e-happy-path',
                 'regression-e2e',
                 'smoke',
                 'sanity',
                 'regression-full',
-                'e2e-happy-path',
                 'e2e-happy-path-ios',
                 'med-android-en',
                 'content-verification'
