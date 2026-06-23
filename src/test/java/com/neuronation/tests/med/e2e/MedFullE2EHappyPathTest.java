@@ -188,7 +188,6 @@ public class MedFullE2EHappyPathTest extends BaseTest {
      * so every flow checks it right after registration (no separate test needed).
      */
     private void assertMciNinetyDayValidity(String validity) {
-        assertMciNinetyDayValidity(validity);
         String expected = LocalDate.now().plusDays(90)
                 .format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
         assertTrue(validity.contains(expected),
