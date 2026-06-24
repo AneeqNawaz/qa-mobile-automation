@@ -1,19 +1,13 @@
 package com.neuronation.tests.med.e2e;
 
 import com.neuronation.base.BaseTest;
-import com.neuronation.config.AppType;
-import com.neuronation.pages.med.profile.TrainingReminderScreen;
 import com.neuronation.testdata.Features;
-import com.neuronation.testdata.FlowConfig;
-import com.neuronation.testdata.ProfileData;
 import com.neuronation.utils.ScreenDumper;
-import com.neuronation.utils.TestDataLoader;
 import io.qameta.allure.*;
 import org.testng.annotations.Test;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Map;
 
 import static org.testng.Assert.*;
 
@@ -37,10 +31,10 @@ public class MedFullE2EHappyPathTest extends BaseTest {
             + "NeuroBooster yes → Promise yes → Dashboard. Verify profile shows MCI 90-day validity.")
     public void testFlow1_PasswordMorningSkip() {
         // ── 1. Register + onboarding → Dashboard ──
+        // Settings verification (onboarding selections → Settings) is covered for all 4
+        // flows in MedSettingsVerificationTest; this test owns the registration → dashboard
+        // → re-login → change-email journey.
         medFlow.completeFullFlow("flow1_password_morning_skip");
-        FlowConfig flow = medFlow.getFlowConfig();
-        ProfileData profileData = TestDataLoader.loadProfileData(
-                AppType.MED, context.getLanguage(), ProfileData.class);
 
         assertTrue(screens.dashboard().isDashboardDisplayed(), "Dashboard should be visible");
         ScreenDumper.dumpCurrentScreen("flow1_dashboard");
@@ -51,106 +45,7 @@ public class MedFullE2EHappyPathTest extends BaseTest {
         String validity = screens.profile().getAccountValidity();
         assertMciNinetyDayValidity(validity);
 
-        // ── 3. Profile → Settings → verify each onboarding element step by step ──
-        log.info("=== Tapping Profile → Settings ===");
-        screens.profile().tapSettings();
-        screens.settings().waitForScreen();
-
-        // Verify each row one by one
-        log.info("--- [1/7] Comparison Group ---");
-        String actualComparison = screens.settings().getComparisonGroup();
-        log.info("Expected: {} | Actual: {}", profileData.getAgeGroup(), actualComparison);
-        softAssert.assertEquals(actualComparison, profileData.getAgeGroup(),
-                "Comparison Group should match profile.ageGroup");
-
-        log.info("--- [2/7] Language ---");
-        String expectedLang = "de".equalsIgnoreCase(context.getLanguage())
-                ? "Deutsch" : "English (United Kingdom)";
-        String actualLang = screens.settings().getLanguage();
-        log.info("Expected: {} | Actual: {}", expectedLang, actualLang);
-        assertEquals(actualLang, expectedLang, "Language should match suite language");
-
-        log.info("--- [3/7] Training Adaptation (from trainingComplexity) ---");
-        String expectedAdaptation = "deactivate".equals(flow.getTrainingComplexity())
-                ? "Don't ask me" : "Ask me";
-        String actualAdaptation = screens.settings().getTrainingAdaptation();
-        log.info("Expected: {} | Actual: {}", expectedAdaptation, actualAdaptation);
-        assertEquals(actualAdaptation, expectedAdaptation,
-                "Training Adaptation should match flow.trainingComplexity");
-
-        log.info("--- [4/7] Special Needs ---");
-        boolean expectedSpecialNeeds = !"standard".equals(flow.getSpecialNeeds());
-        boolean actualSpecialNeeds = screens.settings().isSpecialNeedsEnabled();
-        log.info("Expected: {} | Actual: {}", expectedSpecialNeeds, actualSpecialNeeds);
-        assertEquals(actualSpecialNeeds, expectedSpecialNeeds,
-                "Special needs switch should match flow.specialNeeds");
-
-        log.info("--- [5/8] Available Exercises (depends on flow.specialNeeds) ---");
-        String exercises = screens.settings().getAvailableExercises();
-        // standard → all 23/23 available; colorVision/arithmetic/both → fewer (X<23)
-        String expectedExercises = "standard".equals(flow.getSpecialNeeds()) ? "23/23" : null;
-        log.info("Expected: {} | Actual: {}", expectedExercises != null ? expectedExercises : "X/23 with X<23", exercises);
-        assertTrue(exercises.matches("\\d+/\\d+"),
-                "Available Exercises should be 'X/Y' format, got: " + exercises);
-        if (expectedExercises != null) {
-            assertEquals(exercises, expectedExercises,
-                    "Available Exercises should be 23/23 for standard special needs");
-        } else {
-            String[] parts = exercises.split("/");
-            int x = Integer.parseInt(parts[0]), y = Integer.parseInt(parts[1]);
-            assertTrue(x < y,
-                    "Available Exercises X should be less than Y when special needs filter active: " + exercises);
-        }
-
-        log.info("--- [6/8] Training Priorities ---");
-        String priorities = screens.settings().getTrainingPriorities();
-        log.info("Actual: {} (default 'Recommended')", priorities);
-        assertEquals(priorities, "Recommended",
-                "Training Priorities should default to 'Recommended' for new account");
-
-        // ── [7/8] Tap Training Reminder → per-day times → back to Settings ──
-        log.info("--- [7/8] Training Reminder (tap → verify → back) ---");
-        screens.settings().tapTrainingReminder();
-        screens.trainingReminder().waitForScreen();
-
-        String slot = flow.getTrainingTime();
-        String expectedTime = slotToReminderTime(slot);
-        assertNotNull(expectedTime, "No confirmed reminder mapping for slot '" + slot + "'");
-
-        Map<String, String> times = screens.trainingReminder().getAllReminderTimes();
-        log.info("Slot={} Expected={} per day", slot, expectedTime);
-        for (String day : TrainingReminderScreen.DAYS) {
-            String actualDayTime = times.get(day);
-            log.info("  {} → expected={} actual={}", day, expectedTime, actualDayTime);
-            assertEquals(actualDayTime, expectedTime,
-                    day + " should be " + expectedTime + " for slot " + slot);
-        }
-        assertTrue(screens.trainingReminder().isPersonalisedTimesOn(),
-                "'Personalised training times' should default ON");
-        screens.trainingReminder().tapBack();   // → Settings
-
-        // ── [8/8] NeuroBooster — last (Android navigates into detail screen) ──
-        log.info("--- [8/8] NeuroBooster (tap → verify → back) ---");
-        boolean actualNB = screens.settings().isNeuroBoosterEnabled();
-        log.info("Expected: {} | Actual: {}", flow.isNeuroBooster(), actualNB);
-        assertEquals(actualNB, flow.isNeuroBooster(),
-                "NeuroBooster switch should match flow.neuroBooster");
-
-        log.info("=== Settings VERIFIED ✓ comparison={}, lang={}, adaptation={}, "
-                        + "specialNeeds={}, neuroBooster={}, exercises={}, reminder={} ===",
-                profileData.getAgeGroup(), expectedLang, expectedAdaptation,
-                expectedSpecialNeeds, flow.isNeuroBooster(), exercises, expectedTime);
-
-        // ── 6. Profile → Logout → Launch ──
-        // Android: NB back overshoots to Profile — already there
-        // iOS: NB read directly on Settings — need to tap back from Settings to Profile
-        if (screens.profile().isProfileDisplayed()) {
-            log.info("Already on Profile after NB check (Android back-overshoot)");
-        } else {
-            log.info("Tapping back from Settings to reach Profile (iOS)");
-            screens.settings().tapBack();
-        }
-        screens.profile().waitForScreen();
+        // ── 3. Profile → Logout → Launch ──
         screens.profile().tapLogout();
         screens.launch().waitForScreen();
         assertTrue(screens.launch().isStartNowDisplayed(),
@@ -193,17 +88,6 @@ public class MedFullE2EHappyPathTest extends BaseTest {
         assertTrue(validity.contains(expected),
                 "MCI account should be valid 90 days (until " + expected + "): " + validity);
         log.info("MCI 90-day validity confirmed — valid until {}", expected);
-    }
-
-    private static String slotToReminderTime(String slot) {
-        if (slot == null) return null;
-        switch (slot) {
-            case "morning": return "09:00";
-            case "noon":    return null;
-            case "evening": return null;
-            case "night":   return null;
-            default:        return null;
-        }
     }
 
     @Test(
