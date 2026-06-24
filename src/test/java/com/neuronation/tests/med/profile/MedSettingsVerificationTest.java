@@ -3,210 +3,136 @@ package com.neuronation.tests.med.profile;
 import com.neuronation.base.BaseTest;
 import com.neuronation.config.AppType;
 import com.neuronation.pages.med.profile.TrainingReminderScreen;
+import com.neuronation.testdata.ExerciseCatalog;
 import com.neuronation.testdata.Features;
 import com.neuronation.testdata.FlowConfig;
 import com.neuronation.testdata.ProfileData;
 import com.neuronation.utils.TestDataLoader;
 import io.qameta.allure.*;
-import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import java.util.Map;
-
-import static org.testng.Assert.*;
+import java.util.Set;
 
 /**
- * Verifies that every onboarding selection from the active flow appears
- * correctly in Profile → Settings (and Profile → Settings → Training Reminder).
- *
- * Expectations are derived from the FlowConfig that drove registration —
- * no hardcoded literals — so the same test class covers all flows.
+ * Verifies that every onboarding selection from each flow appears correctly in
+ * Profile → Settings (special-needs switches, locked exercises + count, reminder
+ * times, and the existing rows). One onboarding per flow via the data provider —
+ * BaseTest creates a fresh driver in @BeforeMethod before each data row.
  */
 @Epic("NeuroNation MED App")
 @Feature("Settings Verification")
 public class MedSettingsVerificationTest extends BaseTest {
 
-    private static final String FLOW_NAME = "flow1_password_morning_skip";
+    @DataProvider(name = "flows")
+    public static Object[][] flows() {
+        return new Object[][] {
+                {"flow1_password_morning_skip"},      // standard,    23/23, morning 09:00
+                {"flow2_password_evening_doctor"},    // both,        17/23, evening 18:00
+                {"flow3_nopassword_noon_colorvision"},// colorVision, 20/23, noon    14:00
+                {"flow4_password_night_arithmetic"},  // arithmetic,  20/23, night   21:00
+        };
+    }
 
-    private FlowConfig flow;
-    private ProfileData profileData;
+    @Test(dataProvider = "flows",
+          groups = {Features.MED, Features.PROFILE, Features.REGRESSION})
+    @Severity(SeverityLevel.CRITICAL)
+    @Story("Onboarding selections are reflected in Settings")
+    public void settingsReflectOnboarding(String flowName) {
+        ExerciseCatalog catalog = ExerciseCatalog.load();
 
-    @BeforeMethod(alwaysRun = true)
-    public void completeFlowAndNavigateToSettings() {
-        medFlow.completeFullFlow(FLOW_NAME);
-        flow = medFlow.getFlowConfig();
-        profileData = TestDataLoader.loadProfileData(AppType.MED, context.getLanguage(), ProfileData.class);
+        medFlow.completeFullFlow(flowName);
+        FlowConfig flow = medFlow.getFlowConfig();
+        ProfileData profileData = TestDataLoader.loadProfileData(
+                AppType.MED, context.getLanguage(), ProfileData.class);
+        String needs = flow.getSpecialNeeds();
 
+        // Navigate Profile → Settings
         screens.dashboard().tapProfileTab();
         screens.profile().waitForScreen();
         screens.profile().tapSettings();
         screens.settings().waitForScreen();
-    }
 
-    // ──────────────────────────────────────────────
-    // Settings screen — onboarding selections
-    // ──────────────────────────────────────────────
+        // Order matters: the Special-needs and Available-Exercises accordions expand inline
+        // and push the lower Settings rows off-screen. So read all plain rows + Training
+        // Reminder FIRST (collapsed layout), do NeuroBooster (its Android back-nav lands on
+        // Profile), then RE-ENTER Settings and expand the accordions LAST.
 
-    @Test(groups = {Features.MED, Features.PROFILE, Features.SMOKE, Features.CRITICAL})
-    @Severity(SeverityLevel.BLOCKER)
-    @Story("Settings screen loads from Profile")
-    public void testSettings_screenLoads() {
-        assertTrue(screens.settings().isDisplayed(), "Settings should be visible");
-        assertEquals(screens.settings().getToolbarTitle(), "Settings",
-                "Toolbar should show 'Settings'");
-    }
+        // ── Plain text rows (collapsed layout) ──
+        softAssert.assertEquals(screens.settings().getComparisonGroup(), profileData.getAgeGroup(),
+                "Comparison Group should match profile.json ageGroup");
+        softAssert.assertEquals(screens.settings().getLanguage(), expectedLanguageLabel(context.getLanguage()),
+                "Language should match suite language");
+        String expectedAdaptation = "deactivate".equals(flow.getTrainingComplexity()) ? "Don't ask me" : "Ask me";
+        softAssert.assertEquals(screens.settings().getTrainingAdaptation(), expectedAdaptation,
+                "Training Adaptation should match flow.trainingComplexity");
 
-    @Test(groups = {Features.MED, Features.PROFILE, Features.REGRESSION})
-    @Severity(SeverityLevel.CRITICAL)
-    @Story("Comparison Group matches age group selected in onboarding")
-    public void testSettings_comparisonGroup_matchesProfile() {
-        String expected = profileData.getAgeGroup();
-        String actual = screens.settings().getComparisonGroup();
-        log.info("ComparisonGroup expected={} actual={}", expected, actual);
-        assertEquals(actual, expected, "Comparison Group should match profile.json ageGroup");
-    }
+        // ── Available exercises count (reads the row subtitle, no expansion) ──
+        String expectedCount = catalog.expectedCountLabel(needs);
+        String actualCount = screens.settings().getAvailableExercises();
+        log.info("[{}] AvailableExercises expected={} actual={}", flowName, expectedCount, actualCount);
+        softAssert.assertEquals(actualCount, expectedCount,
+                "Available Exercises count should match specialNeeds=" + needs);
 
-    @Test(groups = {Features.MED, Features.PROFILE, Features.REGRESSION})
-    @Severity(SeverityLevel.NORMAL)
-    @Story("Language matches suite language parameter")
-    public void testSettings_language_matchesSelection() {
-        String expected = expectedLanguageLabel(context.getLanguage());
-        String actual = screens.settings().getLanguage();
-        log.info("Language expected={} actual={}", expected, actual);
-        assertEquals(actual, expected, "Language label should match suite language");
-    }
+        // ── Training Reminder per-day times (tap in, read, back to Settings) ──
+        screens.settings().tapTrainingReminder();
+        screens.trainingReminder().waitForScreen();
+        String expectedTime = slotToReminderTime(flow.getTrainingTime());
+        Map<String, String> times = screens.trainingReminder().getAllReminderTimes();
+        log.info("[{}] slot={} expectedTime={} actual={}", flowName, flow.getTrainingTime(), expectedTime, times);
+        for (String day : TrainingReminderScreen.DAYS) {
+            softAssert.assertEquals(times.get(day), expectedTime,
+                    day + " reminder should be " + expectedTime + " for slot " + flow.getTrainingTime());
+        }
+        softAssert.assertTrue(screens.trainingReminder().isPersonalisedTimesOn(),
+                "'Personalised training times' should default ON");
+        screens.trainingReminder().tapBack(); // → Settings
 
-    @Test(groups = {Features.MED, Features.PROFILE, Features.REGRESSION})
-    @Severity(SeverityLevel.NORMAL)
-    @Story("Training Adaptation matches trainingComplexity flow choice")
-    public void testSettings_trainingAdaptation_matchesFlow() {
-        String expected = "deactivate".equals(flow.getTrainingComplexity()) ? "Don't ask me" : "Ask me";
-        String actual = screens.settings().getTrainingAdaptation();
-        log.info("TrainingAdaptation expected={} actual={}", expected, actual);
-        assertEquals(actual, expected, "Training Adaptation should match flow.trainingComplexity");
-    }
+        // ── NeuroBooster (Android back-nav lands on Profile) ──
+        softAssert.assertEquals(screens.settings().isNeuroBoosterEnabled(), flow.isNeuroBooster(),
+                "NeuroBooster switch should match flow.neuroBooster");
 
-    @Test(groups = {Features.MED, Features.PROFILE, Features.REGRESSION})
-    @Severity(SeverityLevel.NORMAL)
-    @Story("Special needs switch reflects flow choice")
-    public void testSettings_specialNeedsSwitch_matchesFlow() {
-        boolean expected = !"standard".equals(flow.getSpecialNeeds());
-        boolean actual = screens.settings().isSpecialNeedsEnabled();
-        log.info("SpecialNeeds expected={} actual={}", expected, actual);
-        assertEquals(actual, expected,
-                "Special needs switch should be ON for non-standard, OFF for standard");
-    }
+        // ── Re-enter Settings, then expand accordions LAST ──
+        screens.profile().waitForScreen();
+        screens.profile().tapSettings();
+        screens.settings().waitForScreen();
 
-    @Test(groups = {Features.MED, Features.PROFILE, Features.REGRESSION})
-    @Severity(SeverityLevel.NORMAL)
-    @Story("NeuroBooster switch reflects flow choice")
-    public void testSettings_neuroBoosterSwitch_matchesFlow() {
-        boolean expected = flow.isNeuroBooster();
-        boolean actual = screens.settings().isNeuroBoosterEnabled();
-        log.info("NeuroBooster expected={} actual={}", expected, actual);
-        assertEquals(actual, expected, "NeuroBooster switch should match flow.neuroBooster");
-    }
+        // ── Special-needs switches ──
+        boolean expectColorVision = "colorVision".equals(needs) || "both".equals(needs);
+        boolean expectArithmetic  = "arithmetic".equals(needs)  || "both".equals(needs);
+        boolean actualColorVision = screens.settings().isColorVisionEnabled();
+        boolean actualArithmetic  = screens.settings().isArithmeticEnabled();
+        log.info("[{}] ColorVision expected={} actual={}", flowName, expectColorVision, actualColorVision);
+        log.info("[{}] Arithmetic  expected={} actual={}", flowName, expectArithmetic, actualArithmetic);
+        softAssert.assertEquals(actualColorVision, expectColorVision,
+                "Color Vision switch should match flow specialNeeds=" + needs);
+        softAssert.assertEquals(actualArithmetic, expectArithmetic,
+                "Arithmetic switch should match flow specialNeeds=" + needs);
 
-    @Test(groups = {Features.MED, Features.PROFILE, Features.REGRESSION})
-    @Severity(SeverityLevel.NORMAL)
-    @Story("Available exercises shown as X/Y count")
-    public void testSettings_availableExercises_shown() {
-        String exercises = screens.settings().getAvailableExercises();
-        log.info("AvailableExercises: {}", exercises);
-        assertNotNull(exercises, "Available Exercises should not be null");
-        assertTrue(exercises.matches("\\d+/\\d+"),
-                "Available Exercises should be 'X/Y' format, got: " + exercises);
-    }
+        // ── Locked exercises set ──
+        Set<String> expectedLocked = new java.util.LinkedHashSet<>(catalog.lockedFor(needs));
+        Set<String> actualLocked = screens.settings().getLockedExercises(catalog.all());
+        log.info("[{}] LockedExercises expected={} actual={}", flowName, expectedLocked, actualLocked);
+        softAssert.assertEquals(actualLocked, expectedLocked,
+                "Locked (unchecked) exercises should match specialNeeds=" + needs);
 
-    @Test(groups = {Features.MED, Features.PROFILE, Features.CONTENT, Features.REGRESSION})
-    @Severity(SeverityLevel.NORMAL)
-    @Story("Settings content snapshot")
-    public void testSettings_contentSnapshot() {
-        verifyOrRecordContent(screens.settings(), "SettingsScreen");
         softAssert.assertAll();
     }
 
-    // ──────────────────────────────────────────────
-    // Training Reminder — per-day reminder times
-    // ──────────────────────────────────────────────
-
-    @Test(groups = {Features.MED, Features.PROFILE, Features.SMOKE, Features.CRITICAL})
-    @Severity(SeverityLevel.CRITICAL)
-    @Story("Training Reminder loads with all 7 days")
-    public void testTrainingReminder_screenLoadsAllDays() {
-        screens.settings().tapTrainingReminder();
-        screens.trainingReminder().waitForScreen();
-
-        assertTrue(screens.trainingReminder().isDisplayed(),
-                "Training Reminder screen should be visible");
-
-        Map<String, String> times = screens.trainingReminder().getAllReminderTimes();
-        log.info("Reminder times: {}", times);
-        for (String day : TrainingReminderScreen.DAYS) {
-            String t = times.get(day);
-            assertNotNull(t, day + " reminder time should be present");
-            assertTrue(t.matches("\\d{1,2}:\\d{2}"),
-                    day + " reminder should be HH:MM, got: " + t);
-        }
-    }
-
-    @Test(groups = {Features.MED, Features.PROFILE, Features.REGRESSION})
-    @Severity(SeverityLevel.CRITICAL)
-    @Story("Per-day reminder times match the flow's training time slot")
-    public void testTrainingReminder_perDayTime_matchesFlowSlot() {
-        screens.settings().tapTrainingReminder();
-        screens.trainingReminder().waitForScreen();
-
-        String slot = flow.getTrainingTime();
-        String expected = slotToReminderTime(slot);
-        if (expected == null) {
-            throw new SkipException("No confirmed reminder-time mapping for slot '"
-                    + slot + "'. Run a flow with a known slot to extend the mapping.");
-        }
-
-        Map<String, String> times = screens.trainingReminder().getAllReminderTimes();
-        log.info("Slot={} expected={} actual={}", slot, expected, times);
-
-        for (String day : TrainingReminderScreen.DAYS) {
-            assertEquals(times.get(day), expected,
-                    day + " reminder time should match slot '" + slot + "' (" + expected + ")");
-        }
-    }
-
-    @Test(groups = {Features.MED, Features.PROFILE, Features.REGRESSION})
-    @Severity(SeverityLevel.NORMAL)
-    @Story("Personalised training times toggle is ON by default")
-    public void testTrainingReminder_personalisedToggle_onByDefault() {
-        screens.settings().tapTrainingReminder();
-        screens.trainingReminder().waitForScreen();
-
-        boolean on = screens.trainingReminder().isPersonalisedTimesOn();
-        log.info("PersonalisedTimes: {}", on);
-        assertTrue(on, "'Personalised training times' should default to ON");
-    }
-
-    // ──────────────────────────────────────────────
-    // Helpers
-    // ──────────────────────────────────────────────
-
-    /** Map of training-time slot → expected reminder time HH:MM.
-     *  Only "morning" is verified live so far. Others return null until confirmed. */
+    /** Training-time slot → expected reminder time (same for all 7 days). */
     private static String slotToReminderTime(String slot) {
         if (slot == null) return null;
         switch (slot) {
             case "morning": return "09:00";
-            case "noon":    return null; // TODO: confirm by registering a noon flow
-            case "evening": return null; // TODO: confirm by registering an evening flow
-            case "night":   return null; // TODO: confirm by registering a night flow
-            default:        return null;
+            case "noon":    return "14:00";
+            case "evening": return "18:00";
+            case "night":   return "21:00";
+            default:        throw new IllegalArgumentException("Unknown training time slot: " + slot);
         }
     }
 
     private static String expectedLanguageLabel(String lang) {
         return "de".equalsIgnoreCase(lang) ? "Deutsch" : "English (United Kingdom)";
-    }
-
-    private static class SkipException extends org.testng.SkipException {
-        SkipException(String msg) { super(msg); }
     }
 }
