@@ -1,0 +1,15 @@
+{
+  "all": [
+    "Memobox", "Form Fever", "Reflector", "Alphabet Soup", "Chain Reaction", "Restorer",
+    "Focus Master", "Symbolism", "Mathrobatics", "Memoflow", "Shuffler", "Clockwise",
+    "Path Finder", "Path Finder Reverse", "Colour Craze", "Turnabout", "Quantum Leap",
+    "Word Acrobat", "Verbal Voyager", "Flash Memo", "Memo Pair", "Quick Switch",
+    "Parallel Perfection"
+  ],
+  "locked": {
+    "standard": [],
+    "colorVision": ["Form Fever", "Colour Craze", "Quantum Leap"],
+    "arithmetic": ["Reflector", "Chain Reaction", "Mathrobatics"],
+    "both": ["Form Fever", "Colour Craze", "Quantum Leap", "Reflector", "Chain Reaction", "Mathrobatics"]
+  }
+}
