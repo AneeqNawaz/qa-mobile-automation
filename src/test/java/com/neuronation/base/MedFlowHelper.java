@@ -186,8 +186,28 @@ public class MedFlowHelper {
             return false;
         });
 
+        dismissVolumePopupIfPresent();
         screens.onboardingVideo().tapClose();
         screens.createAccount().waitForScreen();
+    }
+
+    /** Optionally dismiss the "Adjusting the volume" popup shown before an explanatory video when
+     *  the device volume is low/muted. No-op when it isn't shown (volume up). Best-effort —
+     *  Android only (the id-based lookup simply finds nothing on iOS). */
+    private void dismissVolumePopupIfPresent() {
+        var driver = DriverManager.getDriver();
+        try {
+            for (var t : driver.findElements(AppiumBy.id("android:id/alertTitle"))) {
+                String txt = t.getText();
+                if (txt != null && txt.toLowerCase().contains("volume")) {
+                    driver.findElement(AppiumBy.id("android:id/button1")).click(); // "Yes, continue"
+                    log.info("Dismissed 'Adjusting the volume' popup before video");
+                    return;
+                }
+            }
+        } catch (Exception e) {
+            log.debug("Volume popup check skipped: {}", e.getMessage());
+        }
     }
 
     @Step("Navigate: ... → Create Account → Email Registration Form")
@@ -465,6 +485,7 @@ public class MedFlowHelper {
             new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(5))
                     .until(ExpectedConditions.presenceOfElementLocated(
                             platformLocator("nn.mobile.app.med:id/onboardingContainer", "Video")));
+            dismissVolumePopupIfPresent();
             if (isAndroid()) {
                 screens.onboardingVideo().tapClose();
             } else {
