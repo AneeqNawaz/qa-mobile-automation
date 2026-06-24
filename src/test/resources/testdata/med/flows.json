@@ -15,12 +15,12 @@
     "dataProcessingConsent": false
   },
   "flow2_password_evening_doctor": {
-    "description": "Password auth, standard, evening, doctor fill, newsletter disagree, booster no, promise no",
+    "description": "Password auth, both constraints, evening, doctor fill, newsletter disagree, booster no, promise no",
     "authMethod": "password",
     "doctorInfo": "fill",
     "newsletterConsent": false,
     "trainingComplexity": "activate",
-    "specialNeeds": "standard",
+    "specialNeeds": "both",
     "trainingTime": "evening",
     "trainingDays": "default",
     "notificationPermission": "allow",
