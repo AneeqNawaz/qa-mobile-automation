@@ -85,6 +85,14 @@ public abstract class BaseScreen {
         return !elements.isEmpty() && elements.get(0).isDisplayed();
     }
 
+    /** Like {@link #isVisibleById} but never throws on a stale/!displayed element. */
+    protected boolean isDisplayedById(String resourceId) {
+        for (var el : driver.findElements(AppiumBy.id(resourceId))) {
+            try { if (el.isDisplayed()) return true; } catch (Exception ignored) {}
+        }
+        return false;
+    }
+
     /**
      * Check if an image/visual element is visible on screen.
      * Uses the proxy — suitable for elements that SHOULD exist.
@@ -140,6 +148,16 @@ public abstract class BaseScreen {
         int startY = (int) (dimensions.getHeight() * 0.2);
         int endY = (int) (dimensions.getHeight() * 0.8);
         performSwipe(startX, startY, startX, endY);
+    }
+
+    /** Tap at an absolute screen coordinate (e.g. the dimmed area outside a dialog). */
+    protected void tapAt(int x, int y) {
+        PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
+        Sequence tap = new Sequence(finger, 0);
+        tap.addAction(finger.createPointerMove(Duration.ZERO, PointerInput.Origin.viewport(), x, y));
+        tap.addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()));
+        tap.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
+        driver.perform(Collections.singletonList(tap));
     }
 
     private void performSwipe(int startX, int startY, int endX, int endY) {
@@ -204,15 +222,23 @@ public abstract class BaseScreen {
      */
     protected void scrollToElement(String androidId, String iosAccessibilityId) {
         if (isAndroid()) {
-            // Skip scroll if element is already on screen — UiScrollable.scrollIntoView
-            // first scrolls to the beginning then forwards (the up-then-down behaviour).
-            var existing = driver.findElements(AppiumBy.id(androidId));
-            for (var el : existing) {
-                try { if (el.isDisplayed()) return; } catch (Exception ignored) {}
+            // Already on screen — no scroll needed.
+            if (isDisplayedById(androidId)) return;
+            // Forward-scroll only (content up). UiScrollable.scrollIntoView flings to the
+            // top first and then crawls forward — slow and visually jarring. Targets here
+            // (logout, submit, settings rows) sit BELOW the current view, so a few controlled
+            // swipes reach them quickly without the reset.
+            for (int i = 0; i < 6; i++) {
+                swipeUp();
+                if (isDisplayedById(androidId)) return;
             }
-            driver.findElement(AppiumBy.androidUIAutomator(
-                    "new UiScrollable(new UiSelector().scrollable(true))" +
-                    ".scrollIntoView(new UiSelector().resourceId(\"" + androidId + "\"))"));
+            // Fallback: element may be above current position, or a swipe overshot it — let
+            // UiScrollable locate it (slower, but reliable) as a last resort.
+            try {
+                driver.findElement(AppiumBy.androidUIAutomator(
+                        "new UiScrollable(new UiSelector().scrollable(true)).setMaxSearchSwipes(8)" +
+                        ".scrollIntoView(new UiSelector().resourceId(\"" + androidId + "\"))"));
+            } catch (Exception ignored) {}
         } else {
             try {
                 ((io.appium.java_client.AppiumDriver) driver).executeScript(

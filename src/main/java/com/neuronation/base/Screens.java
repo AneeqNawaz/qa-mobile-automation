@@ -21,6 +21,8 @@ public class Screens {
     private DashboardScreen dashboard;
     private ProfileScreen profile;
     private SettingsScreen settings;
+    private PrivacySettingsScreen privacySettings;
+    private ConsentHistoryScreen consentHistory;
     private TrainingReminderScreen trainingReminder;
     private ChangeEmailScreen changeEmail;
     private LoginScreen login;
@@ -69,6 +71,16 @@ public class Screens {
     public SettingsScreen settings() {
         if (settings == null) settings = new SettingsScreen();
         return settings;
+    }
+
+    public PrivacySettingsScreen privacySettings() {
+        if (privacySettings == null) privacySettings = new PrivacySettingsScreen();
+        return privacySettings;
+    }
+
+    public ConsentHistoryScreen consentHistory() {
+        if (consentHistory == null) consentHistory = new ConsentHistoryScreen();
+        return consentHistory;
     }
 
     public TrainingReminderScreen trainingReminder() {
@@ -202,6 +214,7 @@ public class Screens {
      */
     public void reset() {
         launch = null; dashboard = null; profile = null; settings = null;
+        privacySettings = null; consentHistory = null;
         trainingReminder = null; changeEmail = null; login = null;
         appSelection = null; digaCode = null; onboardingVideo = null;
         createAccount = null; emailRegistration = null; passkey = null;

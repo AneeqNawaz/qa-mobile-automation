@@ -1,0 +1,11 @@
+{
+  "expandableRowOptions": {
+    "Comparison Group": [
+      "Age group 18-20", "Age group 21-30", "Age group 31-40", "Age group 41-50",
+      "Age group 51-60", "Age group 61-70", "Age group 71-80", "Age group 80+"
+    ],
+    "Training Adaptation": ["Ask me", "Don't ask me"],
+    "Language": ["English (United Kingdom)", "Deutsch"]
+  },
+  "trainingPriorityDomains": ["Speed", "Attention", "Memory", "Reasoning"]
+}

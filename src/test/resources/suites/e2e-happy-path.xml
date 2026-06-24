@@ -13,10 +13,9 @@
                  re-login). The class still exposes those methods to the other suites. -->
             <class name="com.neuronation.tests.med.e2e.MedFullE2EHappyPathTest">
                 <methods>
-                    <include name="testFlow1_PasswordMorningSkip"/>
-                    <include name="testFlow2_PasswordEveningDoctor"/>
-                    <include name="testFlow3_NoPasswordNoonColorVision"/>
-                    <include name="testFlow4_PasswordNightArithmetic"/>
+                    <!-- One comprehensive per-flow E2E (data provider runs flow1–4;
+                         -Dflow=<name> limits to a single flow). -->
+                    <include name="fullE2EHappyPath"/>
                 </methods>
             </class>
         </classes>

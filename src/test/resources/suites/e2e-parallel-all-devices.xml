@@ -11,7 +11,7 @@
         <parameter name="config.profile" value="med-android"/>
         <classes>
             <class name="com.neuronation.tests.med.e2e.MedFullE2EHappyPathTest">
-                <methods><include name="testFlow1_PasswordMorningSkip"/></methods>
+                <methods><include name="fullE2EHappyPath"/></methods>
             </class>
         </classes>
     </test>
@@ -22,7 +22,7 @@
         <parameter name="config.profile" value="med-android-emulator"/>
         <classes>
             <class name="com.neuronation.tests.med.e2e.MedFullE2EHappyPathTest">
-                <methods><include name="testFlow1_PasswordMorningSkip"/></methods>
+                <methods><include name="fullE2EHappyPath"/></methods>
             </class>
         </classes>
     </test>
@@ -33,7 +33,7 @@
         <parameter name="config.profile" value="med-ios"/>
         <classes>
             <class name="com.neuronation.tests.med.e2e.MedFullE2EHappyPathTest">
-                <methods><include name="testFlow1_PasswordMorningSkip"/></methods>
+                <methods><include name="fullE2EHappyPath"/></methods>
             </class>
         </classes>
     </test>

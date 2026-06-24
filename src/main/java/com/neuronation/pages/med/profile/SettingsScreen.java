@@ -213,15 +213,16 @@ public class SettingsScreen extends BaseScreen {
     }
 
     /** Read every exercise's checked state in a SINGLE downward sweep: capture all visible
-     *  checkboxes (name → checked) at each position, swipe down, repeat until two passes add
-     *  nothing new (bottom reached). No per-item scrollIntoView (which thrashes top↔item).
-     *  Text is the documented exception — the checkboxes expose no resource-id. */
-    @Step("Read all exercise checkbox states (single downward pass)")
-    public java.util.Map<String, Boolean> getExerciseStates() {
+     *  checkboxes (name → checked) at each position, swipe down, repeat. Stops the instant all
+     *  {@code expected} names have been seen (no extra confirming scrolls) — or when a swipe
+     *  reveals nothing new (bottom reached). No per-item scrollIntoView (which thrashes
+     *  top↔item). Text is the documented exception — the checkboxes expose no resource-id. */
+    @Step("Read exercise checkbox states (single downward pass)")
+    public java.util.Map<String, Boolean> getExerciseStates(java.util.Collection<String> expected) {
         expandAvailableExercises();
         java.util.Map<String, Boolean> states = new java.util.LinkedHashMap<>();
-        int lastSize = -1, stableRounds = 0;
-        for (int i = 0; i < 8 && stableRounds < 2; i++) {
+        int prevSize = -1;
+        for (int i = 0; i < 10; i++) {
             for (WebElement cb : driver.findElements(AppiumBy.className("android.widget.CheckBox"))) {
                 try {
                     String name = cb.getText();
@@ -230,8 +231,11 @@ public class SettingsScreen extends BaseScreen {
                     }
                 } catch (Exception ignored) {}
             }
-            if (states.size() == lastSize) stableRounds++;
-            else { stableRounds = 0; lastSize = states.size(); }
+            boolean haveAll = expected != null && !expected.isEmpty()
+                    && states.keySet().containsAll(expected);
+            boolean noProgress = states.size() == prevSize; // last swipe revealed nothing new
+            if (haveAll || noProgress) break;
+            prevSize = states.size();
             swipeUp(); // scroll the list down to reveal more rows
         }
         log.info("Exercise states read ({} exercises): {}", states.size(), states);
@@ -241,13 +245,155 @@ public class SettingsScreen extends BaseScreen {
     /** Names from {@code allNames} whose checkbox is unchecked (i.e. locked). */
     @Step("Collect locked (unchecked) exercises")
     public java.util.Set<String> getLockedExercises(java.util.List<String> allNames) {
-        java.util.Map<String, Boolean> states = getExerciseStates();
+        java.util.Map<String, Boolean> states = getExerciseStates(allNames);
         java.util.Set<String> locked = new java.util.LinkedHashSet<>();
         for (String name : allNames) {
             Boolean checked = states.get(name);
             if (checked != null && !checked) locked.add(name);
         }
         return locked;
+    }
+
+    /** Collapse the "Special needs in training" accordion by tapping its row (arrow toggle). */
+    @Step("Collapse 'Special needs in training' accordion")
+    public void collapseSpecialNeeds() {
+        if (driver.findElements(AppiumBy.id("nn.mobile.app.med:id/accessibiletySwitch")).isEmpty()) {
+            return; // already collapsed
+        }
+        tapSetting("Special needs in training");
+    }
+
+    /** Collapse the "Available Exercises" accordion. After a downward read its header is
+     *  scrolled off the top, so bring the list back to the top first, then tap to collapse. */
+    @Step("Collapse 'Available Exercises' accordion")
+    public void collapseAvailableExercises() {
+        if (driver.findElements(AppiumBy.className("android.widget.CheckBox")).isEmpty()) {
+            return; // already collapsed
+        }
+        try {
+            driver.findElement(AppiumBy.androidUIAutomator(
+                    "new UiScrollable(new UiSelector().scrollable(true)).scrollToBeginning(10)"));
+        } catch (Exception ignored) {}
+        tapSetting("Available Exercises");
+    }
+
+    // ── Generic expandable single-select row (Comparison Group, Training Adaptation, Language) ──
+    // These rows share the same UI: tapping the row expands an inline list of clickable options
+    // (TextViews with no resource-id). The selected option is highlighted in light green only —
+    // there is NO checked/selected/color attribute exposed to Appium — so selection is verified
+    // via the row subtitle (getSettingValue), and here we just read the offered option labels.
+
+    /** Option labels currently shown inside an expanded row's content holder. The options are
+     *  id-less TextViews under editcycleContentHolder; editcycleContentTitle (the description)
+    /** Is an element with exactly this text on screen? Driver-level UiAutomator text() query —
+     *  reliable, unlike element-scoped findElements which proved flaky here. */
+    public boolean isOptionVisible(String label) {
+        return !driver.findElements(AppiumBy.androidUIAutomator(
+                "new UiSelector().text(\"" + label + "\")")).isEmpty();
+    }
+
+    /** Expand {@code rowTitle}, then report which of {@code expected} option labels are visible.
+     *  Selection isn't asserted (green highlight is visual-only) — the selected value comes from
+     *  the subtitle. Expansion shows multiple options; a collapsed row shows only the selected. */
+    @Step("Expand row {rowTitle} and read its options")
+    public java.util.List<String> expandRowAndReadOptions(String rowTitle, java.util.List<String> expected) {
+        tapSetting(rowTitle);
+        try {
+            new org.openqa.selenium.support.ui.WebDriverWait(driver, java.time.Duration.ofSeconds(6))
+                    .until(d -> expected.stream().filter(this::isOptionVisible).count() >= 2);
+        } catch (Exception ignored) {}
+        java.util.List<String> present = new java.util.ArrayList<>();
+        for (String label : expected) {
+            if (isOptionVisible(label)) present.add(label);
+        }
+        log.info("Row '{}' options present {}/{}: {}", rowTitle, present.size(), expected.size(), present);
+        return present;
+    }
+
+    /** Collapse an expandable row by tapping its title again. */
+    @Step("Collapse row {rowTitle}")
+    public void collapseRow(String rowTitle) {
+        tapSetting(rowTitle);
+    }
+
+    // ── Training Priorities (Attention popup → Understood → 4 domains) ──
+
+    @Step("Open 'Training Priorities' (taps row → Attention popup OR direct domain expand)")
+    public void openTrainingPriorities() {
+        tapSetting("Training Priorities");
+        // On some accounts an "Attention" popup (button1) appears first; on others the row expands
+        // directly to the domains (domainTitle). Wait for EITHER so callers can branch.
+        try {
+            new org.openqa.selenium.support.ui.WebDriverWait(driver, java.time.Duration.ofSeconds(6))
+                    .until(d -> !d.findElements(AppiumBy.id("android:id/button1")).isEmpty()
+                            || !d.findElements(AppiumBy.id("nn.mobile.app.med:id/domainTitle")).isEmpty());
+        } catch (Exception ignored) {}
+    }
+
+    @Step("Is the 'Attention' popup shown")
+    public boolean isAttentionPopupShown() {
+        // Detect by the Understood button (android:id/button1). On a freshly-onboarded account
+        // the dialog has a message + button but NO android:id/alertTitle, so we do NOT require
+        // the title here. Presence-based to avoid isDisplayed() races during the entrance anim.
+        return !driver.findElements(AppiumBy.id("android:id/button1")).isEmpty();
+    }
+
+    @Step("Get Attention popup title")
+    public String getAttentionTitle() {
+        var els = driver.findElements(AppiumBy.id("android:id/alertTitle"));
+        return els.isEmpty() ? "" : els.get(0).getText();
+    }
+
+    @Step("Get Attention popup message")
+    public String getAttentionMessage() {
+        var els = driver.findElements(AppiumBy.id("android:id/message"));
+        return els.isEmpty() ? "" : els.get(0).getText();
+    }
+
+    /** Dismiss the Attention popup by tapping the dimmed scrim just above the dialog
+     *  (cancelable dialog). The dialog starts ~1/3 down the screen, so ~0.22·height lands in
+     *  the scrim — clear of the status bar / toolbar above and the dialog below. Verified on
+     *  device: tapping at 0.06·height instead hit the toolbar and misfired. */
+    @Step("Dismiss Attention popup by tapping outside")
+    public void dismissAttentionPopupOutside() {
+        var size = driver.manage().window().getSize();
+        tapAt(size.getWidth() / 2, (int) (size.getHeight() * 0.22));
+        // Wait for the dialog to actually go away so a follow-up isAttentionPopupShown() is reliable.
+        try {
+            new org.openqa.selenium.support.ui.WebDriverWait(driver, java.time.Duration.ofSeconds(5))
+                    .until(d -> d.findElements(AppiumBy.id("android:id/button1")).isEmpty());
+        } catch (Exception ignored) {}
+    }
+
+    @Step("Tap 'Understood' on the Attention popup")
+    public void tapUnderstood() {
+        driver.findElement(AppiumBy.id("android:id/button1")).click();
+        new org.openqa.selenium.support.ui.WebDriverWait(driver, java.time.Duration.ofSeconds(5))
+                .until(org.openqa.selenium.support.ui.ExpectedConditions.presenceOfElementLocated(
+                        AppiumBy.id("nn.mobile.app.med:id/domainTitle")));
+    }
+
+    /** Collapse the expanded Training Priorities accordion (tap its row/arrow). */
+    @Step("Collapse 'Training Priorities' accordion")
+    public void collapseTrainingPriorities() {
+        if (driver.findElements(AppiumBy.id("nn.mobile.app.med:id/domainTitle")).isEmpty()) {
+            return; // not expanded
+        }
+        tapSetting("Training Priorities");
+    }
+
+    /** Domain titles shown after Understood (Speed / Attention / Memory / Reasoning). */
+    @Step("Read Training Priorities domains")
+    public java.util.List<String> getTrainingPriorityDomains() {
+        java.util.List<String> domains = new java.util.ArrayList<>();
+        for (WebElement el : driver.findElements(AppiumBy.id("nn.mobile.app.med:id/domainTitle"))) {
+            try {
+                String t = el.getText();
+                if (t != null && !t.isEmpty()) domains.add(t);
+            } catch (Exception ignored) {}
+        }
+        log.info("Training Priorities domains ({}): {}", domains.size(), domains);
+        return domains;
     }
 
     @Step("Is 'NeuroBooster' switch ON")

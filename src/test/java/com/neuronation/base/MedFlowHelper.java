@@ -16,6 +16,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Config-driven navigation helper for MED app flow.
@@ -33,6 +35,9 @@ public class MedFlowHelper {
     private String currentPassword;
     private String currentCode;
     private FlowConfig flowConfig;
+
+    /** Per-day reminder times captured from the onboarding Schedule Review screen. */
+    private final Map<String, String> scheduleReviewTimes = new LinkedHashMap<>();
 
     public MedFlowHelper(Screens screens, String language) {
         this.screens = screens;
@@ -536,9 +541,23 @@ public class MedFlowHelper {
 
     @Step("Complete schedule review — scroll and confirm")
     public void completeScheduleReview() {
+        // Capture the per-day times shown here during onboarding so a test can verify them
+        // (they should all equal the chosen slot time). Best-effort — never break the flow.
+        try {
+            scheduleReviewTimes.clear();
+            scheduleReviewTimes.putAll(screens.scheduleReview().getScheduleTimes());
+            log.info("Captured Schedule Review per-day times: {}", scheduleReviewTimes);
+        } catch (Exception e) {
+            log.warn("Could not capture Schedule Review per-day times: {}", e.getMessage());
+        }
         screens.scheduleReview().tapConfirm();
         // Notification popup follows
         waitForNotificationPopup();
+    }
+
+    /** Per-day reminder times captured from the onboarding Schedule Review screen (day→"HH:MM"). */
+    public Map<String, String> getScheduleReviewTimes() {
+        return scheduleReviewTimes;
     }
 
     private void waitForNotificationPopup() {

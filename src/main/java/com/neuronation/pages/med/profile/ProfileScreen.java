@@ -276,7 +276,16 @@ public class ProfileScreen extends BaseScreen {
     public void tapDeleteAccount() { swipeUp(); tap(deleteAccount); }
 
     @Step("Tap 'Privacy Settings'")
-    public void tapPrivacySettings() { swipeUp(); tap(privacySettings); }
+    public void tapPrivacySettings() {
+        scrollToElement("nn.mobile.app.med:id/menu_privacy_title", "Privacy Settings");
+        tap(privacySettings);
+    }
+
+    @Step("Tap 'Consent History'")
+    public void tapConsentHistory() {
+        scrollToElement("nn.mobile.app.med:id/menu_consent_history_title", "Consent History");
+        tap(consentHistory);
+    }
 
     @Step("Tap 'About us'")
     public void tapAboutUs() { swipeUp(); tap(aboutUs); }
