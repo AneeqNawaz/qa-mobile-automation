@@ -59,6 +59,15 @@ public class SettingsScreen extends BaseScreen {
     @iOSXCUITFindBy(iOSClassChain = "**/XCUIElementTypeSwitch[`name BEGINSWITH \"NeuroBooster\"`]")
     private WebElement neuroBoosterSwitch;
 
+    // ── Special-needs accordion (expanded under "Special needs in training") ──
+    @AndroidFindBy(id = "nn.mobile.app.med:id/accessibiletySwitch")
+    @iOSXCUITFindBy(accessibility = "accessibiletySwitch")   // iOS unverified (WDA blocker)
+    private WebElement colorVisionSwitch;
+
+    @AndroidFindBy(id = "nn.mobile.app.med:id/dyscalculiaSwitch")
+    @iOSXCUITFindBy(accessibility = "dyscalculiaSwitch")     // iOS unverified (WDA blocker)
+    private WebElement arithmeticSwitch;
+
     // ── Lifecycle ──
 
     @Step("Wait for Settings screen to load")
@@ -156,15 +165,74 @@ public class SettingsScreen extends BaseScreen {
         return isAndroid() ? readAndroidValue("Training Priorities") : safeText(trainingPrioritiesValue);
     }
 
-    @Step("Is 'Special needs in training' switch ON")
+    /** "Special needs in training" is an inline accordion. Expand it (idempotent) so the
+     *  Color Vision / Arithmetic switches are present. */
+    @Step("Expand 'Special needs in training' accordion")
+    public void expandSpecialNeeds() {
+        if (!driver.findElements(AppiumBy.id("nn.mobile.app.med:id/accessibiletySwitch")).isEmpty()) {
+            return; // already expanded
+        }
+        tapSetting("Special needs in training");
+        new org.openqa.selenium.support.ui.WebDriverWait(driver, java.time.Duration.ofSeconds(5))
+                .until(org.openqa.selenium.support.ui.ExpectedConditions.presenceOfElementLocated(
+                        AppiumBy.id("nn.mobile.app.med:id/accessibiletySwitch")));
+    }
+
+    @Step("Is Color Vision Deficiency switch ON")
+    public boolean isColorVisionEnabled() {
+        expandSpecialNeeds();
+        return "true".equals(colorVisionSwitch.getAttribute("checked"));
+    }
+
+    @Step("Is Arithmetic Impairment switch ON")
+    public boolean isArithmeticEnabled() {
+        expandSpecialNeeds();
+        return "true".equals(arithmeticSwitch.getAttribute("checked"));
+    }
+
+    @Step("Is 'Special needs in training' enabled (either constraint on)")
     public boolean isSpecialNeedsEnabled() {
         if (isAndroid()) {
-            // Android has no Switch widget on Settings — subtitle is non-empty when enabled
-            // (shows the special need name), empty for "standard"/disabled.
-            return !readAndroidValue("Special needs in training").isEmpty();
+            return isColorVisionEnabled() || isArithmeticEnabled();
         }
         try { return "1".equals(specialNeedsSwitch.getAttribute("value")); }
         catch (Exception e) { return false; }
+    }
+
+    /** "Available Exercises" is an inline accordion of CheckBox rows (no resource-id; the
+     *  exercise name is the only stable identifier). Expand it (idempotent). */
+    @Step("Expand 'Available Exercises' accordion")
+    public void expandAvailableExercises() {
+        if (!driver.findElements(AppiumBy.className("android.widget.CheckBox")).isEmpty()) {
+            return; // already expanded
+        }
+        tapSetting("Available Exercises");
+        new org.openqa.selenium.support.ui.WebDriverWait(driver, java.time.Duration.ofSeconds(5))
+                .until(org.openqa.selenium.support.ui.ExpectedConditions.presenceOfElementLocated(
+                        AppiumBy.className("android.widget.CheckBox")));
+    }
+
+    /** Scroll the expanded exercise list to the named checkbox and report its checked state.
+     *  Text locator is the documented exception — the checkboxes expose no resource-id. */
+    @Step("Is exercise checked: {exerciseName}")
+    public boolean isExerciseChecked(String exerciseName) {
+        expandAvailableExercises();
+        WebElement box = driver.findElement(AppiumBy.androidUIAutomator(
+                "new UiScrollable(new UiSelector().scrollable(true))" +
+                ".scrollIntoView(new UiSelector().className(\"android.widget.CheckBox\").text(\""
+                + exerciseName + "\"))"));
+        return "true".equals(box.getAttribute("checked"));
+    }
+
+    /** Names from {@code allNames} whose checkbox is currently unchecked (i.e. locked). */
+    @Step("Collect locked (unchecked) exercises")
+    public java.util.Set<String> getLockedExercises(java.util.List<String> allNames) {
+        expandAvailableExercises();
+        java.util.Set<String> locked = new java.util.LinkedHashSet<>();
+        for (String name : allNames) {
+            if (!isExerciseChecked(name)) locked.add(name);
+        }
+        return locked;
     }
 
     @Step("Is 'NeuroBooster' switch ON")
