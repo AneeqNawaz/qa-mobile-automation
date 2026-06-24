@@ -212,25 +212,40 @@ public class SettingsScreen extends BaseScreen {
                         AppiumBy.className("android.widget.CheckBox")));
     }
 
-    /** Scroll the expanded exercise list to the named checkbox and report its checked state.
-     *  Text locator is the documented exception — the checkboxes expose no resource-id. */
-    @Step("Is exercise checked: {exerciseName}")
-    public boolean isExerciseChecked(String exerciseName) {
+    /** Read every exercise's checked state in a SINGLE downward sweep: capture all visible
+     *  checkboxes (name → checked) at each position, swipe down, repeat until two passes add
+     *  nothing new (bottom reached). No per-item scrollIntoView (which thrashes top↔item).
+     *  Text is the documented exception — the checkboxes expose no resource-id. */
+    @Step("Read all exercise checkbox states (single downward pass)")
+    public java.util.Map<String, Boolean> getExerciseStates() {
         expandAvailableExercises();
-        WebElement box = driver.findElement(AppiumBy.androidUIAutomator(
-                "new UiScrollable(new UiSelector().scrollable(true))" +
-                ".scrollIntoView(new UiSelector().className(\"android.widget.CheckBox\").text(\""
-                + exerciseName + "\"))"));
-        return "true".equals(box.getAttribute("checked"));
+        java.util.Map<String, Boolean> states = new java.util.LinkedHashMap<>();
+        int lastSize = -1, stableRounds = 0;
+        for (int i = 0; i < 8 && stableRounds < 2; i++) {
+            for (WebElement cb : driver.findElements(AppiumBy.className("android.widget.CheckBox"))) {
+                try {
+                    String name = cb.getText();
+                    if (name != null && !name.isEmpty()) {
+                        states.putIfAbsent(name, "true".equals(cb.getAttribute("checked")));
+                    }
+                } catch (Exception ignored) {}
+            }
+            if (states.size() == lastSize) stableRounds++;
+            else { stableRounds = 0; lastSize = states.size(); }
+            swipeUp(); // scroll the list down to reveal more rows
+        }
+        log.info("Exercise states read ({} exercises): {}", states.size(), states);
+        return states;
     }
 
-    /** Names from {@code allNames} whose checkbox is currently unchecked (i.e. locked). */
+    /** Names from {@code allNames} whose checkbox is unchecked (i.e. locked). */
     @Step("Collect locked (unchecked) exercises")
     public java.util.Set<String> getLockedExercises(java.util.List<String> allNames) {
-        expandAvailableExercises();
+        java.util.Map<String, Boolean> states = getExerciseStates();
         java.util.Set<String> locked = new java.util.LinkedHashSet<>();
         for (String name : allNames) {
-            if (!isExerciseChecked(name)) locked.add(name);
+            Boolean checked = states.get(name);
+            if (checked != null && !checked) locked.add(name);
         }
         return locked;
     }

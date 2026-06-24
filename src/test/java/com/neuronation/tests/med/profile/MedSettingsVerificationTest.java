@@ -27,12 +27,18 @@ public class MedSettingsVerificationTest extends BaseTest {
 
     @DataProvider(name = "flows")
     public static Object[][] flows() {
-        return new Object[][] {
+        Object[][] all = {
                 {"flow1_password_morning_skip"},      // standard,    23/23, morning 09:00
                 {"flow2_password_evening_doctor"},    // both,        17/23, evening 18:00
                 {"flow3_nopassword_noon_colorvision"},// colorVision, 20/23, noon    14:00
                 {"flow4_password_night_arithmetic"},  // arithmetic,  20/23, night   21:00
         };
+        // Optional single-flow filter: -Dflow=flow4_password_night_arithmetic
+        String only = System.getProperty("flow");
+        if (only != null && !only.isEmpty()) {
+            return new Object[][] {{only}};
+        }
+        return all;
     }
 
     @Test(dataProvider = "flows",
@@ -116,6 +122,19 @@ public class MedSettingsVerificationTest extends BaseTest {
         log.info("[{}] LockedExercises expected={} actual={}", flowName, expectedLocked, actualLocked);
         softAssert.assertEquals(actualLocked, expectedLocked,
                 "Locked (unchecked) exercises should match specialNeeds=" + needs);
+
+        // Return the app to the Launch screen so the next flow starts clean (every E2E flow
+        // ends logged out). Best-effort — must not mask the verification result above.
+        try {
+            screens.settings().tapBack();          // Settings → Profile
+            screens.profile().waitForScreen();
+            screens.profile().tapLogout();
+            screens.launch().waitForScreen();
+            log.info("[{}] logged out — Launch screen visible", flowName);
+        } catch (Exception e) {
+            log.warn("[{}] post-flow logout failed (next flow may need a manual reset): {}",
+                    flowName, e.getMessage());
+        }
 
         softAssert.assertAll();
     }
