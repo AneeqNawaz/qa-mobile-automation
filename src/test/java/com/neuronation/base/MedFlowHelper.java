@@ -164,6 +164,10 @@ public class MedFlowHelper {
         // On iOS, also check if we've left the Activation screen (nav bar changed)
         var driver = DriverManager.getDriver();
         new WebDriverWait(driver, Duration.ofSeconds(30)).until(d -> {
+            // The "Adjusting the volume" popup (shown before the explanatory video when volume is
+            // low/muted) is NOT an error — dismiss it and keep waiting for the video, otherwise
+            // the error-dialog check below misclassifies it as an app bug.
+            if (dismissVolumePopupIfPresent()) return false;
             if (isAlertPresent()) {
                 com.neuronation.utils.BugReporter.checkForErrorDialog(
                         "after DiGA code activation", "Code: " + currentCode);
@@ -192,22 +196,30 @@ public class MedFlowHelper {
     }
 
     /** Optionally dismiss the "Adjusting the volume" popup shown before an explanatory video when
-     *  the device volume is low/muted. No-op when it isn't shown (volume up). Best-effort —
-     *  Android only (the id-based lookup simply finds nothing on iOS). */
-    private void dismissVolumePopupIfPresent() {
+     *  the device volume is low/muted (title "Adjusting the volume", message about the explanatory
+     *  video containing spoken language). Taps "Yes, continue". Returns true if it dismissed one.
+     *  No-op when it isn't shown (volume up). Android only (id-based lookup finds nothing on iOS). */
+    private boolean dismissVolumePopupIfPresent() {
         var driver = DriverManager.getDriver();
         try {
-            for (var t : driver.findElements(AppiumBy.id("android:id/alertTitle"))) {
-                String txt = t.getText();
-                if (txt != null && txt.toLowerCase().contains("volume")) {
-                    driver.findElement(AppiumBy.id("android:id/button1")).click(); // "Yes, continue"
-                    log.info("Dismissed 'Adjusting the volume' popup before video");
-                    return;
+            StringBuilder dialogText = new StringBuilder();
+            for (String id : new String[]{"android:id/alertTitle", "android:id/message"}) {
+                for (var el : driver.findElements(AppiumBy.id(id))) {
+                    String t = el.getText();
+                    if (t != null) dialogText.append(' ').append(t.toLowerCase());
                 }
+            }
+            String text = dialogText.toString();
+            if (text.contains("volume") || text.contains("explanatory video")
+                    || text.contains("spoken language")) {
+                driver.findElement(AppiumBy.id("android:id/button1")).click(); // "Yes, continue"
+                log.info("Dismissed 'Adjusting the volume' popup before video");
+                return true;
             }
         } catch (Exception e) {
             log.debug("Volume popup check skipped: {}", e.getMessage());
         }
+        return false;
     }
 
     @Step("Navigate: ... → Create Account → Email Registration Form")
@@ -482,9 +494,13 @@ public class MedFlowHelper {
     @Step("Dismiss post-exercise story video")
     public void dismissInterExerciseVideo() {
         try {
-            new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(5))
-                    .until(ExpectedConditions.presenceOfElementLocated(
-                            platformLocator("nn.mobile.app.med:id/onboardingContainer", "Video")));
+            // The volume popup can appear before this video too — dismiss it while waiting so it
+            // can't block the video container.
+            new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(8)).until(d -> {
+                if (dismissVolumePopupIfPresent()) return false;
+                return !d.findElements(
+                        platformLocator("nn.mobile.app.med:id/onboardingContainer", "Video")).isEmpty();
+            });
             dismissVolumePopupIfPresent();
             if (isAndroid()) {
                 screens.onboardingVideo().tapClose();
