@@ -676,9 +676,31 @@ public class MedFlowHelper {
         boolean yes = flowConfig == null || flowConfig.isNeuroBooster();
         if (yes) {
             screens.neuroBooster().tapYes();
+            dismissNotificationSettingsPopupIfPresent();
             screens.promise().waitForScreen();
         } else {
             screens.neuroBooster().tapNo();
+        }
+    }
+
+    /** If the app shows a "turn on notifications → Open settings / Cancel" popup (it does when the
+     *  OS notification permission was permanently denied on a prior run on the same device),
+     *  dismiss it via "Cancel" so the flow can continue to the Promise screen. Best-effort and
+     *  guarded — only acts when BOTH a Cancel and an Open-settings button are present, so it can't
+     *  touch unrelated dialogs. No-op otherwise (fresh device shows the normal allow/deny dialog). */
+    private void dismissNotificationSettingsPopupIfPresent() {
+        var driver = DriverManager.getDriver();
+        try {
+            var cancel = driver.findElements(AppiumBy.androidUIAutomator(
+                    "new UiSelector().clickable(true).textMatches(\"(?i)cancel\")"));
+            var openSettings = driver.findElements(AppiumBy.androidUIAutomator(
+                    "new UiSelector().textMatches(\"(?i)open settings\")"));
+            if (!cancel.isEmpty() && !openSettings.isEmpty()) {
+                cancel.get(0).click();
+                log.info("Dismissed notification 'Open settings / Cancel' popup via Cancel");
+            }
+        } catch (Exception e) {
+            log.debug("Notification settings popup check skipped: {}", e.getMessage());
         }
     }
 

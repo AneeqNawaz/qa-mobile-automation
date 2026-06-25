@@ -298,21 +298,35 @@ public class SettingsScreen extends BaseScreen {
     @Step("Expand row {rowTitle} and read its options")
     public java.util.List<String> expandRowAndReadOptions(String rowTitle, java.util.List<String> expected) {
         tapSetting(rowTitle);
+        // Wait for the accordion to render at least one option.
         try {
             new org.openqa.selenium.support.ui.WebDriverWait(driver, java.time.Duration.ofSeconds(6))
-                    .until(d -> expected.stream().filter(this::isOptionVisible).count() >= 2);
+                    .until(d -> expected.stream().anyMatch(this::isOptionVisible));
         } catch (Exception ignored) {}
-        java.util.List<String> present = new java.util.ArrayList<>();
-        for (String label : expected) {
-            if (isOptionVisible(label)) present.add(label);
+        // Scroll-sweep: some options (e.g. "Age group 80+") sit below the fold. Collect visible
+        // labels, swipe down, repeat until all expected are seen or no new ones appear.
+        java.util.LinkedHashSet<String> present = new java.util.LinkedHashSet<>();
+        int prevSize = -1;
+        for (int i = 0; i < 8; i++) {
+            for (String label : expected) {
+                if (isOptionVisible(label)) present.add(label);
+            }
+            if (present.containsAll(expected) || present.size() == prevSize) break;
+            prevSize = present.size();
+            swipeUp();
         }
         log.info("Row '{}' options present {}/{}: {}", rowTitle, present.size(), expected.size(), present);
-        return present;
+        return new java.util.ArrayList<>(present);
     }
 
-    /** Collapse an expandable row by tapping its title again. */
+    /** Collapse an expandable row. The options sweep may have scrolled the row title off-screen,
+     *  so scroll back to the top first, then tap the title. */
     @Step("Collapse row {rowTitle}")
     public void collapseRow(String rowTitle) {
+        try {
+            driver.findElement(AppiumBy.androidUIAutomator(
+                    "new UiScrollable(new UiSelector().scrollable(true)).scrollToBeginning(10)"));
+        } catch (Exception ignored) {}
         tapSetting(rowTitle);
     }
 

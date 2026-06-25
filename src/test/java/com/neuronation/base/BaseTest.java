@@ -73,7 +73,7 @@ public class BaseTest {
 
         // Fixtures
         screens = new Screens();
-        softAssert = new SoftAssert();
+        softAssert = new ScreenshotSoftAssert(); // captures a screenshot at each failing step
         medFlow = new MedFlowHelper(screens, language);
         snapshotManager = new SnapshotManager("src/test/resources/snapshots");
         contentVerifier = new ContentVerifier();
