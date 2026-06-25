@@ -39,3 +39,6 @@ screen-dumps/
 
 # Internal docs (not for public repo)
 docs/
+
+# build/run logs
+*.log

@@ -55,7 +55,10 @@ public class DriverFactory {
             options.setAutomationName(config.getString("automation.name"));
             // App is pre-installed — never uninstall/reinstall
             options.setCapability("appium:noReset", true);
-            options.setCapability("appium:forceAppLaunch", true);
+            // Default true (relaunch app fresh). Set -Dforce.app.launch=false to ATTACH to the
+            // app's current state without relaunching — e.g. a logged-in-only settings check.
+            boolean forceLaunch = !"false".equals(config.getString("force.app.launch"));
+            options.setCapability("appium:forceAppLaunch", forceLaunch);
             // Unique systemPort per device for parallel execution on single Appium server
             String systemPort = config.getString("system.port");
             if (systemPort != null && !systemPort.isEmpty()) {
@@ -100,7 +103,10 @@ public class DriverFactory {
             }
             options.setAutomationName(config.getString("automation.name"));
             options.setCapability("appium:noReset", true);
-            options.setCapability("appium:forceAppLaunch", true);
+            // Default true (relaunch app fresh). Set -Dforce.app.launch=false to ATTACH to the
+            // app's current state without relaunching — e.g. a logged-in-only settings check.
+            boolean forceLaunch = !"false".equals(config.getString("force.app.launch"));
+            options.setCapability("appium:forceAppLaunch", forceLaunch);
             // WDA signing for real devices
             String xcodeOrgId = config.getString("xcodeOrgId");
             if (xcodeOrgId != null && !xcodeOrgId.isEmpty()) {

@@ -651,6 +651,20 @@ public class MedFlowHelper {
 
     private void handleIosNotificationPermission(String perm) {
         var driver = DriverManager.getDriver();
+        // If the OS notification permission was already decided on a PRIOR run (it's sticky per app
+        // install — e.g. a previous deny-flow), iOS no longer shows the Allow/Don't-Allow dialog; the
+        // app shows its own "Notifications required — Cancel / Open Settings" popup instead. We can't
+        // change the OS decision in-app, so Cancel it and continue. NEVER tap "Open Settings" (the
+        // alert-accept primary), which leaves the app and breaks the flow.
+        var openSettings = driver.findElements(AppiumBy.iOSNsPredicateString(
+                "type == \"XCUIElementTypeButton\" AND name == \"Open Settings\""));
+        if (!openSettings.isEmpty()) {
+            var cancel = driver.findElements(AppiumBy.iOSNsPredicateString(
+                    "type == \"XCUIElementTypeButton\" AND name == \"Cancel\""));
+            if (!cancel.isEmpty()) cancel.get(0).click();
+            log.info("iOS notification permission already decided (OS-level) — Cancelled the 'Open Settings' popup and continued");
+            return;
+        }
         try {
             if ("allow".equals(perm)) {
                 // Use Appium's native alert accept for iOS system alerts
@@ -677,7 +691,12 @@ public class MedFlowHelper {
         if (yes) {
             screens.neuroBooster().tapYes();
             dismissNotificationSettingsPopupIfPresent();
-            screens.promise().waitForScreen();
+            // Android transitions NeuroBooster → Promise popup. iOS shows NO Promise — it goes
+            // straight to the Tips screen — so only wait for Promise on Android; the tolerant
+            // completePromise() (waits for Promise, else falls through to Tips) handles both.
+            if (isAndroid()) {
+                screens.promise().waitForScreen();
+            }
         } else {
             screens.neuroBooster().tapNo();
         }
@@ -690,17 +709,39 @@ public class MedFlowHelper {
      *  touch unrelated dialogs. No-op otherwise (fresh device shows the normal allow/deny dialog). */
     private void dismissNotificationSettingsPopupIfPresent() {
         var driver = DriverManager.getDriver();
+        // The popup ("Permission to send notifications is required … enable in device settings",
+        // Cancel / Open Settings) appears — after a short render delay — only when NeuroBooster needs
+        // notifications but the OS permission was denied. So poll for it on deny flows; on allow flows
+        // it never shows, so only glance briefly. Anchor on "Open Settings" so we never touch unrelated
+        // dialogs, then dismiss via Cancel to let the flow continue to the Promise screen.
+        boolean expectPopup = flowConfig != null && "deny".equals(flowConfig.getNotificationPermission());
+        int timeoutSec = expectPopup ? 12 : 2;
         try {
-            var cancel = driver.findElements(AppiumBy.androidUIAutomator(
-                    "new UiSelector().clickable(true).textMatches(\"(?i)cancel\")"));
-            var openSettings = driver.findElements(AppiumBy.androidUIAutomator(
-                    "new UiSelector().textMatches(\"(?i)open settings\")"));
-            if (!cancel.isEmpty() && !openSettings.isEmpty()) {
-                cancel.get(0).click();
-                log.info("Dismissed notification 'Open settings / Cancel' popup via Cancel");
+            if (isAndroid()) {
+                new WebDriverWait(driver, Duration.ofSeconds(timeoutSec))
+                        .until(ExpectedConditions.presenceOfElementLocated(AppiumBy.androidUIAutomator(
+                                "new UiSelector().textMatches(\"(?i)open settings\")")));
+                var cancel = driver.findElements(AppiumBy.androidUIAutomator(
+                        "new UiSelector().clickable(true).textMatches(\"(?i)cancel\")"));
+                if (!cancel.isEmpty()) {
+                    cancel.get(0).click();
+                    log.info("Dismissed notification 'Open Settings / Cancel' popup via Cancel");
+                }
+            } else {
+                // iOS: native Alert "Notifications" with Cancel / Open Settings buttons. Anchor on
+                // "Open Settings" so we never touch unrelated alerts, then tap Cancel.
+                new WebDriverWait(driver, Duration.ofSeconds(timeoutSec))
+                        .until(ExpectedConditions.presenceOfElementLocated(AppiumBy.iOSNsPredicateString(
+                                "type == \"XCUIElementTypeButton\" AND name == \"Open Settings\"")));
+                var cancel = driver.findElements(AppiumBy.iOSNsPredicateString(
+                        "type == \"XCUIElementTypeButton\" AND name == \"Cancel\""));
+                if (!cancel.isEmpty()) {
+                    cancel.get(0).click();
+                    log.info("iOS: dismissed Notifications 'Open Settings / Cancel' popup via Cancel");
+                }
             }
         } catch (Exception e) {
-            log.debug("Notification settings popup check skipped: {}", e.getMessage());
+            log.debug("Notification settings popup not shown within {}s — continuing", timeoutSec);
         }
     }
 
@@ -873,8 +914,11 @@ public class MedFlowHelper {
         var tipsBtn = iOS
                 ? org.openqa.selenium.By.xpath("//XCUIElementTypeButton[@name=\"Understood\"]")
                 : AppiumBy.id("nn.mobile.app.med:id/cta_button_inner");
+        // Dashboard = bottom-nav present. iOS: the Profile tab is NOT selected by default, so the
+        // old `@value="1"` (tab selected) never matched and the loop spun to its deadline (~85s of
+        // dead time on an already-visible dashboard). Match the Profile tab button's PRESENCE instead.
         var dashboardSignal = iOS
-                ? org.openqa.selenium.By.xpath("//XCUIElementTypeButton[@name=\"Profile\" and @value=\"1\"]")
+                ? org.openqa.selenium.By.xpath("//XCUIElementTypeButton[@name=\"Profile\"]")
                 : AppiumBy.id("nn.mobile.app.med:id/navigation_profile");
 
         // Interstitials appear SEQUENTIALLY and login is slow: on a real run the
@@ -884,12 +928,10 @@ public class MedFlowHelper {
         // loop returns the instant the Dashboard tab bar shows, so the happy path is unaffected.
         long deadline = System.currentTimeMillis() + 90_000;
         while (System.currentTimeMillis() < deadline) {
-            if (isAnyDisplayed(d, dashboardSignal)) {
-                log.info("Dashboard tab bar visible — no interstitials");
-                return;
-            }
-            // Android: OS save-password popup (Samsung Pass / Google PM) appears
-            // BEFORE the in-app Passkey screen. Reuse the registration dismissal logic.
+            // Dismiss interstitials FIRST: the dashboard sits behind the Tips/Passkey modal, so its
+            // bottom-nav can be in the tree while a modal is up — checking the dashboard signal first
+            // would false-exit and leave the modal blocking. Clear modals, THEN detect the dashboard.
+            // Android: OS save-password popup (Samsung Pass / Google PM) appears before the Passkey screen.
             if (!iOS && checkAndDismissAndroidPasswordManager(d)) continue;
 
             // After tapping Passkey or Tips the dialog takes 1-3s to transition out;
@@ -902,6 +944,10 @@ public class MedFlowHelper {
             if (tapIfDisplayed(d, tipsBtn, "Post-login Tips popup", "Understood")) {
                 waitUntilGone(d, tipsBtn, 5);
                 continue;
+            }
+            if (isAnyDisplayed(d, dashboardSignal)) {
+                log.info("Dashboard tab bar visible — no interstitials");
+                return;
             }
             try { Thread.sleep(500); } catch (InterruptedException ignored) {}
         }

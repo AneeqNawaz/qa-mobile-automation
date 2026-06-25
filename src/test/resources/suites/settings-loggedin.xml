@@ -1,0 +1,13 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="Settings Verification (logged-in)" parallel="methods" thread-count="1">
+    <parameter name="language" value="en"/>
+    <listeners>
+        <listener class-name="com.neuronation.listeners.AllureScreenshotListener"/>
+        <listener class-name="io.qameta.allure.testng.AllureTestNg"/>
+    </listeners>
+    <test name="Settings/Privacy/Consent from logged-in Dashboard">
+        <classes>
+            <class name="com.neuronation.tests.med.profile.MedSettingsLoggedInTest"/>
+        </classes>
+    </test>
+</suite>

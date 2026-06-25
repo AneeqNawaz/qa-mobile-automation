@@ -38,21 +38,29 @@ public class ConsentHistoryScreen extends BaseScreen {
      *  Wait until it appears so all entries are present before we read. */
     @Step("Wait for consent entries to finish loading")
     public void waitForEntriesLoaded() {
+        if (isAndroid()) {
+            new org.openqa.selenium.support.ui.WebDriverWait(driver, java.time.Duration.ofSeconds(10))
+                    .until(d -> {
+                        for (WebElement t : d.findElements(AppiumBy.id("nn.mobile.app.med:id/helpItemTitle"))) {
+                            try {
+                                String s = t.getText();
+                                if (s != null && s.toLowerCase().contains("newsletter")) return true;
+                            } catch (Exception ignored) {}
+                        }
+                        return false;
+                    });
+            return;
+        }
+        // iOS: wait for the Newsletter title StaticText to be present.
         new org.openqa.selenium.support.ui.WebDriverWait(driver, java.time.Duration.ofSeconds(10))
-                .until(d -> {
-                    for (WebElement t : d.findElements(AppiumBy.id("nn.mobile.app.med:id/helpItemTitle"))) {
-                        try {
-                            String s = t.getText();
-                            if (s != null && s.toLowerCase().contains("newsletter")) return true;
-                        } catch (Exception ignored) {}
-                    }
-                    return false;
-                });
+                .until(d -> !d.findElements(AppiumBy.iOSNsPredicateString(
+                        "type == \"XCUIElementTypeStaticText\" AND name CONTAINS \"Newsletter\"")).isEmpty());
     }
 
     /** Content text of the entry whose title contains {@code titleContains}, or "" if none. */
     @Step("Get consent entry content for: {titleContains}")
     public String getEntryContent(String titleContains) {
+        if (!isAndroid()) return iosEntryContent(titleContains);
         var titles = driver.findElements(AppiumBy.id("nn.mobile.app.med:id/helpItemTitle"));
         var contents = driver.findElements(AppiumBy.id("nn.mobile.app.med:id/helpItemContent"));
         for (int i = 0; i < titles.size() && i < contents.size(); i++) {
@@ -66,6 +74,27 @@ public class ConsentHistoryScreen extends BaseScreen {
         return "";
     }
 
+    /** iOS: each entry is a title StaticText followed by a TextView whose value is
+     *  "&lt;dd.MM.yyyy HH:mm:ss&gt;\nChanged to Consent|Dissent". Pair by nearest TextView below the title. */
+    private String iosEntryContent(String titleContains) {
+        var titles = driver.findElements(AppiumBy.iOSNsPredicateString(
+                "type == \"XCUIElementTypeStaticText\" AND name CONTAINS \"" + titleContains + "\""));
+        if (titles.isEmpty()) return "";
+        int ty;
+        try { ty = titles.get(0).getLocation().getY(); } catch (Exception e) { return ""; }
+        WebElement best = null;
+        int bestDy = Integer.MAX_VALUE;
+        for (WebElement c : driver.findElements(AppiumBy.iOSNsPredicateString(
+                "type == \"XCUIElementTypeTextView\" AND value CONTAINS \"Changed to\""))) {
+            try {
+                int dy = c.getLocation().getY() - ty; // content sits just below its title
+                if (dy >= 0 && dy < bestDy) { bestDy = dy; best = c; }
+            } catch (Exception ignored) {}
+        }
+        try { return best != null ? best.getAttribute("value") : ""; }
+        catch (Exception e) { return ""; }
+    }
+
     /** true = "Changed to Consent", false = "Changed to Dissent" (or entry missing). */
     @Step("Is consent given for: {titleContains}")
     public boolean isConsentGiven(String titleContains) {
@@ -76,7 +105,10 @@ public class ConsentHistoryScreen extends BaseScreen {
     /** Whether the entry's content carries a date (M/D/YYYY …). */
     @Step("Does consent entry show a date/time: {titleContains}")
     public boolean entryHasDateTime(String titleContains) {
-        return getEntryContent(titleContains).matches("(?s).*\\d{1,2}/\\d{1,2}/\\d{4}.*");
+        String c = getEntryContent(titleContains);
+        // Android: M/D/YYYY h:mm:ss AM/PM  |  iOS: dd.MM.yyyy HH:mm:ss
+        return c.matches("(?s).*\\d{1,2}/\\d{1,2}/\\d{4}.*")
+                || c.matches("(?s).*\\d{1,2}\\.\\d{2}\\.\\d{4}.*");
     }
 
     @Step("Go back to Profile")

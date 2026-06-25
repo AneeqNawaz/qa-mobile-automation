@@ -1,0 +1,17 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="E2E flow only — iOS" parallel="methods" thread-count="1">
+    <parameter name="language" value="en"/>
+    <listeners>
+        <listener class-name="com.neuronation.listeners.AllureScreenshotListener"/>
+        <listener class-name="io.qameta.allure.testng.AllureTestNg"/>
+    </listeners>
+    <test name="Single flow E2E (no extra re-registering tests)">
+        <classes>
+            <class name="com.neuronation.tests.med.e2e.MedFullE2EHappyPathTest">
+                <methods>
+                    <include name="fullE2EHappyPath"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+</suite>

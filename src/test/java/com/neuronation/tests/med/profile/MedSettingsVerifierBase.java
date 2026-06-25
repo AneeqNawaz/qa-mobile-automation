@@ -36,6 +36,11 @@ public abstract class MedSettingsVerifierBase extends BaseTest {
     // ICU uses U+202F before AM/PM — allow unicode spaces.
     protected static final Pattern CONSENT_TS_PATTERN = Pattern.compile(
             "(\\d{1,2}/\\d{1,2}/\\d{4}[\\s\\u00A0\\u202F]+\\d{1,2}:\\d{2}:\\d{2}[\\s\\u00A0\\u202F]+[AP]M)");
+    // iOS renders the consent timestamp as dd.MM.yyyy HH:mm:ss (24h, no AM/PM).
+    protected static final DateTimeFormatter CONSENT_TS_FORMAT_IOS =
+            DateTimeFormatter.ofPattern("d.M.yyyy H:mm:ss", Locale.US);
+    protected static final Pattern CONSENT_TS_PATTERN_IOS = Pattern.compile(
+            "(\\d{1,2}\\.\\d{1,2}\\.\\d{4}[\\s\\u00A0\\u202F]+\\d{1,2}:\\d{2}:\\d{2})");
 
     /** Run one verification step. A thrown exception (navigation/read failure) is recorded as a
      *  soft failure so the run continues to the next step instead of halting on a single issue. */
@@ -55,24 +60,38 @@ public abstract class MedSettingsVerifierBase extends BaseTest {
      * NOT log out — the caller decides what happens next.
      */
     protected void verifyOnboardingSettingsPrivacyConsent(String flowName, LocalDateTime flowStart) {
+        verifyOnboardingSettingsPrivacyConsent(flowName, flowStart, true);
+    }
+
+    /**
+     * @param includeOnboardingOnly when {@code false} (a logged-in-only run, no onboarding this
+     *   session) skip the onboarding Schedule-Review check (step 0) and the consent-timestamp
+     *   freshness check — the account was created earlier so "now" isn't a valid reference.
+     *   Settings / Privacy / Consent VALUES are still verified. The "Open Settings" step starts
+     *   from the Dashboard, so the app must already be logged in.
+     */
+    protected void verifyOnboardingSettingsPrivacyConsent(String flowName, LocalDateTime flowStart,
+                                                          boolean includeOnboardingOnly) {
         ExerciseCatalog catalog = ExerciseCatalog.load();
         FlowConfig flow = medFlow.getFlowConfig();
         ProfileData profileData = TestDataLoader.loadProfileData(
                 AppType.MED, context.getLanguage(), ProfileData.class);
         String needs = flow.getSpecialNeeds();
 
-        // 0. Onboarding Schedule Review per-day times (captured during onboarding).
-        step("0. Onboarding Schedule Review per-day times", () -> {
-            Map<String, String> sched = medFlow.getScheduleReviewTimes();
-            String expTime = slotToReminderTime(flow.getTrainingTime());
-            log.info("[{}] 0. Onboarding Schedule Review expected={} actual={}", flowName, expTime, sched);
-            softAssert.assertFalse(sched.isEmpty(),
-                    "Schedule Review should have shown per-day times during onboarding");
-            for (Map.Entry<String, String> e : sched.entrySet()) {
-                softAssert.assertEquals(e.getValue(), expTime,
-                        "Onboarding Schedule Review " + e.getKey() + " should be " + expTime);
-            }
-        });
+        // 0. Onboarding Schedule Review per-day times (captured during onboarding) — onboarding only.
+        if (includeOnboardingOnly) {
+            step("0. Onboarding Schedule Review per-day times", () -> {
+                Map<String, String> sched = medFlow.getScheduleReviewTimes();
+                String expTime = slotToReminderTime(flow.getTrainingTime());
+                log.info("[{}] 0. Onboarding Schedule Review expected={} actual={}", flowName, expTime, sched);
+                softAssert.assertFalse(sched.isEmpty(),
+                        "Schedule Review should have shown per-day times during onboarding");
+                for (Map.Entry<String, String> e : sched.entrySet()) {
+                    softAssert.assertEquals(e.getValue(), expTime,
+                            "Onboarding Schedule Review " + e.getKey() + " should be " + expTime);
+                }
+            });
+        }
 
         step("Open Settings", () -> {
             screens.dashboard().tapProfileTab();
@@ -98,6 +117,15 @@ public abstract class MedSettingsVerifierBase extends BaseTest {
             String actCount = screens.settings().getAvailableExercises();
             log.info("[{}] 2. Available Exercises count exp={} act={}", flowName, expCount, actCount);
             softAssert.assertEquals(actCount, expCount, "Available Exercises count should match specialNeeds=" + needs);
+
+            if (!"android".equals(context.getPlatform())) {
+                // iOS: every exercise Switch reports the same frame (y≈282), so individual toggles
+                // can't be reliably paired to a game. The X/Y count label (asserted above) is the
+                // authoritative checked/total signal. Expand→collapse for visual parity.
+                screens.settings().expandAvailableExercises();
+                screens.settings().collapseAvailableExercises();
+                return;
+            }
 
             Map<String, Boolean> states = screens.settings().getExerciseStates(catalog.all());
             Set<String> actLocked = new java.util.LinkedHashSet<>();
@@ -160,16 +188,32 @@ public abstract class MedSettingsVerifierBase extends BaseTest {
         step("7. Training Reminder", () -> {
             screens.settings().tapTrainingReminder();
             screens.trainingReminder().waitForScreen();
-            String expTime = slotToReminderTime(flow.getTrainingTime());
             Map<String, String> times = screens.trainingReminder().getAllReminderTimes();
-            log.info("[{}] 7. Training Reminder slot={} expected={} actual={}",
-                    flowName, flow.getTrainingTime(), expTime, times);
-            for (String day : TrainingReminderScreen.DAYS) {
-                softAssert.assertEquals(times.get(day), expTime,
-                        day + " reminder should be " + expTime + " for slot " + flow.getTrainingTime());
+            boolean personalisedOn = screens.trainingReminder().isPersonalisedTimesOn();
+            boolean notificationsAllowed = !"deny".equals(flow.getNotificationPermission());
+            String expTime = slotToReminderTime(flow.getTrainingTime());
+            log.info("[{}] 7. Training Reminder slot={} notificationsAllowed={} expected={} actual={} personalisedOn={}",
+                    flowName, flow.getTrainingTime(), notificationsAllowed, expTime, times, personalisedOn);
+            if (notificationsAllowed) {
+                // Permission granted → reminder ON, every day shows the slot time.
+                for (String day : TrainingReminderScreen.DAYS) {
+                    softAssert.assertEquals(times.get(day), expTime,
+                            day + " reminder should be " + expTime + " for slot " + flow.getTrainingTime());
+                }
+                softAssert.assertTrue(personalisedOn,
+                        "'Personalised training times' should be ON when notifications are allowed");
+            } else {
+                // Permission DENIED → the app turns the reminder OFF and shows no per-day times
+                // (only the dropdown arrow). This is specific to denied permission: manually
+                // toggling off with permission granted keeps the times visible.
+                softAssert.assertFalse(personalisedOn,
+                        "'Personalised training times' should be OFF when notification permission was denied");
+                // Day rows are still present but show no time (only the arrow) → all values blank.
+                boolean anyTimeShown = times.values().stream()
+                        .anyMatch(v -> v != null && !v.trim().isEmpty());
+                softAssert.assertFalse(anyTimeShown,
+                        "No per-day reminder times should show when notification permission was denied, but found: " + times);
             }
-            softAssert.assertTrue(screens.trainingReminder().isPersonalisedTimesOn(),
-                    "'Personalised training times' should default ON");
             screens.trainingReminder().tapBack();
         });
 
@@ -197,9 +241,10 @@ public abstract class MedSettingsVerifierBase extends BaseTest {
             screens.profile().tapConsentHistory();
             screens.consentHistory().waitForScreen();
             screens.consentHistory().waitForEntriesLoaded();
-            verifyConsent(flowName, "Newsletter", ConsentHistoryScreen.NEWSLETTER, flow.isNewsletterConsent(), flowStart);
-            verifyConsent(flowName, "Data retention", ConsentHistoryScreen.DATA_RETENTION, flow.isDataRetainConsent(), flowStart);
-            verifyConsent(flowName, "Data processing", ConsentHistoryScreen.DATA_PROCESSING, flow.isDataProcessingConsent(), flowStart);
+            LocalDateTime ref = includeOnboardingOnly ? flowStart : null; // null → skip freshness check
+            verifyConsent(flowName, "Newsletter", ConsentHistoryScreen.NEWSLETTER, flow.isNewsletterConsent(), ref);
+            verifyConsent(flowName, "Data retention", ConsentHistoryScreen.DATA_RETENTION, flow.isDataRetainConsent(), ref);
+            verifyConsent(flowName, "Data processing", ConsentHistoryScreen.DATA_PROCESSING, flow.isDataProcessingConsent(), ref);
             screens.consentHistory().tapBack();
         });
     }
@@ -208,6 +253,19 @@ public abstract class MedSettingsVerifierBase extends BaseTest {
      *  and the expanded list contains every configured option (plus the selected value). The
      *  selection highlight is visual-only, so selection is verified via the subtitle. */
     protected void verifyExpandableRow(String flowName, String rowTitle, String expectedSelected) {
+        if (!"android".equals(context.getPlatform())) {
+            // iOS: clean expand → verify the selected flag (per flow) → collapse. One value read,
+            // two taps — no per-label option queries or scroll-sweep (those are slow/unreliable on
+            // iOS, where the full option list isn't dependably exposed). The selected value IS the flag.
+            screens.settings().tapSetting(rowTitle);               // expand
+            String selected = screens.settings().getSettingValue(rowTitle);
+            log.info("[{}] {} selected exp={} act={}", flowName, rowTitle, expectedSelected, selected);
+            softAssert.assertEquals(selected, expectedSelected,
+                    rowTitle + " selected value should be '" + expectedSelected + "'");
+            screens.settings().tapSetting(rowTitle);               // collapse
+            return;
+        }
+
         String subtitle = screens.settings().getSettingValue(rowTitle);
         log.info("[{}] {} subtitle exp={} act={}", flowName, rowTitle, expectedSelected, subtitle);
         softAssert.assertEquals(subtitle, expectedSelected,
@@ -236,7 +294,7 @@ public abstract class MedSettingsVerifierBase extends BaseTest {
         boolean actualConsent = content.contains("Consent") && !content.contains("Dissent");
         LocalDateTime ts = parseConsentTimestamp(content);
 
-        Long diffFromStart = ts == null ? null : Math.abs(Duration.between(ts, reference).toMinutes());
+        Long diffFromStart = (ts == null || reference == null) ? null : Math.abs(Duration.between(ts, reference).toMinutes());
         Long diffFromNow = ts == null ? null : Math.abs(Duration.between(ts, LocalDateTime.now()).toMinutes());
         log.info("[{}] Consent {} expected={} actual={} ts={} diffFromFlowStart={}min diffFromNow={}min",
                 flowName, label, expectedConsent, actualConsent, ts, diffFromStart, diffFromNow);
@@ -245,7 +303,8 @@ public abstract class MedSettingsVerifierBase extends BaseTest {
                 label + " consent should be " + (expectedConsent ? "Consent" : "Dissent"));
         softAssert.assertNotNull(ts,
                 label + " consent entry should have a parseable date/time, got: " + content);
-        if (ts != null) {
+        // reference == null → logged-in-only run: account predates this session, skip freshness.
+        if (ts != null && reference != null) {
             long diffMin = Math.abs(Duration.between(ts, reference).toMinutes());
             softAssert.assertTrue(diffMin <= CONSENT_TIME_TOLERANCE_MIN,
                     label + " consent time " + ts + " should be within "
@@ -256,15 +315,21 @@ public abstract class MedSettingsVerifierBase extends BaseTest {
 
     protected static LocalDateTime parseConsentTimestamp(String content) {
         if (content == null) return null;
+        // Android: M/d/yyyy h:mm:ss a
         Matcher m = CONSENT_TS_PATTERN.matcher(content);
-        if (!m.find()) return null;
-        String normalized = m.group(1).replaceAll("[\\u00A0\\u202F\\u2007\\u2009]", " ")
-                .replaceAll("\\s+", " ").trim();
-        try {
-            return LocalDateTime.parse(normalized, CONSENT_TS_FORMAT);
-        } catch (Exception e) {
-            return null;
+        if (m.find()) {
+            String n = m.group(1).replaceAll("[\\u00A0\\u202F\\u2007\\u2009]", " ")
+                    .replaceAll("\\s+", " ").trim();
+            try { return LocalDateTime.parse(n, CONSENT_TS_FORMAT); } catch (Exception ignored) {}
         }
+        // iOS: dd.MM.yyyy HH:mm:ss
+        Matcher mi = CONSENT_TS_PATTERN_IOS.matcher(content);
+        if (mi.find()) {
+            String n = mi.group(1).replaceAll("[\\u00A0\\u202F\\u2007\\u2009]", " ")
+                    .replaceAll("\\s+", " ").trim();
+            try { return LocalDateTime.parse(n, CONSENT_TS_FORMAT_IOS); } catch (Exception ignored) {}
+        }
+        return null;
     }
 
     /** Training-time slot → expected reminder time (same for all 7 days). */
