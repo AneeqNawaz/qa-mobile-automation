@@ -928,10 +928,18 @@ public class MedFlowHelper {
         // loop returns the instant the Dashboard tab bar shows, so the happy path is unaffected.
         long deadline = System.currentTimeMillis() + 90_000;
         while (System.currentTimeMillis() < deadline) {
-            // Dismiss interstitials FIRST: the dashboard sits behind the Tips/Passkey modal, so its
-            // bottom-nav can be in the tree while a modal is up — checking the dashboard signal first
-            // would false-exit and leave the modal blocking. Clear modals, THEN detect the dashboard.
-            // Android: OS save-password popup (Samsung Pass / Google PM) appears before the Passkey screen.
+            // ANDROID: check the Dashboard FIRST. checkAndDismissAndroidPasswordManager()'s fallback
+            // presses BACK whenever main_toolbar_title is absent — which is exactly the case ON the
+            // Dashboard (bottom-nav, no toolbar title) — so running it before the dashboard check would
+            // press BACK off the dashboard and spin to the deadline (the bug that broke re-login on the
+            // Samsung physical device). Returning here as soon as the bottom-nav shows avoids that.
+            // iOS does NOT check first: its Profile tab is in the tree behind the Tips/Passkey modal,
+            // so an early dashboard check would false-exit and leave the modal blocking.
+            if (!iOS && isAnyDisplayed(d, dashboardSignal)) {
+                log.info("Dashboard tab bar visible — no interstitials");
+                return;
+            }
+            // OS save-password popup (Samsung Pass / Google PM) appears before the Passkey screen.
             if (!iOS && checkAndDismissAndroidPasswordManager(d)) continue;
 
             // After tapping Passkey or Tips the dialog takes 1-3s to transition out;
