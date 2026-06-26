@@ -128,6 +128,25 @@ public class BugReporter {
                 errorMsg = texts.size() > 1 ? texts.get(1).getText() : dialogTitle;
             }
 
+            // Benign info dialogs are NOT bugs — dismiss and continue. The "Adjusting the volume"
+            // popup (shown before an explanatory video when the device volume is low/muted) is the
+            // known case; it can appear at any video point, so handle it here at the source rather
+            // than racing a per-wait dismissal.
+            String benign = (dialogTitle + " " + errorMsg).toLowerCase();
+            if (benign.contains("volume") || benign.contains("explanatory video")
+                    || benign.contains("spoken language")) {
+                try {
+                    if (isAndroid) {
+                        driver.findElement(io.appium.java_client.AppiumBy.id("android:id/button1")).click(); // "Yes, continue"
+                    } else {
+                        var btns = driver.findElements(io.appium.java_client.AppiumBy.iOSClassChain(
+                                "**/XCUIElementTypeAlert/**/XCUIElementTypeButton"));
+                        if (!btns.isEmpty()) btns.get(btns.size() - 1).click();
+                    }
+                } catch (Exception ignored) {}
+                return; // not a bug — proceed with the regular test
+            }
+
             // Build detail lines
             java.util.List<String> details = new java.util.ArrayList<>();
             details.add("Context: " + context);
