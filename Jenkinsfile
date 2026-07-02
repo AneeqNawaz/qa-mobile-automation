@@ -37,6 +37,11 @@ pipeline {
             defaultValue: '77AAAAAAAAAAAAAX',
             description: 'DiGA activation code (reusable test code — overrides Mock HI API call, no VPN needed)'
         )
+        booleanParam(
+            name: 'NOTIFY_SLACK',
+            defaultValue: true,
+            description: 'Post the run summary to Slack. UNCHECK for manual/ad-hoc runs (e.g. iOS bring-up) so #qa-automation-nightly is not pinged. The nightly build leaves this on.'
+        )
     }
 
     options {
@@ -150,6 +155,10 @@ BrowserStack.Build=Jenkins-${env.BUILD_NUMBER}-${params.SUITE}-${params.PLATFORM
             // which script-security blocks). Counts are parsed from surefire in the shell
             // and everything optional is wrapped so the message ALWAYS sends.
             script {
+                if (!params.NOTIFY_SLACK) {
+                    echo 'Slack notification skipped (NOTIFY_SLACK=false).'
+                    return   // exits this script block only — junit/allure/archive above still ran
+                }
                 def result  = currentBuild.currentResult                 // SUCCESS / UNSTABLE / FAILURE
                 def color   = result == 'SUCCESS' ? 'good' : (result == 'FAILURE' ? 'danger' : 'warning')
                 def icon    = result == 'SUCCESS' ? ':large_green_circle:' : (result == 'FAILURE' ? ':red_circle:' : ':large_yellow_circle:')
