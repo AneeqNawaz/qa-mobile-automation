@@ -17,6 +17,8 @@ pipeline {
                 'sanity',
                 'regression-full',
                 'e2e-happy-path-ios',
+                'e2e-flow-only-ios',
+                'settings-loggedin',
                 'med-android-en',
                 'content-verification'
             ],
