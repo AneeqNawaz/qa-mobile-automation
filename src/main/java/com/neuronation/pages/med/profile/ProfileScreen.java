@@ -197,15 +197,21 @@ public class ProfileScreen extends BaseScreen {
     public String getAccountId() { return getText(accountId); }
     public String getAccountValidity() {
         // iOS: element may be in hierarchy but scrolled off-screen (visible=false).
-        // Scroll it into view via mobile:scroll, then read text.
+        // Only scroll it into view when it is NOT already on screen — after landing on Profile the
+        // MCI label sits at the top and is usually visible, so an unconditional scroll-up wastes time
+        // (and forces a scroll-down again for Change Email / Logout).
         try {
             if (!isAndroid()) {
-                try {
-                    var args = new java.util.HashMap<String, Object>();
-                    args.put("predicateString", "name BEGINSWITH 'Account for'");
-                    args.put("toVisible", true);
-                    ((io.appium.java_client.AppiumDriver) driver).executeScript("mobile: scroll", args);
-                } catch (Exception ignored) {}
+                boolean onScreen = !driver.findElements(io.appium.java_client.AppiumBy.iOSNsPredicateString(
+                        "name BEGINSWITH 'Account for' AND visible == 1")).isEmpty();
+                if (!onScreen) {
+                    try {
+                        var args = new java.util.HashMap<String, Object>();
+                        args.put("predicateString", "name BEGINSWITH 'Account for'");
+                        args.put("toVisible", true);
+                        ((io.appium.java_client.AppiumDriver) driver).executeScript("mobile: scroll", args);
+                    } catch (Exception ignored) {}
+                }
             }
             // Use presence (not visibility) — iOS may report visible=false but text is readable
             return new org.openqa.selenium.support.ui.WebDriverWait(driver, java.time.Duration.ofSeconds(30))

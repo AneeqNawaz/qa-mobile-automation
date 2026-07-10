@@ -118,6 +118,37 @@ pipeline {
                 }
             }
         }
+
+        // Nightly: after the Android (BrowserStack) run, ALSO run the iOS 4-flow on the LOCAL
+        // Mac-mini iPhone. iOS cannot run on BrowserStack (MED requires a device screen lock that
+        // BS devices lack), so this is a local run — NO browserstack wrapper, config.profile=med-ios.
+        // Only fires on the default (android) build so it doesn't double-run on a manual PLATFORM=ios.
+        // PREREQUISITES on this agent at run time (2am): WebDriverAgent serving on :8100 with
+        // `iproxy 8100 8100`, Appium on :4724, the iPhone connected + trusted, and WDA signing valid
+        // (personal team C37FD39U3R — 7-day profile expiry, re-sign weekly). If any are down the iOS
+        // suite fails; catchError marks the build UNSTABLE rather than failing the Android result.
+        stage('Test iOS (local device)') {
+            when { expression { params.PLATFORM == 'android' } }
+            steps {
+                withCredentials([
+                    string(credentialsId: 'IMAP_PASSWORD', variable: 'IMAP_PASSWORD')
+                ]) {
+                    catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+                        // Preserve the Android surefire/allure output before the iOS run reuses target/.
+                        sh 'rm -rf target/android-results && mkdir -p target/android-results && ' +
+                           'cp -R target/surefire-reports target/android-results/ 2>/dev/null || true; ' +
+                           'cp -R target/allure-results target/android-results/ 2>/dev/null || true'
+                        sh """
+                            mvn -B -e -ntp test \
+                              -Dapp.type=med \
+                              -Dconfig.profile=med-ios \
+                              -DsuiteFile=src/test/resources/suites/e2e-flow-only-ios.xml \
+                              -Dactivation.code=${params.ACTIVATION_CODE}
+                        """
+                    }
+                }
+            }
+        }
     }
 
     post {

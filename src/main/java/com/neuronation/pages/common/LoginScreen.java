@@ -82,6 +82,19 @@ public class LoginScreen extends BaseScreen {
                 .until(org.openqa.selenium.support.ui.ExpectedConditions.visibilityOf(emailInput));
     }
 
+    /** Non-blocking: is the email field visible right now? Used to poll the login form while a
+     *  credential chooser may be covering it (returns fast, never throws). */
+    public boolean isLoginFormVisible() {
+        try {
+            var els = driver.findElements(isAndroid()
+                    ? AppiumBy.id("nn.mobile.app.med:id/textEmailAddress")
+                    : AppiumBy.iOSClassChain("**/XCUIElementTypeTextField"));
+            return !els.isEmpty() && els.get(0).isDisplayed();
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     public boolean isDisplayed() {
         return isDisplayed(loginViaEmailButton) || isDisplayed(emailInput);
     }
@@ -175,35 +188,48 @@ public class LoginScreen extends BaseScreen {
      *   iOS:     System Passkey sheet → tap X close button at ~90% width / ~18% height
      */
     @Step("Dismiss OS password manager / passkey overlay")
-    public void dismissPasswordManagerOverlay() {
+    /** @return true if a credential/password overlay was found and dismissed this call. */
+    public boolean dismissPasswordManagerOverlay() {
         try {
             if (isAndroid()) {
-                // Pixel emulator: Credential Manager has "Close sheet" content-desc button
-                var closeBtn = driver.findElements(AppiumBy.accessibilityId("Close sheet"));
-                if (!closeBtn.isEmpty()) {
-                    closeBtn.get(0).click();
-                    log.info("Dismissed Android Credential Manager via 'Close sheet' button");
-                    return;
-                }
-                // Samsung physical: Credential Manager has "Cancel" text button
-                // Only tap if we're sure it's the credential overlay (check for known surrounding text)
-                var passkeyOverlay = driver.findElements(AppiumBy.androidUIAutomator(
-                        "new UiSelector().textContains(\"saved passkey\")" +
-                        ".fromParent(new UiSelector().packageName(\"com.android.credentialmanager\"))"));
-                var saveSignIn = driver.findElements(AppiumBy.androidUIAutomator(
-                        "new UiSelector().textContains(\"Choose a saved\")"));
-                if (!passkeyOverlay.isEmpty() || !saveSignIn.isEmpty()) {
-                    var cancelBtn = driver.findElements(AppiumBy.androidUIAutomator(
-                            "new UiSelector().packageName(\"com.android.credentialmanager\").text(\"Cancel\")"));
-                    if (!cancelBtn.isEmpty()) {
-                        cancelBtn.get(0).click();
-                        log.info("Dismissed Samsung Credential Manager via 'Cancel' button");
-                        return;
+                // The credential chooser (GMS Identity Credentials, AOSP/Pixel Credential Manager, or
+                // Samsung Pass) covers the login form on re-login. FAST detection: only act when the
+                // email field is NOT reachable (something's covering it) — a cheap resourceId check —
+                // then look DIRECTLY for the chooser's dismiss control with cheap EXACT-match queries.
+                // (The previous full-tree regex scans — textMatches/packageNameMatches — were slow when
+                // polled repeatedly, which is why cancelling felt sluggish.)
+                if (isLoginFormVisible()) return false;   // form reachable → nothing to dismiss
+                // 1. Close 'X' — content-desc "Close" (GMS) or "Close sheet" (Pixel CM).
+                for (String desc : new String[]{"Close", "Close sheet"}) {
+                    var b = driver.findElements(AppiumBy.accessibilityId(desc));
+                    if (!b.isEmpty()) {
+                        b.get(0).click();
+                        log.info("Dismissed credential chooser via '{}'", desc);
+                        waitCredentialChooserGone();
+                        return true;
                     }
-                    // Fall back to back press for the credential overlay
-                    driver.navigate().back();
-                    log.info("Dismissed Android credential overlay via back press");
                 }
+                // 2. Named dismiss buttons (Samsung uses "Cancel"). Exact text() — fast.
+                for (String label : new String[]{"Cancel", "No thanks", "Not now", "Dismiss"}) {
+                    var b = driver.findElements(AppiumBy.androidUIAutomator(
+                            "new UiSelector().text(\"" + label + "\")"));
+                    if (!b.isEmpty()) {
+                        b.get(0).click();
+                        log.info("Dismissed credential chooser via '{}'", label);
+                        waitCredentialChooserGone();
+                        return true;
+                    }
+                }
+                // 3. Confirm it IS a chooser (chooser-only "Sign-in options" text) before a back press,
+                //    so we never navigate away from a non-chooser screen. Exact text() — fast.
+                if (!driver.findElements(AppiumBy.androidUIAutomator(
+                        "new UiSelector().text(\"Sign-in options\")")).isEmpty()) {
+                    driver.navigate().back();
+                    log.info("Dismissed credential chooser via back press");
+                    waitCredentialChooserGone();
+                    return true;
+                }
+                return false;
             } else {
                 var dimensions = driver.manage().window().getSize();
                 int xBtn = (int) (dimensions.getWidth() * 0.903);
@@ -216,10 +242,24 @@ public class LoginScreen extends BaseScreen {
                 tap.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
                 driver.perform(Collections.singletonList(tap));
                 log.info("Dismissed iOS Passkey sheet via X at ({}, {})", xBtn, yBtn);
+                return true;
             }
         } catch (Exception e) {
             log.debug("No password manager overlay detected: {}", e.getMessage());
         }
+        return false;
+    }
+
+    /** After tapping a chooser's dismiss control, wait briefly for the login form to come back
+     *  (a cheap resourceId poll — the form reappearing IS the "chooser gone" signal). Returns as
+     *  soon as the field is visible, so a quick dismiss costs almost nothing. */
+    private void waitCredentialChooserGone() {
+        if (!isAndroid()) return;
+        try {
+            new org.openqa.selenium.support.ui.WebDriverWait(driver, java.time.Duration.ofSeconds(3))
+                    .pollingEvery(java.time.Duration.ofMillis(150))
+                    .until(d -> isLoginFormVisible());
+        } catch (Exception ignored) {}
     }
 
     // ──────────────────────────────────────────────

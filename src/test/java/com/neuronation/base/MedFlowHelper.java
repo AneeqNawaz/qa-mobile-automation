@@ -39,6 +39,14 @@ public class MedFlowHelper {
     /** Per-day reminder times captured from the onboarding Schedule Review screen. */
     private final Map<String, String> scheduleReviewTimes = new LinkedHashMap<>();
 
+    /** True once a notification-permission DENY was actually applied this run (the OS prompt was
+     *  shown and dismissed, or the OS-level "Open Settings" popup was cancelled). Stays false when
+     *  the OS never prompts — e.g. a persistent local install whose permission was already decided,
+     *  where deny cannot be forced. The verifier uses this to skip the deny-only assertions rather
+     *  than fail on an environment that can't exercise the deny path (fresh installs still can). */
+    private boolean notificationDenyApplied = false;
+    public boolean wasNotificationDenyApplied() { return notificationDenyApplied; }
+
     public MedFlowHelper(Screens screens, String language) {
         this.screens = screens;
         this.language = language;
@@ -605,10 +613,15 @@ public class MedFlowHelper {
                         .until(ExpectedConditions.presenceOfElementLocated(
                                 AppiumBy.androidUIAutomator("new UiSelector().textContains(\"notifications\")")));
             } else {
-                // iOS shows a native alert for notification permission
+                // iOS notification permission is a SYSTEM alert that does not surface as an
+                // XCUIElementTypeAlert in the app source (the old check missed it and always burned
+                // the full 10s). The alert API does see it, so poll that — returns the instant the
+                // alert appears.
                 new WebDriverWait(driver, Duration.ofSeconds(10))
-                        .until(d -> !d.findElements(AppiumBy.iOSClassChain(
-                                "**/XCUIElementTypeAlert")).isEmpty());
+                        .until(d -> {
+                            try { ((org.openqa.selenium.WebDriver) d).switchTo().alert().getText(); return true; }
+                            catch (Exception ex) { return false; }
+                        });
             }
         } catch (Exception e) {
             log.info("Notification popup not detected — continuing");
@@ -618,6 +631,7 @@ public class MedFlowHelper {
     @Step("Handle notification permission based on config")
     public void completeNotificationPermission() {
         String perm = flowConfig != null ? flowConfig.getNotificationPermission() : "allow";
+        notificationDenyApplied = false;
         try {
             if (isAndroid()) {
                 handleAndroidNotificationPermission(perm);
@@ -627,6 +641,11 @@ public class MedFlowHelper {
         } catch (Exception e) {
             log.info("No notification popup found");
         }
+        // A DENIED notification permission makes the app immediately raise a "Notifications required —
+        // Open Settings / Cancel" alert on the NeuroBooster/reminder screen, covering yes_button (so
+        // the waitForScreen below would time out). Cancel it here — BEFORE waiting for NeuroBooster —
+        // rather than only after tapYes. No-op on allow flows (no such alert). NEVER taps Open Settings.
+        dismissNotificationSettingsPopupIfPresent();
         screens.neuroBooster().waitForScreen();
     }
 
@@ -639,12 +658,14 @@ public class MedFlowHelper {
             } else {
                 driver.findElement(
                         AppiumBy.id("com.android.permissioncontroller:id/permission_deny_button")).click();
+                notificationDenyApplied = true;
             }
         } catch (Exception e) {
             try {
                 String btnText = "allow".equals(perm) ? "Allow" : "Don't allow";
                 driver.findElement(
                         AppiumBy.androidUIAutomator("new UiSelector().text(\"" + btnText + "\")")).click();
+                if (!"allow".equals(perm)) notificationDenyApplied = true;
             } catch (Exception ignored) {}
         }
     }
@@ -662,6 +683,9 @@ public class MedFlowHelper {
             var cancel = driver.findElements(AppiumBy.iOSNsPredicateString(
                     "type == \"XCUIElementTypeButton\" AND name == \"Cancel\""));
             if (!cancel.isEmpty()) cancel.get(0).click();
+            // The OS-level permission is already DENIED (that is why the app shows this popup), so a
+            // deny is effectively in force this run.
+            if ("deny".equals(perm)) notificationDenyApplied = true;
             log.info("iOS notification permission already decided (OS-level) — Cancelled the 'Open Settings' popup and continued");
             return;
         }
@@ -672,6 +696,7 @@ public class MedFlowHelper {
                 log.info("Accepted iOS notification permission via alert API");
             } else {
                 driver.switchTo().alert().dismiss();
+                notificationDenyApplied = true;
                 log.info("Dismissed iOS notification permission via alert API");
             }
         } catch (Exception e) {
@@ -680,7 +705,10 @@ public class MedFlowHelper {
                 String buttonLabel = "allow".equals(perm) ? "Allow" : "Don\u2019t Allow";
                 var buttons = driver.findElements(AppiumBy.iOSClassChain(
                         "**/XCUIElementTypeAlert/**/XCUIElementTypeButton[`label == '" + buttonLabel + "'`]"));
-                if (!buttons.isEmpty()) buttons.get(0).click();
+                if (!buttons.isEmpty()) {
+                    buttons.get(0).click();
+                    if (!"allow".equals(perm)) notificationDenyApplied = true;
+                }
             } catch (Exception ignored) {}
         }
     }
@@ -711,10 +739,13 @@ public class MedFlowHelper {
         var driver = DriverManager.getDriver();
         // The popup ("Permission to send notifications is required … enable in device settings",
         // Cancel / Open Settings) appears — after a short render delay — only when NeuroBooster needs
-        // notifications but the OS permission was denied. So poll for it on deny flows; on allow flows
-        // it never shows, so only glance briefly. Anchor on "Open Settings" so we never touch unrelated
-        // dialogs, then dismiss via Cancel to let the flow continue to the Promise screen.
-        boolean expectPopup = flowConfig != null && "deny".equals(flowConfig.getNotificationPermission());
+        // notifications but the OS permission was actually DENIED this run. So poll longer only when a
+        // deny was really applied; when the OS never prompted (permission already granted on this
+        // install) the popup never shows, so just glance briefly instead of burning ~12s. Anchor on
+        // "Open Settings" so we never touch unrelated dialogs, then dismiss via Cancel.
+        boolean expectPopup = flowConfig != null
+                && "deny".equals(flowConfig.getNotificationPermission())
+                && notificationDenyApplied;
         int timeoutSec = expectPopup ? 12 : 2;
         try {
             if (isAndroid()) {
@@ -864,16 +895,17 @@ public class MedFlowHelper {
         login.waitForScreen();
         login.tapLoginViaEmail();
 
-        // Password-manager / passkey overlay may appear AFTER tap (timing varies).
-        // Poll: alternate between dismiss attempts and waitForLoginForm until form visible.
+        // The credential chooser can appear AFTER the tap with a DELAY (seen on flow 3: it rendered
+        // after the old snapshot checks, so it was never dismissed and the form never showed). Poll
+        // up to 30s: each pass, dismiss the chooser if present; if the form is up, stop; if nothing
+        // was dismissed and the form isn't up yet, wait briefly to let a slow chooser render, then
+        // re-check. dismissPasswordManagerOverlay() also waits for the chooser to fully close.
         long deadline = System.currentTimeMillis() + 30_000;
         while (System.currentTimeMillis() < deadline) {
-            login.dismissPasswordManagerOverlay();
-            try {
-                login.waitForLoginFormShort();   // 3s wait
-                break;
-            } catch (Exception ignored) {
-                // overlay may have re-appeared; loop to dismiss again
+            boolean dismissed = login.dismissPasswordManagerOverlay();
+            if (login.isLoginFormVisible()) break;
+            if (!dismissed) {
+                try { Thread.sleep(300); } catch (InterruptedException ignored) {}
             }
         }
         login.waitForLoginForm();
@@ -894,6 +926,9 @@ public class MedFlowHelper {
         login.enterPassword(password);
         login.tapSubmit();
         log.info("Login form submitted for {}", email);
+        // The iOS "Save Password?" sheet appears AFTER the login network round-trip (several seconds
+        // later, not immediately), so it is dismissed inside dismissPostLoginInterstitials()'s poll
+        // loop rather than with a one-shot wait here.
     }
 
     /** Dismiss post-login interstitials (Passkey screen, Tips popup) if shown,
@@ -914,6 +949,11 @@ public class MedFlowHelper {
         var tipsBtn = iOS
                 ? org.openqa.selenium.By.xpath("//XCUIElementTypeButton[@name=\"Understood\"]")
                 : AppiumBy.id("nn.mobile.app.med:id/cta_button_inner");
+        // iOS: the "Save Password?" sheet appears a few seconds after login submit and sits in front
+        // of everything, blocking the Dashboard until dismissed via "Not Now". (iOS only.)
+        var savePwdBtn = iOS
+                ? org.openqa.selenium.By.xpath("//XCUIElementTypeButton[@name=\"Not Now\"]")
+                : null;
         // Dashboard = bottom-nav present. iOS: the Profile tab is NOT selected by default, so the
         // old `@value="1"` (tab selected) never matched and the loop spun to its deadline (~85s of
         // dead time on an already-visible dashboard). Match the Profile tab button's PRESENCE instead.
@@ -941,6 +981,12 @@ public class MedFlowHelper {
             }
             // OS save-password popup (Samsung Pass / Google PM) appears before the Passkey screen.
             if (!iOS && checkAndDismissAndroidPasswordManager(d)) continue;
+
+            // iOS "Save Password?" sheet — dismiss via "Not Now" whenever it shows during this window.
+            if (iOS && tapIfDisplayed(d, savePwdBtn, "iOS 'Save Password?' sheet", "Not Now")) {
+                waitUntilGone(d, savePwdBtn, 5);
+                continue;
+            }
 
             // After tapping Passkey or Tips the dialog takes 1-3s to transition out;
             // wait for the tapped button to disappear before re-checking the loop, so

@@ -54,6 +54,16 @@ public class ChangeEmailScreen extends BaseScreen {
 
     @Step("Get current email shown on Change Email screen")
     public String getCurrentEmail() {
+        // The field shows its HINT ("Current email") until the value populates (async on load), so a
+        // too-early read returns the hint, not the email. Wait briefly for a real address ("@").
+        try {
+            new org.openqa.selenium.support.ui.WebDriverWait(driver, java.time.Duration.ofSeconds(6))
+                    .until(d -> {
+                        String cur = isAndroid() ? currentEmailField.getText()
+                                                 : currentEmailField.getAttribute("value");
+                        return cur != null && cur.contains("@");
+                    });
+        } catch (Exception ignored) {}
         try {
             // iOS: TextField value carries the actual text; getText() returns "" when label empty.
             String v = isAndroid() ? currentEmailField.getText()

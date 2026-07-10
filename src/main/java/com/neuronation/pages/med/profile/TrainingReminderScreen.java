@@ -96,9 +96,11 @@ public class TrainingReminderScreen extends BaseScreen {
         return parseTimeFromDescription(descForDay(day));
     }
 
-    /** Convert "06:00 PM" → "18:00", "9:00 AM" → "09:00", "09:00" → "09:00". */
+    /** Convert "06:00 PM" → "18:00", "9:00 AM" → "09:00", "09:00" → "09:00".
+     *  iOS renders a U+202F narrow no-break space before AM/PM which Java's \s does NOT match, so
+     *  normalize the unicode spaces to plain spaces first. */
     private String normalizeTo24h(String t) {
-        t = t.trim();
+        t = t.replaceAll("[\\u00A0\\u202F\\u2007\\u2009]", " ").trim();
         var m = java.util.regex.Pattern.compile("^(\\d{1,2}):(\\d{2})\\s*([APap][Mm])?$").matcher(t);
         if (!m.matches()) return t;
         int h = Integer.parseInt(m.group(1));
@@ -147,13 +149,13 @@ public class TrainingReminderScreen extends BaseScreen {
         }
     }
 
-    /** "Every Monday at 09:00" → "09:00" */
+    /** "Every Monday at 9:00 AM" → "09:00" (iOS renders 12h; normalize to 24h to match Android). */
     private String parseTimeFromDescription(WebElement el) {
         try {
             String v = el.getAttribute("value");
             if (v == null) return "";
             int idx = v.lastIndexOf(" at ");
-            return idx < 0 ? "" : v.substring(idx + 4).trim();
+            return idx < 0 ? "" : normalizeTo24h(v.substring(idx + 4).trim());
         } catch (Exception e) {
             return "";
         }

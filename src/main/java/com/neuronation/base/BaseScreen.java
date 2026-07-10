@@ -161,6 +161,7 @@ public abstract class BaseScreen {
     }
 
     private void performSwipe(int startX, int startY, int endX, int endY) {
+        log.info("SWIPE ({},{})->({},{})", startX, startY, endX, endY);
         PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
         Sequence swipe = new Sequence(finger, 0);
         swipe.addAction(finger.createPointerMove(Duration.ZERO,
@@ -224,19 +225,13 @@ public abstract class BaseScreen {
         if (isAndroid()) {
             // Already on screen — no scroll needed.
             if (isDisplayedById(androidId)) return;
-            // Forward-scroll only (content up). UiScrollable.scrollIntoView flings to the
-            // top first and then crawls forward — slow and visually jarring. Targets here
-            // (logout, submit, settings rows) sit BELOW the current view, so a few controlled
-            // swipes reach them quickly without the reset.
-            for (int i = 0; i < 6; i++) {
-                swipeUp();
-                if (isDisplayedById(androidId)) return;
-            }
-            // Fallback: element may be above current position, or a swipe overshot it — let
-            // UiScrollable locate it (slower, but reliable) as a last resort.
+            // Scroll DIRECTLY to the target with UiScrollable.scrollIntoView — it drives the list
+            // straight to the element (forward, then backward if needed) and stops ON it. This
+            // replaces the old "6 blind forward swipes + reverse fallback", which overshot and then
+            // scrolled back (the 4-5-down-then-2-3-up / Samsung back-and-forth churn).
             try {
                 driver.findElement(AppiumBy.androidUIAutomator(
-                        "new UiScrollable(new UiSelector().scrollable(true)).setMaxSearchSwipes(8)" +
+                        "new UiScrollable(new UiSelector().scrollable(true)).setMaxSearchSwipes(12)" +
                         ".scrollIntoView(new UiSelector().resourceId(\"" + androidId + "\"))"));
             } catch (Exception ignored) {}
         } else {

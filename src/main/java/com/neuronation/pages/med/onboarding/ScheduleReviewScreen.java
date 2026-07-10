@@ -50,6 +50,26 @@ public class ScheduleReviewScreen extends BaseScreen {
     @Step("Read per-day reminder times shown on the Schedule Review screen")
     public Map<String, String> getScheduleTimes() {
         Map<String, String> times = new LinkedHashMap<>();
+
+        if (!isAndroid()) {
+            // iOS: each day is a TextView whose value is "Every <Day> at 9:00 AM" (verified on
+            // device — same pattern as the Training Reminder settings screen). All 7 days render at
+            // once, so no scrolling. Parse the time after " at " and normalize to 24h.
+            for (String day : new String[]{"Monday", "Tuesday", "Wednesday", "Thursday",
+                                           "Friday", "Saturday", "Sunday"}) {
+                var els = driver.findElements(AppiumBy.iOSNsPredicateString(
+                        "type == \"XCUIElementTypeTextView\" AND value BEGINSWITH \"Every " + day + " at \""));
+                if (els.isEmpty()) continue;
+                try {
+                    String v = els.get(0).getAttribute("value");
+                    int idx = v == null ? -1 : v.lastIndexOf(" at ");
+                    if (idx >= 0) times.put(day, to24h(v.substring(idx + 4)));
+                } catch (Exception ignored) {}
+            }
+            log.info("iOS Schedule Review per-day times read: {}", times);
+            return times;
+        }
+
         int prevSize = -1;
         for (int i = 0; i < 6; i++) {
             var titles = driver.findElements(AppiumBy.id("nn.mobile.app.med:id/editcycleCellTitle"));

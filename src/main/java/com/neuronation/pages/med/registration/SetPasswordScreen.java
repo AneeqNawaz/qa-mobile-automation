@@ -75,23 +75,30 @@ public class SetPasswordScreen extends BaseScreen {
     @Step("Set password and submit: {password}")
     public void setPasswordAndSubmit(String password) {
         if (isIOS()) {
-            // 1. Type password — may trigger "Use Strong Password" popup
+            // iOS shows a "Use Strong Password?" popup the instant the SecureTextField gains focus,
+            // which otherwise swallows every keystroke after the first (the "only one digit typed"
+            // symptom). So focus FIRST, dismiss that popup, THEN type the whole password in one clean
+            // pass — once declined it does not reappear, so no retype dance is needed.
+            // 1. Focus the field (triggers the popup) and wait for it.
+            passwordInput.click();
+            try {
+                new org.openqa.selenium.support.ui.WebDriverWait(driver, java.time.Duration.ofSeconds(3))
+                        .until(d -> !d.findElements(
+                                io.appium.java_client.AppiumBy.accessibilityId("xmark")).isEmpty());
+            } catch (Exception ignored) {}
+            // 2. Dismiss "Use Strong Password?" before typing.
+            dismissStrongPasswordPopup();
+            // 3. Type the full password once (clean now).
             type(passwordInput, password);
-            try { Thread.sleep(500); } catch (InterruptedException ignored) {}
-            // 2. Dismiss "Use Strong Password" popup if it appeared
-            boolean hadPopup = dismissStrongPasswordPopup();
-            if (hadPopup) {
-                // Popup intercepted typing — retype password
+            // 4. Safety net: if the popup still slipped in and truncated input, dismiss + retype once.
+            if (dismissStrongPasswordPopup()) {
                 type(passwordInput, password);
-                try { Thread.sleep(300); } catch (InterruptedException ignored) {}
             }
-            // 3. Dismiss keyboard via Next button
+            // 5. Dismiss keyboard via Next button, then Create Account.
             try {
                 var nextBtn = driver.findElements(io.appium.java_client.AppiumBy.accessibilityId("Next:"));
                 if (!nextBtn.isEmpty()) nextBtn.get(0).click();
             } catch (Exception ignored) {}
-            try { Thread.sleep(300); } catch (InterruptedException ignored) {}
-            // 4. Tap Create Account
             tapSubmit();
         } else {
             enterPassword(password);

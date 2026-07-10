@@ -79,9 +79,21 @@ public class MedFullE2EHappyPathTest extends MedSettingsVerifierBase {
                     "Dashboard should be visible after re-login");
         });
 
-        // 15. Change Email shows the email used at login
-        step("Change Email shows the login email", () -> {
+        // 15. MCI 90-day validity FIRST — the MCI label is at the TOP of Profile, so verifying it
+        // before Change Email/Logout (both lower down) avoids a scroll-up-then-down round trip.
+        step("Profile MCI + 90-day validity", () -> {
             screens.dashboard().tapProfileTab();
+            screens.profile().waitForScreen();
+            String validity = screens.profile().getAccountValidity();
+            String expected = LocalDate.now().plusDays(90)
+                    .format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
+            log.info("[{}] MCI validity='{}' expected until {}", flowName, validity, expected);
+            softAssert.assertTrue(validity.contains(expected),
+                    "MCI account should be valid 90 days (until " + expected + "): " + validity);
+        });
+
+        // 16. Change Email shows the email used at login (scrolls down from the MCI label)
+        step("Change Email shows the login email", () -> {
             screens.profile().waitForScreen();
             screens.profile().tapChangeEmail();
             screens.changeEmail().waitForScreen();
@@ -90,16 +102,6 @@ public class MedFullE2EHappyPathTest extends MedSettingsVerifierBase {
             softAssert.assertEquals(currentEmail, email, "Change Email should show the email used at login");
             screens.changeEmail().tapBack();
             screens.profile().waitForScreen();
-        });
-
-        // 16. MCI 90-day validity
-        step("MCI 90-day validity", () -> {
-            String validity = screens.profile().getAccountValidity();
-            String expected = LocalDate.now().plusDays(90)
-                    .format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
-            log.info("[{}] MCI validity='{}' expected until {}", flowName, validity, expected);
-            softAssert.assertTrue(validity.contains(expected),
-                    "MCI account should be valid 90 days (until " + expected + "): " + validity);
         });
 
         // 17. Final logout → Launch (leaves app clean for the next flow)

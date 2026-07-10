@@ -118,15 +118,9 @@ public abstract class MedSettingsVerifierBase extends BaseTest {
             log.info("[{}] 2. Available Exercises count exp={} act={}", flowName, expCount, actCount);
             softAssert.assertEquals(actCount, expCount, "Available Exercises count should match specialNeeds=" + needs);
 
-            if (!"android".equals(context.getPlatform())) {
-                // iOS: every exercise Switch reports the same frame (y≈282), so individual toggles
-                // can't be reliably paired to a game. The X/Y count label (asserted above) is the
-                // authoritative checked/total signal. Expand→collapse for visual parity.
-                screens.settings().expandAvailableExercises();
-                screens.settings().collapseAvailableExercises();
-                return;
-            }
-
+            // Both platforms: expand, read each exercise's name + toggle (iOS pairs each game text to
+            // its same-row Switch by Y once truly expanded — verified on device), assert the unchecked
+            // set is exactly the locked set and the X/Y count is internally consistent, then collapse.
             Map<String, Boolean> states = screens.settings().getExerciseStates(catalog.all());
             Set<String> actLocked = new java.util.LinkedHashSet<>();
             long checkedCount = 0;
@@ -202,6 +196,15 @@ public abstract class MedSettingsVerifierBase extends BaseTest {
                 }
                 softAssert.assertTrue(personalisedOn,
                         "'Personalised training times' should be ON when notifications are allowed");
+            } else if (!medFlow.wasNotificationDenyApplied()) {
+                // Deny was requested but the OS never prompted this run — the permission was already
+                // decided on this install (common on a persistent local device; fresh installs and
+                // BrowserStack DO prompt, where the deny path below runs). We cannot force a deny
+                // here, so DON'T assert the denied state (that would be a false failure). Log the
+                // actual reminder state for visibility and move on.
+                log.warn("[{}] 7. Notification deny could NOT be applied (OS did not prompt — permission "
+                        + "already decided on this install). Skipping deny-state assertions. "
+                        + "Actual: personalisedOn={} times={}", flowName, personalisedOn, times);
             } else {
                 // Permission DENIED → the app turns the reminder OFF and shows no per-day times
                 // (only the dropdown arrow). This is specific to denied permission: manually

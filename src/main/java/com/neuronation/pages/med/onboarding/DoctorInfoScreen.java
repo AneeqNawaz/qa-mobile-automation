@@ -24,20 +24,23 @@ public class DoctorInfoScreen extends BaseScreen {
     @iOSXCUITFindBy(accessibility = "Contact details of the doctor")
     private WebElement contactDetailsLabel;
 
+    // iOS: match on placeholderValue (stable) NOT value — a TextField's `value` equals the
+    // placeholder ONLY while empty; once text is typed `value` becomes that text, so a
+    // `value == 'City'` locator can no longer re-resolve the field mid-fill (stale/"not present").
     @AndroidFindBy(id = "nn.mobile.app.med:id/textPostalCode")
-    @iOSXCUITFindBy(iOSClassChain = "**/XCUIElementTypeTextField[`value == 'Postal code'`]")
+    @iOSXCUITFindBy(iOSClassChain = "**/XCUIElementTypeTextField[`placeholderValue == 'Postal code'`]")
     private WebElement postalCodeInput;
 
     @AndroidFindBy(id = "nn.mobile.app.med:id/textCity")
-    @iOSXCUITFindBy(iOSClassChain = "**/XCUIElementTypeTextField[`value == 'City'`]")
+    @iOSXCUITFindBy(iOSClassChain = "**/XCUIElementTypeTextField[`placeholderValue == 'City'`]")
     private WebElement cityInput;
 
     @AndroidFindBy(id = "nn.mobile.app.med:id/textFirstName")
-    @iOSXCUITFindBy(iOSClassChain = "**/XCUIElementTypeTextField[`value == 'First name'`]")
+    @iOSXCUITFindBy(iOSClassChain = "**/XCUIElementTypeTextField[`placeholderValue == 'First name'`]")
     private WebElement firstNameInput;
 
     @AndroidFindBy(id = "nn.mobile.app.med:id/textLastName")
-    @iOSXCUITFindBy(iOSClassChain = "**/XCUIElementTypeTextField[`value == 'Last name'`]")
+    @iOSXCUITFindBy(iOSClassChain = "**/XCUIElementTypeTextField[`placeholderValue == 'Last name'`]")
     private WebElement lastNameInput;
 
     @AndroidFindBy(id = "nn.mobile.app.med:id/doctorInfo_prescriptionCheckbox")
@@ -60,25 +63,43 @@ public class DoctorInfoScreen extends BaseScreen {
     @Step("Enter doctor postal code: {postalCode}")
     public void enterPostalCode(String postalCode) {
         log.info("Entering postal code: {}", postalCode);
-        type(postalCodeInput, postalCode);
+        typeIntoField(postalCodeInput, postalCode);
     }
 
     @Step("Enter doctor city: {city}")
     public void enterCity(String city) {
         log.info("Entering city: {}", city);
-        type(cityInput, city);
+        typeIntoField(cityInput, city);
     }
 
     @Step("Enter doctor first name: {firstName}")
     public void enterFirstName(String firstName) {
         log.info("Entering first name: {}", firstName);
-        type(firstNameInput, firstName);
+        typeIntoField(firstNameInput, firstName);
     }
 
     @Step("Enter doctor last name: {lastName}")
     public void enterLastName(String lastName) {
         log.info("Entering last name: {}", lastName);
-        type(lastNameInput, lastName);
+        typeIntoField(lastNameInput, lastName);
+    }
+
+    /** iOS: sending keys without first focusing the target field lets them append to the
+     *  previously-focused field (verified on device: the city "Berlin" landed in the postal-code
+     *  field as "10115Berlin"). So tap the field to focus it, clear, type, then verify the value
+     *  and retry once on mismatch. Android's type() is already reliable here. */
+    private void typeIntoField(WebElement field, String text) {
+        if (isAndroid()) { type(field, text); return; }
+        for (int attempt = 0; attempt < 2; attempt++) {
+            tap(field);                                  // focus THIS field first
+            try { field.clear(); } catch (Exception ignored) {}
+            field.sendKeys(text);
+            String v = "";
+            try { v = field.getAttribute("value"); } catch (Exception ignored) {}
+            if (v != null && v.trim().equals(text.trim())) return;   // typed cleanly
+            log.info("Field value '{}' != expected '{}' (attempt {}) — clearing and retrying", v, text, attempt);
+            try { field.clear(); } catch (Exception ignored) {}
+        }
     }
 
     @Step("Fill all doctor details")
@@ -119,8 +140,25 @@ public class DoctorInfoScreen extends BaseScreen {
     @Step("Fill doctor details and continue")
     public void fillAndContinue(String postalCode, String city, String firstName, String lastName) {
         fillDoctorDetails(postalCode, city, firstName, lastName);
+        dismissKeyboardIos();   // the last field's keyboard covers Continue → dismiss before tapping
         swipeUp();
         tapContinue();
+    }
+
+    /** iOS: after the last text field the on-screen keyboard covers the Continue button, so
+     *  elementToBeClickable(Continue) times out ("element was not visible"). Tap the non-editable
+     *  header to resign first-responder (dismiss the keyboard). No-op on Android (its type() here
+     *  doesn't leave a blocking keyboard over Continue). */
+    private void dismissKeyboardIos() {
+        if (isAndroid()) return;
+        try {
+            contactDetailsLabel.click();
+        } catch (Exception e) {
+            try {
+                var s = driver.manage().window().getSize();
+                tapAt(s.getWidth() / 2, (int) (s.getHeight() * 0.15));
+            } catch (Exception ignored) {}
+        }
     }
 
     @Step("Tap back button")

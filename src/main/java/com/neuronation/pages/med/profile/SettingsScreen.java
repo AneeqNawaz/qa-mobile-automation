@@ -194,6 +194,56 @@ public class SettingsScreen extends BaseScreen {
                 "type == \"XCUIElementTypeStaticText\" AND name == \"" + name + "\" AND visible == 1");
     }
 
+    // ── iOS accordion helpers (real-expansion detection + chevron-based collapse) ──
+    // Verified from live device tree: (a) sub-rows exist in the tree even when the accordion is
+    // COLLAPSED (StaticTexts at height=1), so "element present" is NOT "expanded" — the reliable
+    // signal is that the row's Switches spread across multiple Y positions once expanded (collapsed
+    // stacks them all at the row frame). (b) each row exposes a disclosure Button name="chevron" at
+    // the right edge; iOS shows no up-arrow when expanded, so we collapse by tapping that chevron.
+
+    /** Parse the current iOS page source once into a DOM. */
+    private org.w3c.dom.Document iosDoc() throws Exception {
+        return javax.xml.parsers.DocumentBuilderFactory.newInstance().newDocumentBuilder()
+                .parse(new java.io.ByteArrayInputStream(
+                        driver.getPageSource().getBytes(java.nio.charset.StandardCharsets.UTF_8)));
+    }
+
+    /** How many distinct Y positions the Switches whose name starts with {@code namePrefix} occupy.
+     *  Collapsed accordion → 1 (all stacked at the row frame); expanded → many. */
+    private int iosSwitchYspread(String namePrefix) {
+        try {
+            org.w3c.dom.NodeList all = iosDoc().getElementsByTagName("XCUIElementTypeSwitch");
+            java.util.Set<Integer> ys = new java.util.HashSet<>();
+            for (int i = 0; i < all.getLength(); i++) {
+                org.w3c.dom.Element e = (org.w3c.dom.Element) all.item(i);
+                if (!e.getAttribute("name").startsWith(namePrefix)) continue;
+                try { ys.add(Integer.parseInt(e.getAttribute("y"))); } catch (Exception ignored) {}
+            }
+            return ys.size();
+        } catch (Exception e) { return 0; }
+    }
+
+    /** iOS: collapse the accordion for {@code rowTitle} by tapping its disclosure chevron (Button
+     *  name="chevron" at the right edge — one per row). Picks the chevron nearest the row title's Y.
+     *  Falls back to tapping the title (which also toggles) if no chevron sits on that row. */
+    private void tapRowChevronIos(String rowTitle) {
+        java.util.List<WebElement> titles = driver.findElements(AppiumBy.iOSNsPredicateString(
+                "type == \"XCUIElementTypeStaticText\" AND name == \"" + rowTitle + "\" AND visible == 1"));
+        if (titles.isEmpty()) { tapSetting(rowTitle); return; }
+        int ty;
+        try { ty = titles.get(0).getLocation().getY(); } catch (Exception e) { tapSetting(rowTitle); return; }
+        WebElement best = null; int bestDy = Integer.MAX_VALUE;
+        for (WebElement c : driver.findElements(AppiumBy.iOSNsPredicateString(
+                "type == \"XCUIElementTypeButton\" AND name == \"chevron\" AND visible == 1"))) {
+            try {
+                int dy = Math.abs(c.getLocation().getY() - ty);
+                if (dy < bestDy) { bestDy = dy; best = c; }
+            } catch (Exception ignored) {}
+        }
+        if (best != null && bestDy <= 40) best.click();
+        else tapSetting(rowTitle);
+    }
+
     /** iOS: the constraint Switch for a label is the Switch nearest that label by Y (the
      *  special-needs switches sit on the same rows as their labels; exercise/NB switches are far). */
     private boolean iosConstraintOn(String labelName) {
@@ -270,14 +320,14 @@ public class SettingsScreen extends BaseScreen {
                             AppiumBy.className("android.widget.CheckBox")));
             return;
         }
-        // iOS: expanded reveals the game list (StaticTexts like "Memobox").
-        if (!driver.findElements(AppiumBy.iOSNsPredicateString(
-                "type == \"XCUIElementTypeStaticText\" AND name == \"Memobox\"")).isEmpty()) return;
+        // iOS: the game StaticTexts exist in the tree even when COLLAPSED (height=1), so presence
+        // is not expansion. The real signal is the exercise Switches spreading across many Y
+        // positions (collapsed → all stacked at the row frame). Wait for that spread.
+        if (iosSwitchYspread("Available Exercises") > 1) return; // already expanded
         tapSetting("Available Exercises");
         try {
-            new org.openqa.selenium.support.ui.WebDriverWait(driver, java.time.Duration.ofSeconds(5))
-                    .until(d -> !d.findElements(AppiumBy.iOSNsPredicateString(
-                            "type == \"XCUIElementTypeStaticText\" AND name == \"Memobox\"")).isEmpty());
+            new org.openqa.selenium.support.ui.WebDriverWait(driver, java.time.Duration.ofSeconds(6))
+                    .until(d -> iosSwitchYspread("Available Exercises") > 1);
         } catch (Exception ignored) {}
     }
 
@@ -308,58 +358,55 @@ public class SettingsScreen extends BaseScreen {
             prevSize = states.size();
             swipeUp(); // scroll the list down to reveal more rows
         }
+        // Recovery: a big blind swipe can jump past a single row (observed on the Samsung S24 —
+        // "Memoflow" was skipped, giving 22/23 and failing the count↔checkbox check). For any
+        // expected exercise the sweep missed, scroll it DIRECTLY into view by name and read it, so
+        // the captured set is always complete regardless of screen size / swipe granularity.
+        if (expected != null) {
+            for (String name : expected) {
+                if (states.containsKey(name)) continue;
+                try {
+                    WebElement cb = driver.findElement(AppiumBy.androidUIAutomator(
+                            "new UiScrollable(new UiSelector().scrollable(true)).setMaxSearchSwipes(15)"
+                            + ".scrollIntoView(new UiSelector().className(\"android.widget.CheckBox\").text(\"" + name + "\"))"));
+                    states.put(name, "true".equals(cb.getAttribute("checked")));
+                    log.info("Recovered sweep-skipped exercise '{}' via scrollIntoView", name);
+                } catch (Exception e) {
+                    log.warn("Could not recover exercise '{}': {}", name, e.getMessage());
+                }
+            }
+        }
         log.info("Exercise states read ({} exercises): {}", states.size(), states);
         return states;
     }
 
-    /** iOS exercise reader: expand, then scroll down reading every game→checked pair (mirrors the
-     *  Android sweep), scroll back up. Each game is a StaticText; its checkbox is the same-row Switch
-     *  (paired by Y). Uses ONE page-source parse per scroll position instead of dozens of per-element
-     *  round-trips (those are slow on iOS). */
+    /** iOS exercise reader: expand, then read EVERY game→checked pair from a SINGLE page-source
+     *  parse — no scrolling. Verified on device: once truly expanded, all 23 game StaticTexts and
+     *  all 23 per-game Switches are present in the tree at distinct Ys (off-screen rows included),
+     *  each game sitting at the exact Y of its Switch (dy=0). So one parse pairs the whole list; a
+     *  scroll sweep is unnecessary and, at the bottom, just re-swipes fruitlessly. Rows step ~47px,
+     *  so a dy<45 threshold pairs a game only to its own Switch. The aggregate "Available Exercises,
+     *  N/N" Switch is excluded so it can't be mistaken for the top row's toggle. */
     private java.util.Map<String, Boolean> iosExerciseStates(java.util.Collection<String> expected) {
         expandAvailableExercises();
         java.util.Map<String, Boolean> states = new java.util.LinkedHashMap<>();
-        int dry = 0;                       // consecutive passes that revealed no new game
-        for (int i = 0; i < 14 && dry < 2; i++) {
-            int before = states.size();
-            parseVisibleExerciseRows(states, expected);
-            if (expected != null && !expected.isEmpty() && states.keySet().containsAll(expected)) break;
-            dry = (states.size() == before) ? dry + 1 : 0;   // tolerate one unrendered pass
-            swipeUp();                     // scroll the list up to reveal the next rows
-        }
-        // scroll back up to the row header so the follow-up collapse tap lands cleanly
-        for (int i = 0; i < 8 && driver.findElements(AppiumBy.iOSNsPredicateString(
-                "type == \"XCUIElementTypeStaticText\" AND name == \"Available Exercises\" AND visible == 1")).isEmpty(); i++) {
-            swipeDown();
-        }
-        log.info("iOS exercise states read ({}): {}", states.size(), states);
-        return states;
-    }
-
-    /** Parse the current page source once; for each on-screen game name (in {@code expected}) pair
-     *  the nearest same-row Switch by Y and record checked (value == "1"). */
-    private void parseVisibleExerciseRows(java.util.Map<String, Boolean> states,
-                                          java.util.Collection<String> expected) {
-        if (expected == null) return;
+        if (expected == null) return states;
         try {
-            org.w3c.dom.Document doc = javax.xml.parsers.DocumentBuilderFactory.newInstance()
-                    .newDocumentBuilder()
-                    .parse(new java.io.ByteArrayInputStream(
-                            driver.getPageSource().getBytes(java.nio.charset.StandardCharsets.UTF_8)));
-            org.w3c.dom.NodeList all = doc.getElementsByTagName("*");
-            java.util.List<int[]> switchYV = new java.util.ArrayList<>();          // {y, value}
-            java.util.List<Object[]> gameY = new java.util.ArrayList<>();          // {name, y}
+            org.w3c.dom.NodeList all = iosDoc().getElementsByTagName("*");
+            java.util.List<int[]> switchYV = new java.util.ArrayList<>();   // {y, value}
+            java.util.List<Object[]> gameY = new java.util.ArrayList<>();   // {name, y}
             for (int i = 0; i < all.getLength(); i++) {
                 org.w3c.dom.Element e = (org.w3c.dom.Element) all.item(i);
-                if (!"true".equals(e.getAttribute("visible"))) continue;
                 int y;
                 try { y = Integer.parseInt(e.getAttribute("y")); } catch (Exception ex) { continue; }
-                // Appium's getPageSource() encodes the element type as the XML TAG NAME
-                // (e.g. <XCUIElementTypeSwitch>), NOT a "type" attribute.
                 String type = e.getTagName();
-                if ("XCUIElementTypeSwitch".equals(type)
-                        && e.getAttribute("name").startsWith("Available Exercises")) {
-                    switchYV.add(new int[]{y, "1".equals(e.getAttribute("value")) ? 1 : 0});
+                if ("XCUIElementTypeSwitch".equals(type)) {
+                    String nm = e.getAttribute("name");
+                    // per-game switches all share the full game-list name; skip only the pure
+                    // aggregate header switch ("Available Exercises, 23/23").
+                    if (nm.startsWith("Available Exercises") && !nm.matches("Available Exercises,\\s*\\d+/\\d+")) {
+                        switchYV.add(new int[]{y, "1".equals(e.getAttribute("value")) ? 1 : 0});
+                    }
                 } else if ("XCUIElementTypeStaticText".equals(type)) {
                     String n = e.getAttribute("name");
                     if (expected.contains(n)) gameY.add(new Object[]{n, y});
@@ -378,6 +425,8 @@ public class SettingsScreen extends BaseScreen {
         } catch (Exception e) {
             log.warn("iOS exercise parse failed: {}", e.getMessage());
         }
+        log.info("iOS exercise states read ({}): {}", states.size(), states);
+        return states;
     }
 
     /** Names from {@code allNames} whose checkbox is unchecked (i.e. locked). */
@@ -399,10 +448,14 @@ public class SettingsScreen extends BaseScreen {
             if (driver.findElements(AppiumBy.id("nn.mobile.app.med:id/accessibiletySwitch")).isEmpty()) {
                 return; // already collapsed
             }
-        } else if (driver.findElements(iosConstraintLabel("Color Vision Deficiency")).isEmpty()) {
+            tapSetting("Special needs in training");
+            return;
+        }
+        // iOS: collapse via the row's disclosure chevron (no up-arrow when expanded).
+        if (driver.findElements(iosConstraintLabel("Color Vision Deficiency")).isEmpty()) {
             return; // already collapsed
         }
-        tapSetting("Special needs in training");
+        tapRowChevronIos("Special needs in training");
     }
 
     /** Collapse the "Available Exercises" accordion. After a downward read its header is
@@ -420,17 +473,17 @@ public class SettingsScreen extends BaseScreen {
             tapSetting("Available Exercises");
             return;
         }
-        // iOS: collapsed once the game list is gone (Memobox absent).
-        if (driver.findElements(AppiumBy.iOSNsPredicateString(
-                "type == \"XCUIElementTypeStaticText\" AND name == \"Memobox\"")).isEmpty()) {
-            return;
+        // iOS: game texts persist in the tree even when collapsed, so detect collapse by the switch
+        // Y-spread instead (collapsed → all stacked at the row frame).
+        if (iosSwitchYspread("Available Exercises") <= 1) {
+            return; // already collapsed
         }
-        // bring the row title back into view (the sweep may have scrolled it off), then tap to collapse
+        // the downward sweep may have scrolled the header off — bring it back, then tap its chevron.
         for (int i = 0; i < 8 && driver.findElements(AppiumBy.iOSNsPredicateString(
                 "type == \"XCUIElementTypeStaticText\" AND name == \"Available Exercises\" AND visible == 1")).isEmpty(); i++) {
             swipeDown();
         }
-        tapSetting("Available Exercises");
+        tapRowChevronIos("Available Exercises");
     }
 
     // ── Generic expandable single-select row (Comparison Group, Training Adaptation, Language) ──
@@ -506,18 +559,19 @@ public class SettingsScreen extends BaseScreen {
                 driver.findElement(AppiumBy.androidUIAutomator(
                         "new UiScrollable(new UiSelector().scrollable(true)).scrollToBeginning(10)"));
             } catch (Exception ignored) {}
-        } else {
-            // iOS: the option sweep may have scrolled the row title off-screen — swipe back up to
-            // it before tapping (UiScrollable doesn't exist on iOS, which threw before).
-            for (int i = 0; i < 6; i++) {
-                if (!driver.findElements(AppiumBy.iOSNsPredicateString(
-                        "type == \"XCUIElementTypeStaticText\" AND name == \"" + rowTitle + "\" AND visible == 1")).isEmpty()) {
-                    break;
-                }
-                swipeDown();
-            }
+            tapSetting(rowTitle);
+            return;
         }
-        tapSetting(rowTitle);
+        // iOS: the option sweep may have scrolled the row title off-screen — swipe back up to it,
+        // then collapse via its disclosure chevron (UiScrollable doesn't exist on iOS).
+        for (int i = 0; i < 6; i++) {
+            if (!driver.findElements(AppiumBy.iOSNsPredicateString(
+                    "type == \"XCUIElementTypeStaticText\" AND name == \"" + rowTitle + "\" AND visible == 1")).isEmpty()) {
+                break;
+            }
+            swipeDown();
+        }
+        tapRowChevronIos(rowTitle);
     }
 
     // ── Training Priorities (Attention popup → Understood → 4 domains) ──
@@ -605,11 +659,20 @@ public class SettingsScreen extends BaseScreen {
             if (driver.findElements(AppiumBy.id("nn.mobile.app.med:id/domainTitle")).isEmpty()) {
                 return; // not expanded
             }
-        } else if (driver.findElements(AppiumBy.iOSNsPredicateString(
+            tapSetting("Training Priorities");
+            return;
+        }
+        // iOS: collapse via chevron.
+        if (driver.findElements(AppiumBy.iOSNsPredicateString(
                 "type == \"XCUIElementTypeStaticText\" AND name == \"Speed\"")).isEmpty()) {
             return; // not expanded
         }
-        tapSetting("Training Priorities");
+        // bring the row title back into view (Understood/domain expansion may have scrolled it), then chevron.
+        for (int i = 0; i < 6 && driver.findElements(AppiumBy.iOSNsPredicateString(
+                "type == \"XCUIElementTypeStaticText\" AND name == \"Training Priorities\" AND visible == 1")).isEmpty(); i++) {
+            swipeDown();
+        }
+        tapRowChevronIos("Training Priorities");
     }
 
     /** Domain titles shown after Understood (Speed / Attention / Memory / Reasoning). */
