@@ -82,42 +82,90 @@ pipeline {
         }
 
         stage('Test') {
-            steps {
-                // BrowserStack-typed credential — the browserstack{} wrapper injects
-                // BROWSERSTACK_USERNAME / BROWSERSTACK_ACCESS_KEY. Using aneeqnawaz's
-                // account so it matches the account the MED app is uploaded under.
-                browserstack(credentialsId: 'c380e328-98ad-4aa9-9360-b930ee6db5bf') {
-                    withCredentials([
-                        string(credentialsId: 'IMAP_PASSWORD', variable: 'IMAP_PASSWORD')
-                    ]) {
-                        script {
-                            env.BROWSERSTACK_APP_URL = params.BROWSERSTACK_APP_URL
-                            env.BS_BUILD_NAME = "Jenkins-${env.BUILD_NUMBER}-${params.SUITE}-${params.PLATFORM}"
-
-                            try {
-                                sh """
-                                    mvn -B -e -ntp test \
-                                      -Dbrowserstack.enabled=true \
-                                      -Dapp.type=med \
-                                      -Dplatform=${params.PLATFORM} \
-                                      -DsuiteFile=src/test/resources/suites/${params.SUITE}.xml \
-                                      -Dactivation.code=${params.ACTIVATION_CODE} \
-                                      -Dbrowserstack.build.name='${env.BS_BUILD_NAME}'
-                                """
-                            } finally {
-                                // Resolve the BrowserStack App Automate dashboard URL here, where the
-                                // BS credentials are in scope (post{} runs outside this wrapper). Stash
-                                // it to a file for the Slack step. Best-effort — never fails the build.
-                                try {
-                                    sh '''
-                                        mkdir -p target
-                                        curl -s -u "$BROWSERSTACK_USERNAME:$BROWSERSTACK_ACCESS_KEY" \
-                                          "https://api-cloud.browserstack.com/app-automate/builds.json?limit=50" \
-                                        | python3 -c "import sys,json,os; name=os.environ.get('BS_BUILD_NAME',''); d=json.load(sys.stdin); print(next(('https://app-automate.browserstack.com/dashboard/v2/builds/'+b['automation_build']['hashed_id'] for b in d if b.get('automation_build',{}).get('name')==name),''))" \
-                                          > target/bs_build_url.txt 2>/dev/null || true
-                                    '''
-                                } catch (ignored) { /* link is optional */ }
+            matrix {
+                axes {
+                    axis {
+                        name 'PLATFORM'
+                        values 'android', 'ios'
+                    }
+                }
+                when {
+                    anyOf {
+                        expression { params.PLATFORMS == 'both' }
+                        expression { params.PLATFORMS == env.PLATFORM }
+                    }
+                }
+                agent {
+                    node {
+                        label ''
+                        // Isolated workspace per cell — two `mvn clean` runs must not share target/.
+                        customWorkspace "${env.WORKSPACE}-${PLATFORM}"
+                    }
+                }
+                stages {
+                    stage('Build + Test') {
+                        steps {
+                            checkout scm
+                            sh 'mvn -B -e -ntp clean test-compile'
+                            // BrowserStack-typed credential — the browserstack{} wrapper injects
+                            // BROWSERSTACK_USERNAME / BROWSERSTACK_ACCESS_KEY.
+                            browserstack(credentialsId: 'c380e328-98ad-4aa9-9360-b930ee6db5bf') {
+                                withCredentials([
+                                    string(credentialsId: 'IMAP_PASSWORD', variable: 'IMAP_PASSWORD')
+                                ]) {
+                                    script {
+                                        def appUrl    = (env.PLATFORM == 'ios') ? params.IOS_APP_URL : params.ANDROID_APP_URL
+                                        def buildName = "Jenkins-${env.BUILD_NUMBER}-${params.SUITE}-${env.PLATFORM}"
+                                        try {
+                                            // Per-cell scope for BROWSERSTACK_APP_URL avoids a cross-cell race.
+                                            withEnv(["BROWSERSTACK_APP_URL=${appUrl}"]) {
+                                                sh """
+                                                    mvn -B -e -ntp test \
+                                                      -Dbrowserstack.enabled=true \
+                                                      -Dapp.type=med \
+                                                      -Dplatform=${env.PLATFORM} \
+                                                      -DsuiteFile=src/test/resources/suites/${params.SUITE}.xml \
+                                                      -Dactivation.code=${params.ACTIVATION_CODE} \
+                                                      -Dbrowserstack.build.name='${buildName}'
+                                                """
+                                            }
+                                        } finally {
+                                            // Resolve this platform's BrowserStack dashboard URL while BS
+                                            // credentials are in scope. Best-effort — never fails the build.
+                                            withEnv(["BS_BUILD_NAME=${buildName}"]) {
+                                                sh '''
+                                                    mkdir -p target
+                                                    curl -s -u "$BROWSERSTACK_USERNAME:$BROWSERSTACK_ACCESS_KEY" \
+                                                      "https://api-cloud.browserstack.com/app-automate/builds.json?limit=50" \
+                                                    | python3 -c "import sys,json,os; name=os.environ.get('BS_BUILD_NAME',''); d=json.load(sys.stdin); print(next(('https://app-automate.browserstack.com/dashboard/v2/builds/'+b['automation_build']['hashed_id'] for b in d if b.get('automation_build',{}).get('name')==name),''))" \
+                                                      > target/bs_build_url.txt 2>/dev/null || true
+                                                '''
+                                            }
+                                        }
+                                    }
+                                }
                             }
+                            // Tag every Allure result with the platform so the merged report
+                            // groups Android vs iOS cleanly (both cells run the identical suite).
+                            sh '''
+                                python3 - "$PLATFORM" <<'PY'
+import json, glob, sys
+platform = sys.argv[1]
+disp = 'iOS' if platform == 'ios' else 'Android'
+for f in glob.glob('target/allure-results/*-result.json'):
+    try:
+        with open(f) as fh: data = json.load(fh)
+    except Exception:
+        continue
+    labels = [l for l in data.get('labels', []) if l.get('name') not in ('parentSuite',)]
+    labels.append({'name': 'parentSuite', 'value': disp})
+    labels.append({'name': 'tag', 'value': platform})
+    data['labels'] = labels
+    with open(f, 'w') as fh: json.dump(data, fh)
+PY
+                            '''
+                            stash name: "results-${PLATFORM}", allowEmpty: true,
+                                includes: 'target/allure-results/**,target/surefire-reports/**,target/bs_build_url.txt'
                         }
                     }
                 }
