@@ -9,6 +9,11 @@ pipeline {
 
     parameters {
         choice(
+            name: 'PLATFORMS',
+            choices: ['both', 'android', 'ios'],
+            description: 'Which platform(s) to run. Nightly uses "both" (Android + iOS in parallel). Manual runs can pick a single platform.'
+        )
+        choice(
             name: 'SUITE',
             choices: [
                 'e2e-happy-path',
@@ -22,27 +27,27 @@ pipeline {
                 'med-android-en',
                 'content-verification'
             ],
-            description: 'TestNG suite file under src/test/resources/suites/<SUITE>.xml'
-        )
-        choice(
-            name: 'PLATFORM',
-            choices: ['android', 'ios'],
-            description: 'Mobile platform — selects driver capabilities'
+            description: 'TestNG suite file under src/test/resources/suites/<SUITE>.xml. Applied to BOTH platforms (default e2e-happy-path gives Android/iOS parity).'
         )
         string(
-            name: 'BROWSERSTACK_APP_URL',
+            name: 'ANDROID_APP_URL',
             defaultValue: 'med-android-latest',
-            description: 'BrowserStack app reference — accepts BOTH forms: (1) a bare custom_id for the always-latest build, e.g. med-android-latest (NO bs:// prefix); or (2) a hashed app_url for a specific build, e.g. bs://66552da01496cf88c003dc93a681daab065005a5. Default is the custom_id; re-upload with the same custom_id to refresh.'
+            description: 'BrowserStack Android app reference — bare custom_id (e.g. med-android-latest) or bs:// hash.'
+        )
+        string(
+            name: 'IOS_APP_URL',
+            defaultValue: 'med-ios-latest',
+            description: 'BrowserStack iOS app reference — bare custom_id (e.g. med-ios-latest, the device-lock-bypass build) or bs:// hash.'
         )
         string(
             name: 'ACTIVATION_CODE',
             defaultValue: '77AAAAAAAAAAAAAX',
-            description: 'DiGA activation code (reusable test code — overrides Mock HI API call, no VPN needed)'
+            description: 'DiGA activation code (reusable test code — overrides Mock HI API call, no VPN needed).'
         )
         booleanParam(
             name: 'NOTIFY_SLACK',
             defaultValue: true,
-            description: 'Post the run summary to Slack. UNCHECK for manual/ad-hoc runs (e.g. iOS bring-up) so #qa-automation-nightly is not pinged. The nightly build leaves this on.'
+            description: 'Post the run summary to Slack. UNCHECK for manual/ad-hoc runs so #qa-automation-nightly is not pinged.'
         )
     }
 
