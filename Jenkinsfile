@@ -175,40 +175,51 @@ PY
 
     post {
         always {
-            // TestNG / Surefire results
-            junit allowEmptyResults: true, testResults: 'target/surefire-reports/junitreports/*.xml,target/surefire-reports/*.xml'
-
-            // Seed Allure CI metadata (Environment widget + build-link) before generating
-            // the report. Written into allure-results so the Allure plugin picks them up.
+            // Pull each platform's stashed results into its own subdir (best-effort — a
+            // skipped platform simply has no stash).
             script {
-                if (fileExists('target/allure-results')) {
-                    writeFile file: 'target/allure-results/environment.properties', text: """
-Platform=${params.PLATFORM}
-Suite=${params.SUITE}
-App=${params.BROWSERSTACK_APP_URL}
-ActivationCode=${params.ACTIVATION_CODE}
-BrowserStack.Build=Jenkins-${env.BUILD_NUMBER}-${params.SUITE}-${params.PLATFORM}
-""".stripIndent().trim()
-                    writeFile file: 'target/allure-results/executor.json', text: """
-{"name":"Jenkins","type":"jenkins","buildName":"#${env.BUILD_NUMBER}","buildUrl":"${env.BUILD_URL}","reportUrl":"${env.BUILD_URL}allure"}
-""".stripIndent().trim()
+                ['android', 'ios'].each { p ->
+                    dir("agg/${p}") {
+                        try { unstash "results-${p}" }
+                        catch (ignored) { echo "No stashed results for ${p} (platform not run)." }
+                    }
                 }
             }
 
-            // Generate + publish the Allure report (link on the build page + cross-build
-            // trend). 'commandline' matches the Allure Commandline tool name in
-            // Manage Jenkins -> Tools.
+            // TestNG / Surefire results from both platforms.
+            junit allowEmptyResults: true,
+                testResults: 'agg/*/target/surefire-reports/junitreports/*.xml,agg/*/target/surefire-reports/*.xml'
+
+            // Seed Allure CI metadata for each platform's results dir that exists.
+            script {
+                ['android', 'ios'].each { p ->
+                    def dirPath = "agg/${p}/target/allure-results"
+                    if (fileExists(dirPath)) {
+                        writeFile file: "${dirPath}/environment.properties", text: """
+Platform=${p}
+Suite=${params.SUITE}
+App=${p == 'ios' ? params.IOS_APP_URL : params.ANDROID_APP_URL}
+ActivationCode=${params.ACTIVATION_CODE}
+BrowserStack.Build=Jenkins-${env.BUILD_NUMBER}-${params.SUITE}-${p}
+""".stripIndent().trim()
+                        writeFile file: "${dirPath}/executor.json", text: """
+{"name":"Jenkins","type":"jenkins","buildName":"#${env.BUILD_NUMBER}","buildUrl":"${env.BUILD_URL}","reportUrl":"${env.BUILD_URL}allure"}
+""".stripIndent().trim()
+                    }
+                }
+            }
+
+            // One merged Allure report from BOTH platforms' results. The parentSuite labels
+            // (set in the Test stage) split Android vs iOS cleanly in the Suites tab.
             allure commandline: 'Allure', includeProperties: false,
-                results: [[path: 'target/allure-results']]
+                results: [[path: 'agg/android/target/allure-results'], [path: 'agg/ios/target/allure-results']]
 
-            // Raw artifacts (screenshots, allure json, surefire xml) for debugging.
+            // Raw artifacts for debugging.
             archiveArtifacts allowEmptyArchive: true, fingerprint: false,
-                artifacts: 'target/allure-results/**, target/surefire-reports/**'
+                artifacts: 'agg/**/target/allure-results/**, agg/**/target/surefire-reports/**'
 
-            // Slack summary: clean, color-coded, deep links to Allure + BrowserStack.
-            // Sandbox-safe by design — uses only whitelisted RunWrapper props (no rawBuild,
-            // which script-security blocks). Counts are parsed from surefire in the shell
-            // and everything optional is wrapped so the message ALWAYS sends.
+            // Single Slack summary: one line per platform that ran (counts + inline
+            // BrowserStack link), shared footer. Sandbox-safe (RunWrapper props only).
             script {
                 if (!params.NOTIFY_SLACK) {
                     echo 'Slack notification skipped (NOTIFY_SLACK=false).'
@@ -218,27 +229,34 @@ BrowserStack.Build=Jenkins-${env.BUILD_NUMBER}-${params.SUITE}-${params.PLATFORM
                 def color   = result == 'SUCCESS' ? 'good' : (result == 'FAILURE' ? 'danger' : 'warning')
                 def icon    = result == 'SUCCESS' ? ':large_green_circle:' : (result == 'FAILURE' ? ':red_circle:' : ':large_yellow_circle:')
                 def mention = result == 'SUCCESS' ? '' : '<!here> '       // ping only when not green
-                def dur     = currentBuild.durationString.replace(' and counting', '')
 
-                // Test counts (passed, failed+errors, skipped) parsed from surefire.
-                def passed = '–', failed = '–', skipped = '–'
-                try {
-                    def c = sh(returnStdout: true, script: '''awk -F'[ ,]+' '/^Tests run:/{r+=$3;f+=$5;e+=$7;s+=$9} END{printf "%d,%d,%d", r-f-e-s, f+e, s}' target/surefire-reports/*.txt 2>/dev/null''').trim()
-                    def p = c.tokenize(',')
-                    if (p.size() == 3) { passed = p[0]; failed = p[1]; skipped = p[2] }
-                } catch (ignored) { }
+                // Build one line per platform whose results are present.
+                def lines = []
+                ['android', 'ios'].each { p ->
+                    def sfGlob = "agg/${p}/target/surefire-reports"
+                    if (!fileExists(sfGlob)) { return }   // platform didn't run
+                    def passed = '–', failed = '–', skipped = '–'
+                    try {
+                        def c = sh(returnStdout: true, script: """awk -F'[ ,]+' '/^Tests run:/{r+=\$3;f+=\$5;e+=\$7;s+=\$9} END{printf "%d,%d,%d", r-f-e-s, f+e, s}' ${sfGlob}/*.txt 2>/dev/null""").trim()
+                        def parts = c.tokenize(',')
+                        if (parts.size() == 3) { passed = parts[0]; failed = parts[1]; skipped = parts[2] }
+                    } catch (ignored) { }
 
-                // Optional BrowserStack dashboard link (resolved in the Test stage).
-                def bsLink = ''
-                if (fileExists('target/bs_build_url.txt')) {
-                    def u = readFile('target/bs_build_url.txt').trim()
-                    if (u) { bsLink = ":iphone: <${u}|BrowserStack>      " }
+                    def bsLink = ''
+                    def bsFile = "agg/${p}/target/bs_build_url.txt"
+                    if (fileExists(bsFile)) {
+                        def u = readFile(bsFile).trim()
+                        if (u) { bsLink = "     :iphone: <${u}|BrowserStack>" }
+                    }
+                    def label = (p == 'ios') ? 'iOS' : 'Android'
+                    lines << "${label} · ${params.SUITE}:   :white_check_mark: ${passed}   :x: ${failed}   :fast_forward: ${skipped}${bsLink}"
                 }
 
+                def body = lines.join('\n')
                 slackSend channel: env.SLACK_CHANNEL, color: color,
-                    message: """${mention}${icon}  *MED*   ·   ${params.SUITE}   ·   ${params.PLATFORM}   —   *${result}*
-:white_check_mark: ${passed} passed      :x: ${failed} failed      :fast_forward: ${skipped} skipped      :stopwatch: ${dur}
-:bar_chart: <${env.BUILD_URL}allure|Allure Report>      ${bsLink}:bricks: <${env.BUILD_URL}|Build #${env.BUILD_NUMBER}>      :scroll: <${env.BUILD_URL}console|Console>"""
+                    message: """${mention}${icon}  *MED nightly*   —   *${result}*
+${body}
+:bar_chart: <${env.BUILD_URL}allure|Allure Report>      :bricks: <${env.BUILD_URL}|Build #${env.BUILD_NUMBER}>      :scroll: <${env.BUILD_URL}console|Console>"""
             }
         }
     }
