@@ -75,12 +75,6 @@ pipeline {
             }
         }
 
-        stage('Compile') {
-            steps {
-                sh 'mvn -B -e -ntp clean test-compile'
-            }
-        }
-
         stage('Test') {
             matrix {
                 axes {
@@ -145,10 +139,15 @@ pipeline {
                                     }
                                 }
                             }
-                            // Tag every Allure result with the platform so the merged report
-                            // groups Android vs iOS cleanly (both cells run the identical suite).
-                            sh '''
-                                python3 - "$PLATFORM" <<'PY'
+                        }
+                        post {
+                            // Runs even when `mvn test` failed, so failing platforms are
+                            // still tagged, stashed, and reported by the outer post block.
+                            always {
+                                // Tag every Allure result with the platform so the merged report
+                                // groups Android vs iOS cleanly (both cells run the identical suite).
+                                sh '''
+                                    python3 - "$PLATFORM" <<'PY'
 import json, glob, sys
 platform = sys.argv[1]
 disp = 'iOS' if platform == 'ios' else 'Android'
@@ -163,9 +162,10 @@ for f in glob.glob('target/allure-results/*-result.json'):
     data['labels'] = labels
     with open(f, 'w') as fh: json.dump(data, fh)
 PY
-                            '''
-                            stash name: "results-${PLATFORM}", allowEmpty: true,
-                                includes: 'target/allure-results/**,target/surefire-reports/**,target/bs_build_url.txt'
+                                '''
+                                stash name: "results-${env.PLATFORM}", allowEmpty: true,
+                                    includes: 'target/allure-results/**,target/surefire-reports/**,target/bs_build_url.txt'
+                            }
                         }
                     }
                 }
