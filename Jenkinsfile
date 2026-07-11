@@ -89,13 +89,9 @@ pipeline {
                         expression { params.PLATFORMS == env.PLATFORM }
                     }
                 }
-                agent {
-                    node {
-                        label ''
-                        // Isolated workspace per cell — two `mvn clean` runs must not share target/.
-                        customWorkspace "${env.WORKSPACE}-${PLATFORM}"
-                    }
-                }
+                // Per-cell agent → Jenkins leases each cell its own workspace on the node
+                // (auto-suffixed ws, ws@2), so two `mvn clean` runs never share target/.
+                agent any
                 stages {
                     stage('Build + Test') {
                         steps {
