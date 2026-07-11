@@ -178,6 +178,10 @@ PY
             // Pull each platform's stashed results into its own subdir (best-effort — a
             // skipped platform simply has no stash).
             script {
+                // Wipe last build's aggregation dir first — the main workspace is reused
+                // and `agg/` is not under SCM, so stale results from a prior run would
+                // otherwise be reported for a platform that did not run this build.
+                dir('agg') { deleteDir() }
                 ['android', 'ios'].each { p ->
                     dir("agg/${p}") {
                         try { unstash "results-${p}" }
