@@ -156,7 +156,11 @@ public class DriverFactory {
         bsOptions.put("accessKey", config.getString("browserstack.access.key"));
         bsOptions.put("projectName", config.getString("browserstack.project"));
         bsOptions.put("buildName", config.getString("browserstack.build.name"));
-        bsOptions.put("networkLogs", true);
+        // Network logs use a MITM proxy that intercepts HTTPS — this breaks SSL-pinned
+        // apps (the app rejects the injected cert → "Integrity Check Failed"). Default ON,
+        // but set browserstack.network.logs=false (e.g. for iOS) to disable interception.
+        boolean networkLogs = !"false".equals(config.getString("browserstack.network.logs"));
+        bsOptions.put("networkLogs", networkLogs);
         bsOptions.put("deviceLogs", true);
         // App Automate requires a target device + OS version, else BROWSERSTACK_MISSING_CAPS.
         String deviceName = config.getString("browserstack.device.name");
