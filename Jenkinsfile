@@ -9,6 +9,11 @@ pipeline {
 
     parameters {
         choice(
+            name: 'PLATFORMS',
+            choices: ['both', 'android', 'ios'],
+            description: 'Which platform(s) to run. Nightly uses "both" (Android + iOS in parallel). Manual runs can pick a single platform.'
+        )
+        choice(
             name: 'SUITE',
             choices: [
                 'e2e-happy-path',
@@ -22,27 +27,27 @@ pipeline {
                 'med-android-en',
                 'content-verification'
             ],
-            description: 'TestNG suite file under src/test/resources/suites/<SUITE>.xml'
-        )
-        choice(
-            name: 'PLATFORM',
-            choices: ['android', 'ios'],
-            description: 'Mobile platform — selects driver capabilities'
+            description: 'TestNG suite file under src/test/resources/suites/<SUITE>.xml. Applied to BOTH platforms (default e2e-happy-path gives Android/iOS parity).'
         )
         string(
-            name: 'BROWSERSTACK_APP_URL',
+            name: 'ANDROID_APP_URL',
             defaultValue: 'med-android-latest',
-            description: 'BrowserStack app reference — accepts BOTH forms: (1) a bare custom_id for the always-latest build, e.g. med-android-latest (NO bs:// prefix); or (2) a hashed app_url for a specific build, e.g. bs://66552da01496cf88c003dc93a681daab065005a5. Default is the custom_id; re-upload with the same custom_id to refresh.'
+            description: 'BrowserStack Android app reference — bare custom_id (e.g. med-android-latest) or bs:// hash.'
+        )
+        string(
+            name: 'IOS_APP_URL',
+            defaultValue: 'med-ios-latest',
+            description: 'BrowserStack iOS app reference — bare custom_id (e.g. med-ios-latest, the device-lock-bypass build) or bs:// hash.'
         )
         string(
             name: 'ACTIVATION_CODE',
             defaultValue: '77AAAAAAAAAAAAAX',
-            description: 'DiGA activation code (reusable test code — overrides Mock HI API call, no VPN needed)'
+            description: 'DiGA activation code (reusable test code — overrides Mock HI API call, no VPN needed).'
         )
         booleanParam(
             name: 'NOTIFY_SLACK',
             defaultValue: true,
-            description: 'Post the run summary to Slack. UNCHECK for manual/ad-hoc runs (e.g. iOS bring-up) so #qa-automation-nightly is not pinged. The nightly build leaves this on.'
+            description: 'Post the run summary to Slack. UNCHECK for manual/ad-hoc runs so #qa-automation-nightly is not pinged.'
         )
     }
 
@@ -70,48 +75,103 @@ pipeline {
             }
         }
 
-        stage('Compile') {
-            steps {
-                sh 'mvn -B -e -ntp clean test-compile'
-            }
-        }
-
         stage('Test') {
-            steps {
-                // BrowserStack-typed credential — the browserstack{} wrapper injects
-                // BROWSERSTACK_USERNAME / BROWSERSTACK_ACCESS_KEY. Using aneeqnawaz's
-                // account so it matches the account the MED app is uploaded under.
-                browserstack(credentialsId: 'c380e328-98ad-4aa9-9360-b930ee6db5bf') {
-                    withCredentials([
-                        string(credentialsId: 'IMAP_PASSWORD', variable: 'IMAP_PASSWORD')
-                    ]) {
-                        script {
-                            env.BROWSERSTACK_APP_URL = params.BROWSERSTACK_APP_URL
-                            env.BS_BUILD_NAME = "Jenkins-${env.BUILD_NUMBER}-${params.SUITE}-${params.PLATFORM}"
-
-                            try {
-                                sh """
-                                    mvn -B -e -ntp test \
-                                      -Dbrowserstack.enabled=true \
-                                      -Dapp.type=med \
-                                      -Dplatform=${params.PLATFORM} \
-                                      -DsuiteFile=src/test/resources/suites/${params.SUITE}.xml \
-                                      -Dactivation.code=${params.ACTIVATION_CODE} \
-                                      -Dbrowserstack.build.name='${env.BS_BUILD_NAME}'
-                                """
-                            } finally {
-                                // Resolve the BrowserStack App Automate dashboard URL here, where the
-                                // BS credentials are in scope (post{} runs outside this wrapper). Stash
-                                // it to a file for the Slack step. Best-effort — never fails the build.
-                                try {
-                                    sh '''
-                                        mkdir -p target
-                                        curl -s -u "$BROWSERSTACK_USERNAME:$BROWSERSTACK_ACCESS_KEY" \
-                                          "https://api-cloud.browserstack.com/app-automate/builds.json?limit=50" \
-                                        | python3 -c "import sys,json,os; name=os.environ.get('BS_BUILD_NAME',''); d=json.load(sys.stdin); print(next(('https://app-automate.browserstack.com/dashboard/v2/builds/'+b['automation_build']['hashed_id'] for b in d if b.get('automation_build',{}).get('name')==name),''))" \
-                                          > target/bs_build_url.txt 2>/dev/null || true
-                                    '''
-                                } catch (ignored) { /* link is optional */ }
+            matrix {
+                axes {
+                    axis {
+                        name 'PLATFORM'
+                        values 'android', 'ios'
+                    }
+                }
+                when {
+                    anyOf {
+                        expression { params.PLATFORMS == 'both' }
+                        expression { params.PLATFORMS == env.PLATFORM }
+                    }
+                }
+                // Per-cell agent → Jenkins leases each cell its own workspace on the node
+                // (auto-suffixed ws, ws@2), so two `mvn clean` runs never share target/.
+                agent any
+                stages {
+                    stage('Build + Test') {
+                        steps {
+                            checkout scm
+                            sh 'mvn -B -e -ntp clean test-compile'
+                            // BrowserStack-typed credential — the browserstack{} wrapper injects
+                            // BROWSERSTACK_USERNAME / BROWSERSTACK_ACCESS_KEY.
+                            browserstack(credentialsId: 'c380e328-98ad-4aa9-9360-b930ee6db5bf') {
+                                withCredentials([
+                                    string(credentialsId: 'IMAP_PASSWORD', variable: 'IMAP_PASSWORD')
+                                ]) {
+                                    script {
+                                        def appUrl    = (env.PLATFORM == 'ios') ? params.IOS_APP_URL : params.ANDROID_APP_URL
+                                        def buildName = "Jenkins-${env.BUILD_NUMBER}-${params.SUITE}-${env.PLATFORM}"
+                                        try {
+                                            // Per-cell scope for BROWSERSTACK_APP_URL avoids a cross-cell race.
+                                            withEnv(["BROWSERSTACK_APP_URL=${appUrl}"]) {
+                                                sh """
+                                                    mvn -B -e -ntp test \
+                                                      -Dbrowserstack.enabled=true \
+                                                      -Dapp.type=med \
+                                                      -Dplatform=${env.PLATFORM} \
+                                                      -DsuiteFile=src/test/resources/suites/${params.SUITE}.xml \
+                                                      -Dactivation.code=${params.ACTIVATION_CODE} \
+                                                      -Dbrowserstack.build.name='${buildName}'
+                                                """
+                                            }
+                                        } finally {
+                                            // Resolve this platform's BrowserStack dashboard URL while BS
+                                            // credentials are in scope. Best-effort — never fails the build.
+                                            withEnv(["BS_BUILD_NAME=${buildName}"]) {
+                                                sh '''
+                                                    mkdir -p target
+                                                    curl -s -u "$BROWSERSTACK_USERNAME:$BROWSERSTACK_ACCESS_KEY" \
+                                                      "https://api-cloud.browserstack.com/app-automate/builds.json?limit=50" \
+                                                    | python3 -c "import sys,json,os; name=os.environ.get('BS_BUILD_NAME',''); d=json.load(sys.stdin); print(next(('https://app-automate.browserstack.com/dashboard/v2/builds/'+b['automation_build']['hashed_id'] for b in d if b.get('automation_build',{}).get('name')==name),''))" \
+                                                      > target/bs_build_url.txt 2>/dev/null || true
+                                                '''
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        post {
+                            // Runs even when `mvn test` failed, so failing platforms are
+                            // still tagged, stashed, and reported by the outer post block.
+                            always {
+                                // Tag every Allure result with the platform so the merged report
+                                // groups Android vs iOS cleanly (both cells run the identical suite).
+                                sh '''
+                                    python3 - "$PLATFORM" <<'PY'
+import json, glob, sys
+platform = sys.argv[1]
+disp = 'iOS' if platform == 'ios' else 'Android'
+for f in glob.glob('target/allure-results/*-result.json'):
+    try:
+        with open(f) as fh: data = json.load(fh)
+    except Exception:
+        continue
+    labels = [l for l in data.get('labels', []) if l.get('name') not in ('parentSuite',)]
+    labels.append({'name': 'parentSuite', 'value': disp})
+    labels.append({'name': 'tag', 'value': platform})
+    data['labels'] = labels
+    # Make test identity platform-unique. Both cells run the IDENTICAL suite, so
+    # every result would otherwise share one historyId/testCaseId and Allure would
+    # collapse Android + iOS into a single test (showing only the latest = iOS).
+    if data.get('historyId'):
+        data['historyId'] = platform + '-' + str(data['historyId'])
+    if data.get('testCaseId'):
+        data['testCaseId'] = platform + '-' + str(data['testCaseId'])
+    # Also expose platform as a parameter so it's visible on the test detail.
+    params = [p for p in data.get('parameters', []) if p.get('name') != 'platform']
+    params.append({'name': 'platform', 'value': platform})
+    data['parameters'] = params
+    with open(f, 'w') as fh: json.dump(data, fh)
+PY
+                                '''
+                                stash name: "results-${env.PLATFORM}", allowEmpty: true,
+                                    includes: 'target/allure-results/**,target/surefire-reports/**,target/bs_build_url.txt'
                             }
                         }
                     }
@@ -122,40 +182,55 @@ pipeline {
 
     post {
         always {
-            // TestNG / Surefire results
-            junit allowEmptyResults: true, testResults: 'target/surefire-reports/junitreports/*.xml,target/surefire-reports/*.xml'
-
-            // Seed Allure CI metadata (Environment widget + build-link) before generating
-            // the report. Written into allure-results so the Allure plugin picks them up.
+            // Pull each platform's stashed results into its own subdir (best-effort — a
+            // skipped platform simply has no stash).
             script {
-                if (fileExists('target/allure-results')) {
-                    writeFile file: 'target/allure-results/environment.properties', text: """
-Platform=${params.PLATFORM}
-Suite=${params.SUITE}
-App=${params.BROWSERSTACK_APP_URL}
-ActivationCode=${params.ACTIVATION_CODE}
-BrowserStack.Build=Jenkins-${env.BUILD_NUMBER}-${params.SUITE}-${params.PLATFORM}
-""".stripIndent().trim()
-                    writeFile file: 'target/allure-results/executor.json', text: """
-{"name":"Jenkins","type":"jenkins","buildName":"#${env.BUILD_NUMBER}","buildUrl":"${env.BUILD_URL}","reportUrl":"${env.BUILD_URL}allure"}
-""".stripIndent().trim()
+                // Wipe last build's aggregation dir first — the main workspace is reused
+                // and `agg/` is not under SCM, so stale results from a prior run would
+                // otherwise be reported for a platform that did not run this build.
+                dir('agg') { deleteDir() }
+                ['android', 'ios'].each { p ->
+                    dir("agg/${p}") {
+                        try { unstash "results-${p}" }
+                        catch (ignored) { echo "No stashed results for ${p} (platform not run)." }
+                    }
                 }
             }
 
-            // Generate + publish the Allure report (link on the build page + cross-build
-            // trend). 'commandline' matches the Allure Commandline tool name in
-            // Manage Jenkins -> Tools.
+            // TestNG / Surefire results from both platforms.
+            junit allowEmptyResults: true,
+                testResults: 'agg/*/target/surefire-reports/junitreports/*.xml,agg/*/target/surefire-reports/*.xml'
+
+            // Seed Allure CI metadata for each platform's results dir that exists.
+            script {
+                ['android', 'ios'].each { p ->
+                    def dirPath = "agg/${p}/target/allure-results"
+                    if (fileExists(dirPath)) {
+                        writeFile file: "${dirPath}/environment.properties", text: """
+Platform=${p}
+Suite=${params.SUITE}
+App=${p == 'ios' ? params.IOS_APP_URL : params.ANDROID_APP_URL}
+ActivationCode=${params.ACTIVATION_CODE}
+BrowserStack.Build=Jenkins-${env.BUILD_NUMBER}-${params.SUITE}-${p}
+""".stripIndent().trim()
+                        writeFile file: "${dirPath}/executor.json", text: """
+{"name":"Jenkins","type":"jenkins","buildName":"#${env.BUILD_NUMBER}","buildUrl":"${env.BUILD_URL}","reportUrl":"${env.BUILD_URL}allure"}
+""".stripIndent().trim()
+                    }
+                }
+            }
+
+            // One merged Allure report from BOTH platforms' results. The parentSuite labels
+            // (set in the Test stage) split Android vs iOS cleanly in the Suites tab.
             allure commandline: 'Allure', includeProperties: false,
-                results: [[path: 'target/allure-results']]
+                results: [[path: 'agg/android/target/allure-results'], [path: 'agg/ios/target/allure-results']]
 
-            // Raw artifacts (screenshots, allure json, surefire xml) for debugging.
+            // Raw artifacts for debugging.
             archiveArtifacts allowEmptyArchive: true, fingerprint: false,
-                artifacts: 'target/allure-results/**, target/surefire-reports/**'
+                artifacts: 'agg/**/target/allure-results/**, agg/**/target/surefire-reports/**'
 
-            // Slack summary: clean, color-coded, deep links to Allure + BrowserStack.
-            // Sandbox-safe by design — uses only whitelisted RunWrapper props (no rawBuild,
-            // which script-security blocks). Counts are parsed from surefire in the shell
-            // and everything optional is wrapped so the message ALWAYS sends.
+            // Single Slack summary: one line per platform that ran (counts + inline
+            // BrowserStack link), shared footer. Sandbox-safe (RunWrapper props only).
             script {
                 if (!params.NOTIFY_SLACK) {
                     echo 'Slack notification skipped (NOTIFY_SLACK=false).'
@@ -165,27 +240,34 @@ BrowserStack.Build=Jenkins-${env.BUILD_NUMBER}-${params.SUITE}-${params.PLATFORM
                 def color   = result == 'SUCCESS' ? 'good' : (result == 'FAILURE' ? 'danger' : 'warning')
                 def icon    = result == 'SUCCESS' ? ':large_green_circle:' : (result == 'FAILURE' ? ':red_circle:' : ':large_yellow_circle:')
                 def mention = result == 'SUCCESS' ? '' : '<!here> '       // ping only when not green
-                def dur     = currentBuild.durationString.replace(' and counting', '')
 
-                // Test counts (passed, failed+errors, skipped) parsed from surefire.
-                def passed = '–', failed = '–', skipped = '–'
-                try {
-                    def c = sh(returnStdout: true, script: '''awk -F'[ ,]+' '/^Tests run:/{r+=$3;f+=$5;e+=$7;s+=$9} END{printf "%d,%d,%d", r-f-e-s, f+e, s}' target/surefire-reports/*.txt 2>/dev/null''').trim()
-                    def p = c.tokenize(',')
-                    if (p.size() == 3) { passed = p[0]; failed = p[1]; skipped = p[2] }
-                } catch (ignored) { }
+                // Build one line per platform whose results are present.
+                def lines = []
+                ['android', 'ios'].each { p ->
+                    def sfGlob = "agg/${p}/target/surefire-reports"
+                    if (!fileExists(sfGlob)) { return }   // platform didn't run
+                    def passed = '–', failed = '–', skipped = '–'
+                    try {
+                        def c = sh(returnStdout: true, script: """awk -F'[ ,]+' '/^Tests run:/{r+=\$3;f+=\$5;e+=\$7;s+=\$9} END{printf "%d,%d,%d", r-f-e-s, f+e, s}' ${sfGlob}/*.txt 2>/dev/null""").trim()
+                        def parts = c.tokenize(',')
+                        if (parts.size() == 3) { passed = parts[0]; failed = parts[1]; skipped = parts[2] }
+                    } catch (ignored) { }
 
-                // Optional BrowserStack dashboard link (resolved in the Test stage).
-                def bsLink = ''
-                if (fileExists('target/bs_build_url.txt')) {
-                    def u = readFile('target/bs_build_url.txt').trim()
-                    if (u) { bsLink = ":iphone: <${u}|BrowserStack>      " }
+                    def bsLink = ''
+                    def bsFile = "agg/${p}/target/bs_build_url.txt"
+                    if (fileExists(bsFile)) {
+                        def u = readFile(bsFile).trim()
+                        if (u) { bsLink = "     :iphone: <${u}|BrowserStack>" }
+                    }
+                    def label = (p == 'ios') ? 'iOS' : 'Android'
+                    lines << "${label} · ${params.SUITE}:   :white_check_mark: ${passed}   :x: ${failed}   :fast_forward: ${skipped}${bsLink}"
                 }
 
+                def body = lines.join('\n')
                 slackSend channel: env.SLACK_CHANNEL, color: color,
-                    message: """${mention}${icon}  *MED*   ·   ${params.SUITE}   ·   ${params.PLATFORM}   —   *${result}*
-:white_check_mark: ${passed} passed      :x: ${failed} failed      :fast_forward: ${skipped} skipped      :stopwatch: ${dur}
-:bar_chart: <${env.BUILD_URL}allure|Allure Report>      ${bsLink}:bricks: <${env.BUILD_URL}|Build #${env.BUILD_NUMBER}>      :scroll: <${env.BUILD_URL}console|Console>"""
+                    message: """${mention}${icon}  *MED nightly*   —   *${result}*
+${body}
+:bar_chart: <${env.BUILD_URL}allure|Allure Report>      :bricks: <${env.BUILD_URL}|Build #${env.BUILD_NUMBER}>      :scroll: <${env.BUILD_URL}console|Console>"""
             }
         }
     }
