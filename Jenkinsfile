@@ -156,6 +156,17 @@ for f in glob.glob('target/allure-results/*-result.json'):
     labels.append({'name': 'parentSuite', 'value': disp})
     labels.append({'name': 'tag', 'value': platform})
     data['labels'] = labels
+    # Make test identity platform-unique. Both cells run the IDENTICAL suite, so
+    # every result would otherwise share one historyId/testCaseId and Allure would
+    # collapse Android + iOS into a single test (showing only the latest = iOS).
+    if data.get('historyId'):
+        data['historyId'] = platform + '-' + str(data['historyId'])
+    if data.get('testCaseId'):
+        data['testCaseId'] = platform + '-' + str(data['testCaseId'])
+    # Also expose platform as a parameter so it's visible on the test detail.
+    params = [p for p in data.get('parameters', []) if p.get('name') != 'platform']
+    params.append({'name': 'platform', 'value': platform})
+    data['parameters'] = params
     with open(f, 'w') as fh: json.dump(data, fh)
 PY
                                 '''
