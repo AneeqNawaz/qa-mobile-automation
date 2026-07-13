@@ -11,7 +11,7 @@ pipeline {
         choice(
             name: 'PLATFORMS',
             choices: ['both', 'android', 'ios'],
-            description: 'Which platform(s) to run. Nightly uses "both" (Android + iOS in parallel). Manual runs can pick a single platform.'
+            description: 'Which platform(s) to run. Nightly uses "both" (Android then iOS, SEQUENTIALLY — the BrowserStack plan allows only 1 parallel session). Manual runs can pick a single platform.'
         )
         choice(
             name: 'SUITE',
@@ -76,44 +76,37 @@ pipeline {
         }
 
         stage('Test') {
-            matrix {
-                axes {
-                    axis {
-                        name 'PLATFORM'
-                        values 'android', 'ios'
-                    }
-                }
-                when {
-                    anyOf {
-                        expression { params.PLATFORMS == 'both' }
-                        expression { params.PLATFORMS == env.PLATFORM }
-                    }
-                }
-                // Per-cell agent → Jenkins leases each cell its own workspace on the node
-                // (auto-suffixed ws, ws@2), so two `mvn clean` runs never share target/.
-                agent any
-                stages {
-                    stage('Build + Test') {
-                        steps {
-                            checkout scm
+            steps {
+                script {
+                    // SEQUENTIAL, not a parallel matrix: the BrowserStack App Automate plan has
+                    // Parallels = 1, so only ONE session can run at a time. A parallel Android+iOS
+                    // matrix made the second platform's session queue past the create-session
+                    // timeout (build #52: iOS SessionNotCreated after ~10min). Running the platforms
+                    // one after another keeps us within the single-session limit.
+                    // Each platform tags + stashes its Allure/surefire results BEFORE the next
+                    // platform's `mvn clean` wipes target/; the outer post block merges both.
+                    def platforms = (params.PLATFORMS == 'both') ? ['android', 'ios'] : [params.PLATFORMS]
+                    for (p in platforms) {
+                        stage("Test - ${p}") {
+                            def appUrl    = (p == 'ios') ? params.IOS_APP_URL : params.ANDROID_APP_URL
+                            def buildName = "Jenkins-${env.BUILD_NUMBER}-${params.SUITE}-${p}"
+                            // Fresh compile per platform (clean wipes the prior platform's target/,
+                            // whose results are already stashed below).
                             sh 'mvn -B -e -ntp clean test-compile'
-                            // BrowserStack-typed credential — the browserstack{} wrapper injects
-                            // BROWSERSTACK_USERNAME / BROWSERSTACK_ACCESS_KEY.
-                            browserstack(credentialsId: 'c380e328-98ad-4aa9-9360-b930ee6db5bf') {
-                                withCredentials([
-                                    string(credentialsId: 'IMAP_PASSWORD', variable: 'IMAP_PASSWORD')
-                                ]) {
-                                    script {
-                                        def appUrl    = (env.PLATFORM == 'ios') ? params.IOS_APP_URL : params.ANDROID_APP_URL
-                                        def buildName = "Jenkins-${env.BUILD_NUMBER}-${params.SUITE}-${env.PLATFORM}"
+                            // A platform failure marks the build FAILURE but does NOT abort — the
+                            // other platform still runs, and both get tagged/stashed/reported.
+                            catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+                                browserstack(credentialsId: 'c380e328-98ad-4aa9-9360-b930ee6db5bf') {
+                                    withCredentials([
+                                        string(credentialsId: 'IMAP_PASSWORD', variable: 'IMAP_PASSWORD')
+                                    ]) {
                                         try {
-                                            // Per-cell scope for BROWSERSTACK_APP_URL avoids a cross-cell race.
                                             withEnv(["BROWSERSTACK_APP_URL=${appUrl}"]) {
                                                 sh """
                                                     mvn -B -e -ntp test \
                                                       -Dbrowserstack.enabled=true \
                                                       -Dapp.type=med \
-                                                      -Dplatform=${env.PLATFORM} \
+                                                      -Dplatform=${p} \
                                                       -DsuiteFile=src/test/resources/suites/${params.SUITE}.xml \
                                                       -Dactivation.code=${params.ACTIVATION_CODE} \
                                                       -Dbrowserstack.build.name='${buildName}'
@@ -135,13 +128,9 @@ pipeline {
                                     }
                                 }
                             }
-                        }
-                        post {
-                            // Runs even when `mvn test` failed, so failing platforms are
-                            // still tagged, stashed, and reported by the outer post block.
-                            always {
-                                // Tag every Allure result with the platform so the merged report
-                                // groups Android vs iOS cleanly (both cells run the identical suite).
+                            // Tag this platform's Allure results + stash BEFORE the next platform's
+                            // `mvn clean` wipes target/. Runs even if the mvn above failed (catchError).
+                            withEnv(["PLATFORM=${p}"]) {
                                 sh '''
                                     python3 - "$PLATFORM" <<'PY'
 import json, glob, sys
@@ -156,23 +145,22 @@ for f in glob.glob('target/allure-results/*-result.json'):
     labels.append({'name': 'parentSuite', 'value': disp})
     labels.append({'name': 'tag', 'value': platform})
     data['labels'] = labels
-    # Make test identity platform-unique. Both cells run the IDENTICAL suite, so
+    # Make test identity platform-unique. Both platforms run the IDENTICAL suite, so
     # every result would otherwise share one historyId/testCaseId and Allure would
-    # collapse Android + iOS into a single test (showing only the latest = iOS).
+    # collapse Android + iOS into a single test (showing only the latest).
     if data.get('historyId'):
         data['historyId'] = platform + '-' + str(data['historyId'])
     if data.get('testCaseId'):
         data['testCaseId'] = platform + '-' + str(data['testCaseId'])
-    # Also expose platform as a parameter so it's visible on the test detail.
-    params = [p for p in data.get('parameters', []) if p.get('name') != 'platform']
+    params = [pr for pr in data.get('parameters', []) if pr.get('name') != 'platform']
     params.append({'name': 'platform', 'value': platform})
     data['parameters'] = params
     with open(f, 'w') as fh: json.dump(data, fh)
 PY
                                 '''
-                                stash name: "results-${env.PLATFORM}", allowEmpty: true,
-                                    includes: 'target/allure-results/**,target/surefire-reports/**,target/bs_build_url.txt'
                             }
+                            stash name: "results-${p}", allowEmpty: true,
+                                includes: 'target/allure-results/**,target/surefire-reports/**,target/bs_build_url.txt'
                         }
                     }
                 }
