@@ -7,7 +7,7 @@ package com.neuronation.testdata;
  */
 public class FlowConfig {
     private String description;
-    private String authMethod;          // "password", "passkey", "nopassword"
+    private String authMethod;          // "password", "passkey", "declinepasswordless"
     private String doctorInfo;          // "skip" or "fill"
     private boolean newsletterConsent;
     private String trainingComplexity;  // "activate" or "deactivate"

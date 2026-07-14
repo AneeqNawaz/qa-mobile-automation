@@ -29,7 +29,7 @@ public class MedFullE2EHappyPathTest extends MedSettingsVerifierBase {
         Object[][] all = {
                 {"flow1_password_morning_skip"},      // standard,    23/23, morning 09:00
                 {"flow2_password_evening_doctor"},    // both,        17/23, evening 18:00
-                {"flow3_nopassword_noon_colorvision"},// colorVision, 20/23, noon    14:00
+                {"flow3_declinepasswordless_noon_colorvision"},// colorVision, 20/23, noon    14:00
                 {"flow4_password_night_arithmetic"},  // arithmetic,  20/23, night   21:00
         };
         // Optional single-flow filter: -Dflow=flow4_password_night_arithmetic

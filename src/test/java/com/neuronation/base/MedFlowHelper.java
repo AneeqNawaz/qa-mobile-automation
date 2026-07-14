@@ -282,7 +282,7 @@ public class MedFlowHelper {
             screens.passkeyDialog().tapYes();
             waitAndDismissOsPasswordManager();
             screens.emailVerification().waitForScreen();
-        } else if ("nopassword".equals(authMethod)) {
+        } else if ("declinepasswordless".equals(authMethod)) {
             goToPasskeyDialog();
             screens.passkeyDialog().tapNoUsePassword();
             screens.setPassword().waitForScreen();

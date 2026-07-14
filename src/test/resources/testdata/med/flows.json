@@ -29,9 +29,9 @@
     "dataRetainConsent": true,
     "dataProcessingConsent": false
   },
-  "flow3_nopassword_noon_colorvision": {
-    "description": "No-use-password, color vision, noon, doctor skip, all consents, deny notifications",
-    "authMethod": "nopassword",
+  "flow3_declinepasswordless_noon_colorvision": {
+    "description": "Decline passwordless (tap 'No, use password') → still password auth; color vision, noon, doctor skip, all consents, deny notifications",
+    "authMethod": "declinepasswordless",
     "doctorInfo": "skip",
     "newsletterConsent": true,
     "trainingComplexity": "activate",
