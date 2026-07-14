@@ -460,8 +460,12 @@ public class MedFlowHelper {
         var btnLocator = isAndroid()
                 ? AppiumBy.id("nn.mobile.app.med:id/cta_button_inner")
                 : AppiumBy.accessibilityId("Understood");
+        // BrowserStack iOS renders the next tip screen slower than Android — a 2s poll
+        // exits early ("No more tips after 1") while the 2nd tip is still rendering,
+        // leaving the app on a tip screen so completeExercises() can't find buttonStartExercise.
+        long pollMs = isAndroid() ? 2_000 : 6_000;
         for (int i = 0; i < 4; i++) {
-            long deadline = System.currentTimeMillis() + 2_000;
+            long deadline = System.currentTimeMillis() + pollMs;
             boolean found = false;
             while (System.currentTimeMillis() < deadline) {
                 var btns = d.findElements(btnLocator);
