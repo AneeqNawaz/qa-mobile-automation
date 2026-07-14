@@ -152,6 +152,11 @@ public class TrainingReminderScreen extends BaseScreen {
     /** "Every Monday at 9:00 AM" → "09:00" (iOS renders 12h; normalize to 24h to match Android). */
     private String parseTimeFromDescription(WebElement el) {
         try {
+            // The "Every <Day> at <time>" TextView lingers in the iOS element tree even when the
+            // reminder is OFF (notification denied) and its accordion is collapsed — it is present
+            // but NOT shown on screen. Only read a time that is actually visible, otherwise a
+            // hidden/leftover node is misread as a displayed reminder time.
+            if (!el.isDisplayed()) return "";
             String v = el.getAttribute("value");
             if (v == null) return "";
             int idx = v.lastIndexOf(" at ");
