@@ -160,7 +160,7 @@ PY
                                 '''
                             }
                             stash name: "results-${p}", allowEmpty: true,
-                                includes: 'target/allure-results/**,target/surefire-reports/**,target/bs_build_url.txt'
+                                includes: 'target/allure-results/**,target/surefire-reports/**,target/bs_build_url.txt,target/known-issues-report.json'
                         }
                     }
                 }
@@ -204,6 +204,12 @@ BrowserStack.Build=Jenkins-${env.BUILD_NUMBER}-${params.SUITE}-${p}
                         writeFile file: "${dirPath}/executor.json", text: """
 {"name":"Jenkins","type":"jenkins","buildName":"#${env.BUILD_NUMBER}","buildUrl":"${env.BUILD_URL}","reportUrl":"${env.BUILD_URL}allure"}
 """.stripIndent().trim()
+                        // Bucket failures in Allure: unexpected passes (fixed known issues) vs
+                        // real regressions vs infra defects. Known-issue expected-fails are
+                        // swallowed by knownIssue() so they never appear as failures here.
+                        if (fileExists('src/test/resources/allure/categories.json')) {
+                            sh "cp src/test/resources/allure/categories.json ${dirPath}/categories.json"
+                        }
                     }
                 }
             }
@@ -247,8 +253,34 @@ BrowserStack.Build=Jenkins-${env.BUILD_NUMBER}-${params.SUITE}-${p}
                         def u = readFile(bsFile).trim()
                         if (u) { bsLink = "     :iphone: <${u}|BrowserStack>" }
                     }
+                    // Known-issue summary (green-with-known-issues, not counted as failures).
+                    def knownSeg = ''
+                    def kiFile = "agg/${p}/target/known-issues-report.json"
+                    if (fileExists(kiFile)) {
+                        try {
+                            def out = sh(returnStdout: true, script: """python3 - <<'PY'
+import json
+try:
+    d = json.load(open('${kiFile}'))
+    keys = [i['key'] for i in d.get('knownIssues', []) if i.get('encountered')]
+    print(d.get('encounteredCount', 0))
+    print(','.join(keys))
+    print(len(d.get('agingKeys', []) or []))
+except Exception:
+    print(0); print(''); print(0)
+PY""").trim()
+                            def parts = out.split('\n')
+                            def ec = parts.length > 0 ? parts[0].trim() : '0'
+                            def keys = parts.length > 1 ? parts[1].trim() : ''
+                            def agingN = parts.length > 2 ? parts[2].trim() : '0'
+                            if (ec && ec != '0') {
+                                knownSeg = "   :large_yellow_circle: ${ec} known" + (keys ? " (${keys})" : '')
+                                if (agingN && agingN != '0') { knownSeg += "   :hourglass: ${agingN} aging" }
+                            }
+                        } catch (ignored) { }
+                    }
                     def label = (p == 'ios') ? 'iOS' : 'Android'
-                    lines << "${label} · ${params.SUITE}:   :white_check_mark: ${passed}   :x: ${failed}   :fast_forward: ${skipped}${bsLink}"
+                    lines << "${label} · ${params.SUITE}:   :white_check_mark: ${passed}   :x: ${failed}   :fast_forward: ${skipped}${knownSeg}${bsLink}"
                 }
 
                 def body = lines.join('\n')

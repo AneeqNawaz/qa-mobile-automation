@@ -1,0 +1,23 @@
+{
+  "consent-date-format": {
+    "jira": "https://neuronation.atlassian.net/browse/MIBA-4277",
+    "platform": "ios",
+    "description": "Consent History date/time formatting is hardcoded per platform and ignores device locale & clock settings (Android != iOS for the same account)",
+    "opened": "2026-07-15",
+    "review": "2026-08-15"
+  },
+  "reminder-permission-config": {
+    "jira": "https://neuronation.atlassian.net/browse/MIBA-4280",
+    "platform": "ios",
+    "description": "Training Reminder: onboarding notification-permission answer changes the persisted reminder config (per-day toggles & time visibility) despite an identical in-app choice",
+    "opened": "2026-07-15",
+    "review": "2026-08-15"
+  },
+  "neurobooster-cancel-toggle": {
+    "jira": "https://neuronation.atlassian.net/browse/MIBA-4281",
+    "platform": "ios",
+    "description": "NeuroBooster: Android and iOS persist a different toggle state after the user agrees on the NB screen then cancels the OS notification prompt",
+    "opened": "2026-07-15",
+    "review": "2026-08-15"
+  }
+}

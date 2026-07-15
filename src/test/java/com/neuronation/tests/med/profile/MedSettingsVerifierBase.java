@@ -2,6 +2,12 @@ package com.neuronation.tests.med.profile;
 
 import com.neuronation.base.BaseTest;
 import com.neuronation.config.AppType;
+import com.neuronation.config.ConfigManager;
+import com.neuronation.config.Platform;
+import com.neuronation.knownissues.KnownIssue;
+import com.neuronation.knownissues.KnownIssueAction;
+import com.neuronation.knownissues.KnownIssueRegistry;
+import com.neuronation.knownissues.KnownIssueTracker;
 import com.neuronation.pages.med.profile.ConsentHistoryScreen;
 import com.neuronation.pages.med.profile.TrainingReminderScreen;
 import com.neuronation.testdata.ExerciseCatalog;
@@ -9,6 +15,7 @@ import com.neuronation.testdata.FlowConfig;
 import com.neuronation.testdata.ProfileData;
 import com.neuronation.testdata.SettingsOptions;
 import com.neuronation.utils.TestDataLoader;
+import io.qameta.allure.Allure;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -16,6 +23,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -29,6 +38,7 @@ import java.util.regex.Pattern;
 public abstract class MedSettingsVerifierBase extends BaseTest {
 
     protected final SettingsOptions settingsOptions = SettingsOptions.load();
+    protected final KnownIssueRegistry knownIssues = KnownIssueRegistry.load();
 
     protected static final long CONSENT_TIME_TOLERANCE_MIN = 3;
     protected static final DateTimeFormatter CONSENT_TS_FORMAT =
@@ -50,6 +60,45 @@ public abstract class MedSettingsVerifierBase extends BaseTest {
         } catch (Exception e) {
             log.warn("[step] '{}' threw, continuing: {}", label, e.toString());
             softAssert.fail("Step '" + label + "' failed: " + e);
+        }
+    }
+
+    /**
+     * Soft-assert {@code actual == expected}, but quarantine the failure if a known issue is
+     * registered for {@code id} on the current platform (see testdata/med/known-issues.json).
+     * A quarantined failure is reported (Allure link to the ticket) but does NOT fail the build;
+     * if the assertion instead PASSES while quarantined, the build fails with an "unexpected pass"
+     * so the stale entry gets removed. With no active entry this behaves like a normal soft assert.
+     */
+    protected void knownIssue(String id, Object actual, Object expected, String message) {
+        applyKnownIssue(id, Objects.equals(actual, expected), message,
+                "expected <" + expected + "> but was <" + actual + ">");
+    }
+
+    /** assertTrue variant of {@link #knownIssue(String, Object, Object, String)}. */
+    protected void knownIssue(String id, boolean condition, String message) {
+        applyKnownIssue(id, condition, message, null);
+    }
+
+    private void applyKnownIssue(String id, boolean passed, String message, String failDetail) {
+        Platform platform = ConfigManager.getInstance().getPlatform();
+        Optional<KnownIssue> active = knownIssues.active(id, platform);
+        KnownIssueAction action = KnownIssueAction.resolve(passed, active, id, message, failDetail, platform);
+        switch (action.type) {
+            case NONE:
+                break;
+            case FAIL:
+                softAssert.fail(action.failMessage);
+                break;
+            case RECORD:
+                KnownIssue ki = action.recorded;
+                log.warn("[known-issue] {} ({}) expected-fail on {}: {}",
+                        ki.jiraKey(), id, platform.name().toLowerCase(), message);
+                Allure.link(ki.jiraKey(), ki.getJira());
+                Allure.step("🟡 Known issue " + ki.jiraKey() + " (expected fail): " + message);
+                KnownIssueTracker.record(ki);
+                KnownIssueTracker.enableReportOnExit();
+                break;
         }
     }
 
@@ -190,11 +239,20 @@ public abstract class MedSettingsVerifierBase extends BaseTest {
                     flowName, flow.getTrainingTime(), notificationsAllowed, expTime, times, personalisedOn);
             if (notificationsAllowed) {
                 // Permission granted → reminder ON, every day shows the slot time.
+                // Known issue on iOS (MIBA-4280): the onboarding permission answer changes the
+                // persisted reminder config (per-day times & visibility) even for an identical
+                // in-app choice. knownIssue() quarantines these on iOS, asserts normally on Android.
+                // When MIBA-4280 is fixed: delete the known-issues.json entry, then uncomment the
+                // originals below and remove the knownIssue() calls.
                 for (String day : TrainingReminderScreen.DAYS) {
-                    softAssert.assertEquals(times.get(day), expTime,
+                    // softAssert.assertEquals(times.get(day), expTime,
+                    //         day + " reminder should be " + expTime + " for slot " + flow.getTrainingTime());
+                    knownIssue("reminder-permission-config", times.get(day), expTime,
                             day + " reminder should be " + expTime + " for slot " + flow.getTrainingTime());
                 }
-                softAssert.assertTrue(personalisedOn,
+                // softAssert.assertTrue(personalisedOn,
+                //         "'Personalised training times' should be ON when notifications are allowed");
+                knownIssue("reminder-permission-config", personalisedOn,
                         "'Personalised training times' should be ON when notifications are allowed");
             } else if (!medFlow.wasNotificationDenyApplied()) {
                 // Deny was requested but the OS never prompted this run — the permission was already
@@ -222,7 +280,15 @@ public abstract class MedSettingsVerifierBase extends BaseTest {
 
         step("8. NeuroBooster", () -> {
             log.info("[{}] 8. NeuroBooster exp={}", flowName, flow.isNeuroBooster());
-            softAssert.assertEquals(screens.settings().isNeuroBoosterEnabled(), flow.isNeuroBooster(),
+            // Known issue on iOS (MIBA-4281): NB toggle state persists differently after agree-then-
+            // cancel of the OS prompt. knownIssue() quarantines it on iOS, asserts normally on Android.
+            // When MIBA-4281 is fixed: delete the known-issues.json entry (auto-detected as an
+            // unexpected pass), then restore the original by uncommenting the line below and
+            // removing the knownIssue() call.
+            // softAssert.assertEquals(screens.settings().isNeuroBoosterEnabled(), flow.isNeuroBooster(),
+            //         "NeuroBooster switch should match flow.neuroBooster");
+            knownIssue("neurobooster-cancel-toggle",
+                    screens.settings().isNeuroBoosterEnabled(), flow.isNeuroBooster(),
                     "NeuroBooster switch should match flow.neuroBooster");
         });
 
@@ -306,6 +372,18 @@ public abstract class MedSettingsVerifierBase extends BaseTest {
                 label + " consent should be " + (expectedConsent ? "Consent" : "Dissent"));
         softAssert.assertNotNull(ts,
                 label + " consent entry should have a parseable date/time, got: " + content);
+
+        // Known issue on iOS (MIBA-4277): the consent timestamp format is hardcoded per platform
+        // and ignores device locale. Expected (device-locale) format is M/d/yyyy h:mm:ss a (12h,
+        // AM/PM) as CONSENT_TS_PATTERN; iOS renders d.M.yyyy H:mm:ss (24h). This replaces the
+        // silent dual-format acceptance with an honest check: knownIssue() quarantines it on iOS
+        // and asserts normally on Android. The dual-format PARSING above is retained only so the
+        // (separate, still-open) freshness/timezone check keeps working. When MIBA-4277 is fixed:
+        // delete the known-issues.json entry (auto-detected as an unexpected pass).
+        boolean formatMatchesLocale = content != null && CONSENT_TS_PATTERN.matcher(content).find();
+        knownIssue("consent-date-format", formatMatchesLocale,
+                label + " consent timestamp should be in the device-locale format "
+                        + "'M/d/yyyy h:mm:ss a', got: " + content);
         // reference == null → logged-in-only run: account predates this session, skip freshness.
         if (ts != null && reference != null) {
             long diffMin = Math.abs(Duration.between(ts, reference).toMinutes());

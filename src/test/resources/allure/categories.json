@@ -1,0 +1,15 @@
+[
+  {
+    "name": "Known issue fixed — remove the flag (unexpected pass)",
+    "messageRegex": ".*UNEXPECTED PASS.*",
+    "matchedStatuses": ["failed"]
+  },
+  {
+    "name": "Product regressions",
+    "matchedStatuses": ["failed"]
+  },
+  {
+    "name": "Test / infrastructure defects",
+    "matchedStatuses": ["broken"]
+  }
+]
