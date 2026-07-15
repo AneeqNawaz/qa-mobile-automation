@@ -45,7 +45,7 @@ public final class KnownIssueTracker {
         }
     }
 
-    static void writeReport() {
+    public static void writeReport() {
         try {
             Platform platform = currentPlatform();
             KnownIssueRegistry registry = KnownIssueRegistry.load();
