@@ -2,7 +2,8 @@
   "consent-date-format": {
     "jira": "https://neuronation.atlassian.net/browse/MIBA-4277",
     "platform": "ios",
-    "description": "Consent History date/time formatting is hardcoded per platform and ignores device locale & clock settings (Android != iOS for the same account)",
+    "strict": false,
+    "description": "Consent History date/time formatting is hardcoded per platform and ignores device locale & clock settings; on iOS it is also inconsistent across flows (day-first, 24h, lowercase pm, etc.), so this is report-only (strict:false) until dev makes the format consistent",
     "opened": "2026-07-15",
     "review": "2026-08-15"
   },

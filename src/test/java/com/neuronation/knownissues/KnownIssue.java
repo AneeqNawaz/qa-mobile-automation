@@ -17,12 +17,20 @@ public class KnownIssue {
     private String description; // optional
     private String opened;      // optional ISO date
     private String review;      // optional ISO date
+    private Boolean strict;     // optional, default true
 
     public String getId() { return id; }
     void setId(String id) { this.id = id; }
 
     public String getJira() { return jira; }
     public String getDescription() { return description; }
+
+    /** Strict (default): an unexpected pass fails the build so the flag gets removed. Non-strict
+     *  (for inherently inconsistent bugs): the assertion is report-only — it never fails the build
+     *  whether it passes or fails. */
+    public boolean isStrict() {
+        return strict == null || strict;
+    }
 
     /** Ticket key parsed from the URL (last path segment), e.g. "MIBA-4277". */
     public String jiraKey() {

@@ -72,6 +72,15 @@ public class KnownIssueRegistryTest {
     }
 
     @Test
+    public void strict_defaultsTrue_falseWhenSet() {
+        KnownIssueRegistry r = KnownIssueRegistry.fromJson(
+                "{\"a\":{\"jira\":\"https://x/browse/M-1\",\"platform\":\"ios\"}," +
+                "\"b\":{\"jira\":\"https://x/browse/M-2\",\"platform\":\"ios\",\"strict\":false}}");
+        assertTrue(r.active("a", Platform.IOS).orElseThrow().isStrict(), "strict defaults to true");
+        assertFalse(r.active("b", Platform.IOS).orElseThrow().isStrict(), "explicit strict:false honored");
+    }
+
+    @Test
     public void all_returnsEveryEntry_forReporting() {
         assertEquals(reg().all().size(), 3, "all() should expose every entry for the run summary");
     }
@@ -89,5 +98,10 @@ public class KnownIssueRegistryTest {
         assertEquals(reg.active("consent-date-format", Platform.IOS).orElseThrow().jiraKey(), "MIBA-4277");
         assertEquals(reg.active("reminder-permission-config", Platform.IOS).orElseThrow().jiraKey(), "MIBA-4280");
         assertEquals(reg.active("neurobooster-cancel-toggle", Platform.IOS).orElseThrow().jiraKey(), "MIBA-4281");
+
+        // consent format is inconsistent on iOS → report-only; the other two are strict (auto-alert).
+        assertFalse(reg.active("consent-date-format", Platform.IOS).orElseThrow().isStrict());
+        assertTrue(reg.active("reminder-permission-config", Platform.IOS).orElseThrow().isStrict());
+        assertTrue(reg.active("neurobooster-cancel-toggle", Platform.IOS).orElseThrow().isStrict());
     }
 }

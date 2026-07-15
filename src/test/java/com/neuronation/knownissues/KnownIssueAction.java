@@ -36,6 +36,11 @@ public final class KnownIssueAction {
                 return new KnownIssueAction(Type.RECORD, null, active.get());
             case UNEXPECTED_PASS:
                 KnownIssue ki = active.get();
+                // Non-strict entries (inherently inconsistent bugs) are report-only: an unexpected
+                // pass does NOT fail the build, it is just recorded.
+                if (!ki.isStrict()) {
+                    return new KnownIssueAction(Type.RECORD, null, ki);
+                }
                 String platformName = platform == null ? "?" : platform.name().toLowerCase();
                 String fail = "UNEXPECTED PASS: " + ki.jiraKey() + " ('" + id + "') now passes on "
                         + platformName + " — the bug appears fixed. Remove this entry from "

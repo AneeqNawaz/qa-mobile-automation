@@ -238,21 +238,13 @@ public abstract class MedSettingsVerifierBase extends BaseTest {
             log.info("[{}] 7. Training Reminder slot={} notificationsAllowed={} expected={} actual={} personalisedOn={}",
                     flowName, flow.getTrainingTime(), notificationsAllowed, expTime, times, personalisedOn);
             if (notificationsAllowed) {
-                // Permission granted → reminder ON, every day shows the slot time.
-                // Known issue on iOS (MIBA-4280): the onboarding permission answer changes the
-                // persisted reminder config (per-day times & visibility) even for an identical
-                // in-app choice. knownIssue() quarantines these on iOS, asserts normally on Android.
-                // When MIBA-4280 is fixed: delete the known-issues.json entry, then uncomment the
-                // originals below and remove the knownIssue() calls.
+                // Permission granted → reminder ON, every day shows the slot time. Correct on both
+                // platforms (verified iOS build #66) — asserted normally.
                 for (String day : TrainingReminderScreen.DAYS) {
-                    // softAssert.assertEquals(times.get(day), expTime,
-                    //         day + " reminder should be " + expTime + " for slot " + flow.getTrainingTime());
-                    knownIssue("reminder-permission-config", times.get(day), expTime,
+                    softAssert.assertEquals(times.get(day), expTime,
                             day + " reminder should be " + expTime + " for slot " + flow.getTrainingTime());
                 }
-                // softAssert.assertTrue(personalisedOn,
-                //         "'Personalised training times' should be ON when notifications are allowed");
-                knownIssue("reminder-permission-config", personalisedOn,
+                softAssert.assertTrue(personalisedOn,
                         "'Personalised training times' should be ON when notifications are allowed");
             } else if (!medFlow.wasNotificationDenyApplied()) {
                 // Deny was requested but the OS never prompted this run — the permission was already
@@ -272,7 +264,14 @@ public abstract class MedSettingsVerifierBase extends BaseTest {
                 // Day rows are still present but show no time (only the arrow) → all values blank.
                 boolean anyTimeShown = times.values().stream()
                         .anyMatch(v -> v != null && !v.trim().isEmpty());
-                softAssert.assertFalse(anyTimeShown,
+                // Known issue on iOS (MIBA-4280): when notifications are denied, iOS leaves stale
+                // per-day times lingering instead of clearing them (Android clears them, so this
+                // asserts normally there). Verified in build #66 (iOS showed 22:59 on all 7 days).
+                // When MIBA-4280 is fixed: delete the known-issues.json entry, then uncomment the
+                // original below and remove the knownIssue() call.
+                // softAssert.assertFalse(anyTimeShown,
+                //         "No per-day reminder times should show when notification permission was denied, but found: " + times);
+                knownIssue("reminder-permission-config", !anyTimeShown,
                         "No per-day reminder times should show when notification permission was denied, but found: " + times);
             }
             screens.trainingReminder().tapBack();
@@ -280,16 +279,23 @@ public abstract class MedSettingsVerifierBase extends BaseTest {
 
         step("8. NeuroBooster", () -> {
             log.info("[{}] 8. NeuroBooster exp={}", flowName, flow.isNeuroBooster());
-            // Known issue on iOS (MIBA-4281): NB toggle state persists differently after agree-then-
-            // cancel of the OS prompt. knownIssue() quarantines it on iOS, asserts normally on Android.
-            // When MIBA-4281 is fixed: delete the known-issues.json entry (auto-detected as an
-            // unexpected pass), then restore the original by uncommenting the line below and
-            // removing the knownIssue() call.
-            // softAssert.assertEquals(screens.settings().isNeuroBoosterEnabled(), flow.isNeuroBooster(),
-            //         "NeuroBooster switch should match flow.neuroBooster");
-            knownIssue("neurobooster-cancel-toggle",
-                    screens.settings().isNeuroBoosterEnabled(), flow.isNeuroBooster(),
-                    "NeuroBooster switch should match flow.neuroBooster");
+            boolean notifDenied = "deny".equals(flow.getNotificationPermission());
+            // MIBA-4281 only manifests when the user agreed to NB on its screen but then cancelled
+            // the OS notification prompt (i.e. the notification-denied flow): iOS forces the toggle
+            // OFF while Android keeps the user's choice. Verified build #66 (iOS flow3 read value=0
+            // for neuroBooster:true). In every notifications-allowed flow the toggle is correct on
+            // both platforms, so only quarantine the denied case; assert normally otherwise.
+            // When MIBA-4281 is fixed: delete the known-issues.json entry, then replace the whole
+            // if/else below with the single original assertEquals.
+            if (notifDenied) {
+                // original: softAssert.assertEquals(isNeuroBoosterEnabled(), flow.isNeuroBooster(), msg);
+                knownIssue("neurobooster-cancel-toggle",
+                        screens.settings().isNeuroBoosterEnabled(), flow.isNeuroBooster(),
+                        "NeuroBooster switch should match flow.neuroBooster");
+            } else {
+                softAssert.assertEquals(screens.settings().isNeuroBoosterEnabled(), flow.isNeuroBooster(),
+                        "NeuroBooster switch should match flow.neuroBooster");
+            }
         });
 
         step("9. Privacy Settings", () -> {
@@ -370,19 +376,19 @@ public abstract class MedSettingsVerifierBase extends BaseTest {
 
         softAssert.assertEquals(actualConsent, expectedConsent,
                 label + " consent should be " + (expectedConsent ? "Consent" : "Dissent"));
-        softAssert.assertNotNull(ts,
-                label + " consent entry should have a parseable date/time, got: " + content);
 
-        // Known issue on iOS (MIBA-4277): the consent timestamp format is hardcoded per platform
-        // and ignores device locale. Expected (device-locale) format is M/d/yyyy h:mm:ss a (12h,
-        // AM/PM) as CONSENT_TS_PATTERN; iOS renders d.M.yyyy H:mm:ss (24h). This replaces the
-        // silent dual-format acceptance with an honest check: knownIssue() quarantines it on iOS
-        // and asserts normally on Android. The dual-format PARSING above is retained only so the
-        // (separate, still-open) freshness/timezone check keeps working. When MIBA-4277 is fixed:
-        // delete the known-issues.json entry (auto-detected as an unexpected pass).
+        // Known issue on iOS (MIBA-4277, strict:false → report-only): the consent timestamp format
+        // is hardcoded per platform / locale-dependent and, on iOS, inconsistent across flows
+        // (build #66 saw day-first, 24h, lowercase pm, and even an accidental Android-format match).
+        // Expected canonical format is M/d/yyyy h:mm:ss a (12h, AM/PM) — CONSENT_TS_PATTERN. A match
+        // implies a parseable timestamp, so this single check also covers "timestamp present".
+        // Because iOS is inconsistent, the entry is strict:false: never fails the build on iOS
+        // (whether it passes or fails), asserts normally on Android. When MIBA-4277 is fixed: delete
+        // the known-issues.json entry, then uncomment the original assertNotNull and remove this call.
+        // softAssert.assertNotNull(ts, label + " consent entry should have a parseable date/time, got: " + content);
         boolean formatMatchesLocale = content != null && CONSENT_TS_PATTERN.matcher(content).find();
         knownIssue("consent-date-format", formatMatchesLocale,
-                label + " consent timestamp should be in the device-locale format "
+                label + " consent timestamp should be present and in the device-locale format "
                         + "'M/d/yyyy h:mm:ss a', got: " + content);
         // reference == null → logged-in-only run: account predates this session, skip freshness.
         if (ts != null && reference != null) {

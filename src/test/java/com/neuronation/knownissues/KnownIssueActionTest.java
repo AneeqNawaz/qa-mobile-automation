@@ -48,6 +48,24 @@ public class KnownIssueActionTest {
     }
 
     @Test
+    public void unexpectedPass_nonStrict_isReportOnly() {
+        KnownIssue ki = KnownIssueRegistry
+                .fromJson("{\"c\":{\"jira\":\"https://x/browse/MIBA-4277\",\"platform\":\"ios\",\"strict\":false}}")
+                .active("c", Platform.IOS).orElseThrow();
+        KnownIssueAction a = KnownIssueAction.resolve(true, Optional.of(ki), "c", "msg", null, Platform.IOS);
+        assertEquals(a.type, KnownIssueAction.Type.RECORD, "non-strict unexpected pass must NOT fail the build");
+    }
+
+    @Test
+    public void knownFail_nonStrict_stillRecords() {
+        KnownIssue ki = KnownIssueRegistry
+                .fromJson("{\"c\":{\"jira\":\"https://x/browse/MIBA-4277\",\"platform\":\"ios\",\"strict\":false}}")
+                .active("c", Platform.IOS).orElseThrow();
+        KnownIssueAction a = KnownIssueAction.resolve(false, Optional.of(ki), "c", "msg", "detail", Platform.IOS);
+        assertEquals(a.type, KnownIssueAction.Type.RECORD);
+    }
+
+    @Test
     public void unexpectedPass_failsAndTellsYouToRemoveTheEntry() {
         KnownIssueAction a = KnownIssueAction.resolve(
                 true, Optional.of(iosIssue()), "consent-date-format", "msg", null, Platform.IOS);
