@@ -94,7 +94,12 @@ public abstract class MedSettingsVerifierBase extends BaseTest {
                 KnownIssue ki = action.recorded;
                 log.warn("[known-issue] {} ({}) expected-fail on {}: {}",
                         ki.jiraKey(), id, platform.name().toLowerCase(), message);
-                Allure.link(ki.jiraKey(), ki.getJira());
+                // Visibility on a passing test: a "known-issue" tag + the ticket key as a tag
+                // (both show as filterable chips), and the ticket as an Issue link (bug icon in the
+                // Links panel). Kept as a normal step so the test's PASSED status is untouched.
+                Allure.label("tag", "known-issue");
+                Allure.label("tag", ki.jiraKey());
+                Allure.issue(ki.jiraKey(), ki.getJira());
                 Allure.step("🟡 Known issue " + ki.jiraKey() + " (expected fail): " + message);
                 KnownIssueTracker.record(ki);
                 KnownIssueTracker.enableReportOnExit();

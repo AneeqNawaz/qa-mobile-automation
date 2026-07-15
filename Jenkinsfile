@@ -194,12 +194,35 @@ PY
                 ['android', 'ios'].each { p ->
                     def dirPath = "agg/${p}/target/allure-results"
                     if (fileExists(dirPath)) {
+                        // Known issues → shown on the Allure Overview 'Environment' widget (known
+                        // issues ride on passing tests, so they don't appear in the failure widgets).
+                        def kiEnv = 'none'
+                        def kiFile = "agg/${p}/target/known-issues-report.json"
+                        if (fileExists(kiFile)) {
+                            try {
+                                def s = sh(returnStdout: true, script: """python3 - <<'PY'
+import json
+d = json.load(open('${kiFile}'))
+items = d.get('knownIssues', [])
+if items:
+    parts = []
+    for i in items:
+        t = 'hit' if i.get('encountered') else 'not seen'
+        if i.get('aging'): t += ', aging'
+        parts.append(i['key'] + ' (' + t + ')')
+    print('; '.join(parts) + '  -  ' + str(d.get('encounteredCount', 0)) + ' hit, '
+          + str(len(d.get('agingKeys', []) or [])) + ' aging')
+PY""").trim()
+                                if (s) { kiEnv = s }
+                            } catch (ignored) { }
+                        }
                         writeFile file: "${dirPath}/environment.properties", text: """
 Platform=${p}
 Suite=${params.SUITE}
 App=${p == 'ios' ? params.IOS_APP_URL : params.ANDROID_APP_URL}
 ActivationCode=${params.ACTIVATION_CODE}
 BrowserStack.Build=Jenkins-${env.BUILD_NUMBER}-${params.SUITE}-${p}
+KnownIssues=${kiEnv}
 """.stripIndent().trim()
                         writeFile file: "${dirPath}/executor.json", text: """
 {"name":"Jenkins","type":"jenkins","buildName":"#${env.BUILD_NUMBER}","buildUrl":"${env.BUILD_URL}","reportUrl":"${env.BUILD_URL}allure"}

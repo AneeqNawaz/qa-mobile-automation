@@ -1,12 +1,15 @@
 package com.neuronation.listeners;
 
 import com.neuronation.driver.DriverManager;
+import com.neuronation.knownissues.KnownIssueTracker;
 import io.appium.java_client.AppiumDriver;
 import io.qameta.allure.Allure;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testng.ISuite;
+import org.testng.ISuiteListener;
 import org.testng.ITestListener;
 import org.testng.ITestResult;
 
@@ -23,8 +26,16 @@ import java.util.UUID;
  * is quit — otherwise the driver is null by the time onTestFailure fires
  * and the screenshot is silently lost.
  */
-public class AllureScreenshotListener implements ITestListener {
+public class AllureScreenshotListener implements ITestListener, ISuiteListener {
     private static final Logger log = LoggerFactory.getLogger(AllureScreenshotListener.class);
+
+    /** Deterministically flush the known-issue run summary at suite end (the JVM-exit hook is a
+     *  backstop). Writing here guarantees target/known-issues-report.json exists before Jenkins
+     *  stashes it for the Allure Environment widget / Slack line. */
+    @Override
+    public void onFinish(ISuite suite) {
+        KnownIssueTracker.writeReport();
+    }
 
     @Override
     public void onTestStart(ITestResult result) {
