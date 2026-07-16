@@ -191,6 +191,7 @@ PY
 
             // Seed Allure CI metadata for each platform's results dir that exists.
             script {
+                def executorWritten = false   // one executor entry for the single Jenkins build
                 ['android', 'ios'].each { p ->
                     def dirPath = "agg/${p}/target/allure-results"
                     if (fileExists(dirPath)) {
@@ -224,9 +225,14 @@ ActivationCode=${params.ACTIVATION_CODE}
 BrowserStack.Build=Jenkins-${env.BUILD_NUMBER}-${params.SUITE}-${p}
 KnownIssues=${kiEnv}
 """.stripIndent().trim()
-                        writeFile file: "${dirPath}/executor.json", text: """
-{"name":"Jenkins","type":"jenkins","buildName":"#${env.BUILD_NUMBER}","buildUrl":"${env.BUILD_URL}","reportUrl":"${env.BUILD_URL}allure"}
+                        // Executors widget: one entry for the (single) Jenkins build — the report
+                        // merges both platforms' results, so write executor.json only once.
+                        if (!executorWritten) {
+                            writeFile file: "${dirPath}/executor.json", text: """
+{"name":"Jenkins","type":"jenkins","buildName":"#${env.BUILD_NUMBER} ${params.SUITE}","buildUrl":"${env.BUILD_URL}","reportUrl":"${env.BUILD_URL}allure"}
 """.stripIndent().trim()
+                            executorWritten = true
+                        }
                         // Bucket failures in Allure: unexpected passes (fixed known issues) vs
                         // real regressions vs infra defects. Known-issue expected-fails are
                         // swallowed by knownIssue() so they never appear as failures here.
