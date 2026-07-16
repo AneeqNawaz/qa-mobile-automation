@@ -303,7 +303,9 @@ PY""").trim()
                         } catch (ignored) { }
                     }
                     def label = (p == 'ios') ? 'iOS' : 'Android'
-                    lines << "${label} · ${params.SUITE}:   :white_check_mark: ${passed}   :x: ${failed}   :fast_forward: ${skipped}${knownSeg}${bsLink}"
+                    lines << "${label} · ${params.SUITE}:   :white_check_mark: ${passed}   :x: ${failed}   :fast_forward: ${skipped}${bsLink}"
+                    // Known issues on their own line below the platform line (not cramming the counts row).
+                    if (knownSeg) { lines << "↳ ${knownSeg.trim()}" }
                 }
 
                 def body = lines.join('\n')
