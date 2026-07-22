@@ -1,0 +1,10 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<!-- Device-free unit suite for the section-scroll planner. Runs with:
+     mvn -q test -DsuiteFile=src/test/resources/suites/unit-scroll.xml -->
+<suite name="Section-Scroll Unit Tests">
+    <test name="section-scroll-logic">
+        <classes>
+            <class name="com.neuronation.content.SectionScrollPlannerTest"/>
+        </classes>
+    </test>
+</suite>
