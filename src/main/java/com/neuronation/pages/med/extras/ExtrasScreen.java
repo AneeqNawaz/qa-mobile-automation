@@ -668,12 +668,17 @@ public class ExtrasScreen extends BaseScreen {
 
             WebElement card = null;
             if (unique) {
-                card = findVisibleTileBySubtitle(subtitle);
+                card = findVisibleTileBySubtitle(subtitle);            // body subtitles are unique
+            } else if (hasTarget) {
+                // Target header on screen → match ONLY a tile BELOW it (and above the next header).
+                // Cognitive subtitles repeat across sections, so a plain subtitle match here would grab
+                // a same-subtitle tile from the PREVIOUS section still visible above this header — the
+                // flow3 wrong-tile bug (opened Drive content / a Drive quiz under a Mood tile).
+                card = findVisibleTileInCategory(category, subtitle);
             } else if (inWindow && !hasNext) {
-                card = findVisibleTileBySubtitle(subtitle);            // in-window → subtitle unambiguous
-                if (card == null) card = findVisibleTileInCategory(category, subtitle);
-            } else if (inWindow) {
-                card = findVisibleTileInCategory(category, subtitle);  // next header also visible → strict
+                // Header has scrolled off the top and the next section isn't visible yet → only this
+                // section's tiles are on screen, so a subtitle match is unambiguous.
+                card = findVisibleTileBySubtitle(subtitle);
             }
             if (card != null) return card;
 
@@ -682,7 +687,7 @@ public class ExtrasScreen extends BaseScreen {
 
             String bottom = f.bottomSubtitle();
             if (!bottom.equals(lastBottom) || f.hasCategory(FIRST_CATEGORY)) stagnant = 0;
-            else if (++stagnant >= 2) return null;   // bottom reached without a hit
+            else if (++stagnant >= 3) return null;   // bottom reached without a hit
             lastBottom = bottom;
             scanSwipeUp();                            // DOWN only — never reverse
         }
@@ -830,13 +835,17 @@ public class ExtrasScreen extends BaseScreen {
     private boolean scanDownToCategory(String category) {
         String lastBottom = "";
         int stagnant = 0;
-        for (int step = 0; step < 30; step++) {
+        // Cap raised to 50: a DEEP section (e.g. Dealing = section 5, reached from the top through the
+        // 19 body + 9 earlier-cognitive tiles) needs more short overlapping swipes than the old 30 cap
+        // allowed, which made flow4 give up before ever reaching the Dealing header.
+        for (int step = 0; step < 50; step++) {
             FrameSnapshot f = currentFrame();
             if (f.hasCategory(category)) return true;
             String bottom = f.bottomSubtitle();
-            // Ignore "no movement" while still at the top (the toolbar is just collapsing).
+            // Ignore "no movement" while still at the top (the toolbar is just collapsing). Require 3
+            // stagnant frames (was 2) so a lazy-load pause mid-scroll can't bail early before the bottom.
             if (!bottom.equals(lastBottom) || f.hasCategory(FIRST_CATEGORY)) stagnant = 0;
-            else if (++stagnant >= 2) return false; // bottom reached without finding it
+            else if (++stagnant >= 3) return false; // bottom reached without finding it
             lastBottom = bottom;
             scanSwipeUp(); // overlapping scan swipe → don't skip the target category header
         }
