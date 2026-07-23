@@ -41,8 +41,8 @@ pipeline {
         )
         string(
             name: 'ACTIVATION_CODE',
-            defaultValue: '77AAAAAAAAAAAAAX',
-            description: 'DiGA activation code (reusable test code — overrides Mock HI API call, no VPN needed).'
+            defaultValue: '',
+            description: 'DiGA activation code. LEAVE EMPTY for the nightly: each flow then generates its own code via the Mock HI API — flow1 = MCI, flow2-4 = Parkinson — which the Extras content regression requires (Parkinson has the cognitive sections). Set a value only to FORCE one reusable coupon for every flow (manual/ad-hoc runs); that overrides the API and makes all flows the same account type.'
         )
         booleanParam(
             name: 'NOTIFY_SLACK',
@@ -102,13 +102,20 @@ pipeline {
                                     ]) {
                                         try {
                                             withEnv(["BROWSERSTACK_APP_URL=${appUrl}"]) {
+                                                // Empty ACTIVATION_CODE → omit -Dactivation.code so each flow generates its own
+                                                // code via the Mock HI API (flow1 MCI, flow2-4 Parkinson — the Extras content
+                                                // regression needs Parkinson for the cognitive sections). A non-empty value
+                                                // forces that one coupon for every flow (manual override). clear.rate.limit is
+                                                // always on: API-generated codes are single-use + per-IP throttled.
+                                                def actArg = params.ACTIVATION_CODE?.trim() ? "-Dactivation.code=${params.ACTIVATION_CODE.trim()}" : ""
                                                 sh """
                                                     mvn -B -e -ntp test \
                                                       -Dbrowserstack.enabled=true \
                                                       -Dapp.type=med \
                                                       -Dplatform=${p} \
                                                       -DsuiteFile=src/test/resources/suites/${params.SUITE}.xml \
-                                                      -Dactivation.code=${params.ACTIVATION_CODE} \
+                                                      -Dclear.rate.limit=true \
+                                                      ${actArg} \
                                                       -Dbrowserstack.build.name='${buildName}'
                                                 """
                                             }
