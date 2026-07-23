@@ -222,30 +222,25 @@ public class LoginScreen extends BaseScreen {
                         return true;
                     }
                 }
-                // 2. Named dismiss buttons (Samsung uses "Cancel"). Exact text() — fast.
-                //    IMPORTANT: on Samsung's passkey chooser (com.android.credentialmanager) the "Cancel"
-                //    TextView AND its Button parent are BOTH clickable="false" — the only clickable node is
-                //    a wrapping View. So element.click() (an a11y CLICK on the non-clickable text) no-ops;
-                //    we must COORDINATE-tap the element's centre, which lands on the clickable ancestor.
+                // 2. BACK press — the RELIABLE dismissal for the credential/passkey chooser (esp.
+                //    Samsung Pass). A coordinate tap on "Cancel" is timing-fragile: its node is
+                //    non-clickable, the sheet renders with a 2-3s delay, and on Samsung the tap can
+                //    "succeed" yet the sheet stays up — so the poll spins on it. BACK closes the sheet
+                //    outright. Guard it with a chooser-only signal so we never navigate a real screen.
+                if (isCredentialChooser()) {
+                    driver.navigate().back();
+                    log.info("Dismissed credential chooser via BACK press");
+                    waitCredentialChooserGone();
+                    return true;
+                }
+                // 3. Last resort: coordinate-tap a named "Cancel" (its TextView + Button are both
+                //    clickable=false, so a pixel tap on the centre hits the clickable ancestor View).
                 for (String label : new String[]{"Cancel", "No thanks", "Not now", "Dismiss"}) {
                     var b = driver.findElements(AppiumBy.androidUIAutomator(
                             "new UiSelector().text(\"" + label + "\")"));
                     if (!b.isEmpty()) {
                         tapElementCenter(b.get(0));
-                        log.info("Dismissed credential chooser via '{}' (coordinate tap)", label);
-                        waitCredentialChooserGone();
-                        return true;
-                    }
-                }
-                // 3. Confirm it IS a chooser before a back press, so we never navigate away from a
-                //    non-chooser screen. Any of these chooser-only texts qualifies (Samsung's passkey
-                //    sheet shows "More saved sign-ins" / "Choose a saved passkey", not "Sign-in options").
-                for (String sig : new String[]{"Sign-in options", "More saved sign-ins",
-                        "Choose a saved passkey", "Choose a saved sign-in"}) {
-                    if (!driver.findElements(AppiumBy.androidUIAutomator(
-                            "new UiSelector().textContains(\"" + sig + "\")")).isEmpty()) {
-                        driver.navigate().back();
-                        log.info("Dismissed credential chooser via back press (matched '{}')", sig);
+                        log.info("Dismissed credential chooser via '{}' (coordinate tap fallback)", label);
                         waitCredentialChooserGone();
                         return true;
                     }
@@ -267,6 +262,20 @@ public class LoginScreen extends BaseScreen {
             }
         } catch (Exception e) {
             log.debug("No password manager overlay detected: {}", e.getMessage());
+        }
+        return false;
+    }
+
+    /** True when a credential/password/passkey chooser is on screen — matched by a chooser-only text
+     *  so the BACK press that dismisses it never fires on a normal screen. Covers Samsung Pass, GMS,
+     *  and the AOSP/Pixel Credential Manager. */
+    private boolean isCredentialChooser() {
+        for (String sig : new String[]{"Samsung Pass", "Google Password Manager", "Sign-in options",
+                "More saved sign-ins", "Choose a saved passkey", "Choose a saved sign-in"}) {
+            if (!driver.findElements(AppiumBy.androidUIAutomator(
+                    "new UiSelector().textContains(\"" + sig + "\")")).isEmpty()) {
+                return true;
+            }
         }
         return false;
     }

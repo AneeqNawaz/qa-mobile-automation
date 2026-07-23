@@ -97,11 +97,42 @@ public class OnboardingVideoScreen extends BaseScreen {
                     .until(org.openqa.selenium.support.ui.ExpectedConditions.elementToBeClickable(
                             io.appium.java_client.AppiumBy.id("nn.mobile.app.med:id/closeVideoButton"))).click();
         } else {
-            // iOS: close button works on the first video (after DiGA activation)
-            new org.openqa.selenium.support.ui.WebDriverWait(driver, java.time.Duration.ofSeconds(5))
-                    .until(org.openqa.selenium.support.ui.ExpectedConditions.elementToBeClickable(
-                            io.appium.java_client.AppiumBy.accessibilityId("CloseButtonBlack"))).click();
+            // iOS: try the close X. It works locally, but in CI (BrowserStack) the X tap frequently
+            // does NOT dismiss the player — the app stays on the video and the next screen never
+            // loads. So verify we actually left the video and, if we're still on it, fast-forward to
+            // the end (the explanatory video auto-transitions to Create Account when it finishes).
+            try {
+                new org.openqa.selenium.support.ui.WebDriverWait(driver, java.time.Duration.ofSeconds(5))
+                        .until(org.openqa.selenium.support.ui.ExpectedConditions.elementToBeClickable(
+                                io.appium.java_client.AppiumBy.accessibilityId("CloseButtonBlack"))).click();
+                log.info("Tapped iOS video close X");
+            } catch (Exception e) {
+                log.info("iOS video close X not clickable ({}) — will fast-forward", e.getMessage());
+            }
+            if (!iosLeftVideo(6) && iosOnVideo()) {
+                log.info("iOS still on video after close tap — fast-forwarding to end");
+                skipVideoViaForward();
+            }
         }
+    }
+
+    /** iOS: wait up to {@code sec}s for the Create Account screen (its "register via email" button,
+     *  accessibilityId {@code LoginMailButtonSimple}) — i.e. we successfully left the video. */
+    private boolean iosLeftVideo(int sec) {
+        try {
+            return new org.openqa.selenium.support.ui.WebDriverWait(driver, java.time.Duration.ofSeconds(sec))
+                    .until(d -> !d.findElements(
+                            io.appium.java_client.AppiumBy.accessibilityId("LoginMailButtonSimple")).isEmpty());
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /** iOS: true while the video player is still on screen (player / its close control present). */
+    private boolean iosOnVideo() {
+        return !driver.findElements(io.appium.java_client.AppiumBy.accessibilityId("Video")).isEmpty()
+                || !driver.findElements(io.appium.java_client.AppiumBy.accessibilityId("video_player")).isEmpty()
+                || !driver.findElements(io.appium.java_client.AppiumBy.accessibilityId("CloseButtonBlack")).isEmpty();
     }
 
     /**
