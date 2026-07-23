@@ -144,10 +144,12 @@ public class ExtrasScreen extends BaseScreen {
 
     /**
      * Open the "?" Help tooltip for a SPECIFIC section: anchor that section's header, then tap the
-     * help button sitting between it and the next header. Android only (uses the header Y-band).
+     * help button sitting between it and the next header (the header Y-band). Platform-split:
+     * {@link #openCategoryHelpIOS} handles the iOS tree (see below); Android uses the resource-id band.
      */
     @Step("Open the Help tooltip for section: {category}")
     public void openCategoryHelp(String category) {
+        if (isIOS()) { openCategoryHelpIOS(category); return; }
         if (canBound(category) && !isCategoryVisible(category)) anchorCategory(category);
         Integer headerY = null, nextHeaderY = null;
         for (WebElement h : findAllByPlatformId(ID_CATEGORY_TITLE, ID_CATEGORY_TITLE)) {
@@ -164,6 +166,56 @@ public class ExtrasScreen extends BaseScreen {
             if (by >= headerY - 40 && (nextHeaderY == null || by < nextHeaderY) && by < bestY) { best = b; bestY = by; }
         }
         (best != null ? best : findAllByPlatformId(ID_CATEGORY_HELP_BUTTON, IOS_CATEGORY_HELP).get(0)).click();
+    }
+
+    /**
+     * iOS per-section Help. On iOS the section header is a StaticText whose accessibilityId IS the
+     * section title (the Android {@code category_title} resource-id matches nothing here — that is
+     * why the shared Y-band above would always fall through to the first-visible "?"). iOS also
+     * only renders the TOP-MOST section's "?" in the accessibility tree, so a target lower on the
+     * page has no "?" node yet. We therefore: anchor the section, find its header, and pick the "?"
+     * nearest that header's row within its band (header .. next header). If the target's own "?" is
+     * not rendered yet (nearest match is too far, or above the header), scroll the header upward one
+     * overlap-swipe and retry — bounded. Mirrors Android's per-section mapping.
+     */
+    private void openCategoryHelpIOS(String category) {
+        if (canBound(category) && !isCategoryVisible(category)) anchorCategory(category);
+        WebElement help = null;
+        for (int attempt = 0; attempt < 6 && help == null; attempt++) {
+            WebElement header = iosSectionHeader(category);
+            if (header == null) { anchorCategory(category); continue; }
+            int headerY = yOf(header);
+            Integer nextY = null;
+            String next = sectionPlanner != null ? sectionPlanner.nextSection(category) : null;
+            if (next != null) {
+                WebElement nh = iosSectionHeader(next);
+                if (nh != null) nextY = yOf(nh);
+            }
+            WebElement nearest = null; int nearestDist = Integer.MAX_VALUE;
+            for (WebElement b : findAllByPlatformId(ID_CATEGORY_HELP_BUTTON, IOS_CATEGORY_HELP)) {
+                int by = yOf(b);
+                if (by >= headerY - 60 && (nextY == null || by < nextY)) {
+                    int dist = Math.abs(by - headerY);
+                    if (dist < nearestDist) { nearest = b; nearestDist = dist; }
+                }
+            }
+            // Accept only a "?" that sits on the target header's row (its own); else the target's
+            // node isn't rendered yet — push it toward the top and re-read.
+            if (nearest != null && nearestDist <= 160) help = nearest;
+            else scanSwipeUp();
+        }
+        if (help == null) {
+            var all = findAllByPlatformId(ID_CATEGORY_HELP_BUTTON, IOS_CATEGORY_HELP);
+            if (all.isEmpty()) return;
+            help = all.get(0); // last-resort: first visible (all sections share identical help text)
+        }
+        help.click();
+    }
+
+    /** iOS: the section header StaticText whose accessibilityId equals the section title. */
+    private WebElement iosSectionHeader(String category) {
+        var matches = driver.findElements(AppiumBy.accessibilityId(category));
+        return matches.isEmpty() ? null : matches.get(0);
     }
 
     @Step("Get Help tooltip title")
