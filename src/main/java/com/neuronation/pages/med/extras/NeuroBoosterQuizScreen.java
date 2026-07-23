@@ -169,8 +169,30 @@ public class NeuroBoosterQuizScreen extends BaseScreen {
     }
 
     private void waitForFeedback() {
-        new WebDriverWait(driver, Duration.ofSeconds(10))
+        // After answering, the selected + correct answers get a ✓/✗ marker (answer_result_title).
+        // When that marked answer is the LAST/bottom one, its marker + explanation render BELOW the
+        // fixed "Understood, continue" button — off-screen, so Android's RecyclerView drops it from
+        // the tree and a plain presence wait times out (the flow4 quiz failure). Try the quick wait;
+        // if no marker is present yet, scroll the answer list down to bring it into view, then re-wait.
+        if (waitForResultTitle(5)) return;
+        for (int i = 0; i < 3; i++) {
+            scanSwipeUp();               // reveal content below the fold (a bottom answer's feedback)
+            if (waitForResultTitle(3)) return;
+        }
+        // Final attempt — throw if the feedback genuinely never appeared.
+        new WebDriverWait(driver, Duration.ofSeconds(4))
                 .until(ExpectedConditions.presenceOfElementLocated(AppiumBy.id(ID_RESULT_TITLE)));
+    }
+
+    /** Wait up to {@code sec}s for any answer's ✓/✗ result marker to be present. Never throws. */
+    private boolean waitForResultTitle(int sec) {
+        try {
+            new WebDriverWait(driver, Duration.ofSeconds(sec))
+                    .until(ExpectedConditions.presenceOfElementLocated(AppiumBy.id(ID_RESULT_TITLE)));
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     // ---------- iOS helpers ----------
@@ -194,11 +216,25 @@ public class NeuroBoosterQuizScreen extends BaseScreen {
                 tapAt(r.getX() + r.getWidth() / 2, r.getY() + r.getHeight() / 2);
                 new WebDriverWait(driver, Duration.ofSeconds(10))
                         .until(ExpectedConditions.presenceOfElementLocated(AppiumBy.accessibilityId(IOS_CONTINUE)));
+                revealIosFeedback();  // a bottom answer's ✓/✗ marker can sit below the Continue button
                 return;
             }
         }
         throw new org.openqa.selenium.NoSuchElementException(
                 "No iOS quiz answer matches text: '" + answerText + "'");
+    }
+
+    /** iOS: after answering, scroll the answer list down until a ✓/✗ result marker is on screen. When
+     *  the marked (selected/correct) answer is the LAST one, its marker + explanation render below the
+     *  fixed "Understood, continue" button and are missed by the feedback read — this brings them in. */
+    private void revealIosFeedback() {
+        for (int i = 0; i < 4; i++) {
+            for (WebElement st : driver.findElements(AppiumBy.className("XCUIElementTypeStaticText"))) {
+                String n = nz(st.getAttribute("name"));
+                if (n.startsWith("✓") || n.startsWith("✗")) return; // a marker is already visible
+            }
+            scanSwipeUp();
+        }
     }
 
     private static String nz(String s) { return s == null ? "" : s; }
