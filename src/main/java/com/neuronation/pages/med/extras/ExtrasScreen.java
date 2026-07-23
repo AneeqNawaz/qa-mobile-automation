@@ -168,6 +168,18 @@ public class ExtrasScreen extends BaseScreen {
 
     @Step("Get Help tooltip title")
     public String getHelpTooltipTitle() {
+        if (isIOS()) {
+            // The iOS help tooltip is a native alert whose FIRST StaticText is the title ("Help") and
+            // second is the message (see BaseScreen.getAlertMessage). There is no "alertTitle"
+            // accessibility id on iOS alerts, so the id-based read returned empty.
+            try {
+                var texts = driver.findElements(AppiumBy.iOSClassChain(
+                        "**/XCUIElementTypeAlert/**/XCUIElementTypeStaticText"));
+                return texts.isEmpty() ? "" : texts.get(0).getText();
+            } catch (Exception e) {
+                return "";
+            }
+        }
         return getTextByPlatformId(ID_HELP_DIALOG_TITLE, IOS_HELP_DIALOG_TITLE);
     }
 
