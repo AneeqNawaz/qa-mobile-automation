@@ -1,0 +1,25 @@
+{
+  "toolbarTitle": "Neurobooster",
+  "discoveredWord": "discovered",
+  "discoveredFormat": "%d / %d discovered",
+  "detail": {
+    "primaryCtaExercise": "I’ve completed this, continue",
+    "primaryCtaKnowledge": "I’ve completed this, continue",
+    "primaryCtaCognitiveHealth": "Continue to video and quiz",
+    "secondaryCta": "Let me do this later"
+  },
+  "quiz": {
+    "introTitle": "Let’s do a little quiz!",
+    "startButton": "Start quiz",
+    "answerContinueButton": "Understood, continue",
+    "answerCorrectPrefix": "✓",
+    "answerWrongPrefix": "✗"
+  },
+  "result": {
+    "titlePass": "Great job!",
+    "titleFail": "Let's try again",
+    "actionPass": "Continue",
+    "actionFail": "Try again"
+  },
+  "_note": "Standard UI strings captured live 2026-07-20. Content owner: verify apostrophe/copy before trusting outcome assertions."
+}

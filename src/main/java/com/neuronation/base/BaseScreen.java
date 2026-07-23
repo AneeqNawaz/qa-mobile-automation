@@ -9,6 +9,7 @@ import io.appium.java_client.pagefactory.AppiumFieldDecorator;
 import io.qameta.allure.Step;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.interactions.Pause;
 import org.openqa.selenium.interactions.PointerInput;
 import org.openqa.selenium.interactions.Sequence;
 import org.openqa.selenium.support.PageFactory;
@@ -141,6 +142,25 @@ public abstract class BaseScreen {
         performSwipe(startX, startY, startX, endY);
     }
 
+    /**
+     * A shorter swipe used for CONTENT ENUMERATION: it advances the list by only ~30% of
+     * the screen, leaving a large overlap between consecutive settled frames so no section
+     * header or tile can fall between two reads and be skipped. Full-size {@link #swipeUp}
+     * is fine for pure navigation (scroll-to-top, jump-to-category) where nothing is read.
+     */
+    protected void scanSwipeUp() {
+        var d = driver.manage().window().getSize();
+        performSwipe(d.getWidth() / 2, (int) (d.getHeight() * 0.72), d.getWidth() / 2, (int) (d.getHeight() * 0.42));
+    }
+
+    /** Short OVERLAPPING up-scroll (reveals content ABOVE) — the mirror of {@link #scanSwipeUp}. Moves
+     *  only ~0.30·h so consecutive frames overlap and a section header can't be skipped between swipes
+     *  (unlike {@link #swipeDown}, whose ~0.60·h jump overshoots a header when scanning up to it). */
+    protected void scanSwipeDown() {
+        var d = driver.manage().window().getSize();
+        performSwipe(d.getWidth() / 2, (int) (d.getHeight() * 0.42), d.getWidth() / 2, (int) (d.getHeight() * 0.72));
+    }
+
     @Step("Swipe down on screen")
     protected void swipeDown() {
         var dimensions = driver.manage().window().getSize();
@@ -160,6 +180,42 @@ public abstract class BaseScreen {
         driver.perform(Collections.singletonList(tap));
     }
 
+    /**
+     * Two taps at the same coordinate as ONE atomic gesture, separated by {@code gapMs}.
+     * Used to reveal-then-act on media controllers that auto-hide: a single gesture means
+     * no slow findElement can slip between the taps and let the controller hide.
+     */
+    protected void tapAtTwice(int x, int y, int gapMs) {
+        PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
+        Sequence seq = new Sequence(finger, 0);
+        seq.addAction(finger.createPointerMove(Duration.ZERO, PointerInput.Origin.viewport(), x, y));
+        seq.addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()));
+        seq.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
+        seq.addAction(new Pause(finger, Duration.ofMillis(gapMs)));
+        seq.addAction(finger.createPointerMove(Duration.ZERO, PointerInput.Origin.viewport(), x, y));
+        seq.addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()));
+        seq.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
+        driver.perform(Collections.singletonList(seq));
+    }
+
+    /**
+     * {@code count} taps at the same coordinate as ONE gesture (a single driver round-trip),
+     * {@code gapMs} apart. For rapid repeated tapping — e.g. a video "+N s" forward control —
+     * without paying a round-trip per tap.
+     */
+    protected void tapAtRepeated(int x, int y, int count, int gapMs) {
+        if (count <= 0) return;
+        PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
+        Sequence seq = new Sequence(finger, 0);
+        for (int i = 0; i < count; i++) {
+            if (i > 0) seq.addAction(new Pause(finger, Duration.ofMillis(gapMs)));
+            seq.addAction(finger.createPointerMove(Duration.ZERO, PointerInput.Origin.viewport(), x, y));
+            seq.addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()));
+            seq.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
+        }
+        driver.perform(Collections.singletonList(seq));
+    }
+
     private void performSwipe(int startX, int startY, int endX, int endY) {
         log.info("SWIPE ({},{})->({},{})", startX, startY, endX, endY);
         PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
@@ -167,8 +223,14 @@ public abstract class BaseScreen {
         swipe.addAction(finger.createPointerMove(Duration.ZERO,
                 PointerInput.Origin.viewport(), startX, startY));
         swipe.addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()));
-        swipe.addAction(finger.createPointerMove(Duration.ofMillis(500),
+        swipe.addAction(finger.createPointerMove(Duration.ofMillis(250),
                 PointerInput.Origin.viewport(), endX, endY));
+        // Hold briefly at the end BEFORE releasing to kill fling momentum. Without this the
+        // list keeps flinging after release and the next Appium command blocks on
+        // UiAutomator2's waitForIdle until it settles (~1.7s per scroll). Holding stops the
+        // list at once, so the next read is immediate and the scroll step is deterministic
+        // (no overshoot). Measured on device: ~2.3s → ~1.0s per scroll.
+        swipe.addAction(new Pause(finger, Duration.ofMillis(200)));
         swipe.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
         driver.perform(Collections.singletonList(swipe));
     }

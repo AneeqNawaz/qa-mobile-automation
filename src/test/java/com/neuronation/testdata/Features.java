@@ -36,6 +36,7 @@ public final class Features {
     public static final String NEGATIVE = "negative";
     public static final String NAVIGATION = "navigation";
     public static final String FAQ = "faq";
+    public static final String EXTRAS = "extras";
 
     private Features() {}
 }

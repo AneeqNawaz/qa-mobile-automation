@@ -1,0 +1,2026 @@
+{
+  "toolbarTitle": "Neurobooster",
+  "toolbarSubtitle": "Mini-exercises to refresh your brain in the middle of a tiring day",
+  "categories": [
+    {
+      "title": "Use mini-exercises for your body",
+      "progress": "0 / 19 discovered",
+      "helpTitle": "Help",
+      "helpMessage": "The first time you finish a mini-exercise, it will be marked as discovered."
+    },
+    {
+      "title": "Cognitive Health",
+      "progress": "0 / 3 discovered",
+      "helpTitle": "Help",
+      "helpMessage": "The first time you finish a mini-exercise, it will be marked as discovered."
+    },
+    {
+      "title": "Drive and motivation",
+      "progress": "0 / 3 discovered",
+      "helpTitle": "Help",
+      "helpMessage": "The first time you finish a mini-exercise, it will be marked as discovered."
+    },
+    {
+      "title": "Mood",
+      "progress": "0 / 3 discovered",
+      "helpTitle": "Help",
+      "helpMessage": "The first time you finish a mini-exercise, it will be marked as discovered."
+    },
+    {
+      "title": "Dealing with anxieties about the future",
+      "progress": "0 / 3 discovered",
+      "helpTitle": "Help",
+      "helpMessage": "The first time you finish a mini-exercise, it will be marked as discovered."
+    },
+    {
+      "title": "Changes in relationships and roles",
+      "progress": "0 / 3 discovered",
+      "helpTitle": "Help",
+      "helpMessage": "The first time you finish a mini-exercise, it will be marked as discovered."
+    },
+    {
+      "title": "The effects of medication",
+      "progress": "0 / 3 discovered",
+      "helpTitle": "Help",
+      "helpMessage": "The first time you finish a mini-exercise, it will be marked as discovered."
+    }
+  ],
+  "tiles": [
+    {
+      "category": "Use mini-exercises for your body",
+      "listTitle": "Breathing Exercise",
+      "listSubtitle": "For More Cool, Calm, and Collectedness",
+      "type": "EXERCISE",
+      "detailHeading": "For More Cool, Calm, and Collectedness",
+      "detailBodyContains": [
+        "1. Take a deep and slow breath in, inhaling through your nose, whilst counting to 4 in your head.\n\n2. Hold your breath there for 7 seconds.\n\n3. Then slowly breath out through your mouth. While doing this, count to 8 in your head.\n\nRepeat from step 1 three more times and take this feeling of calm with you into your day."
+      ],
+      "primaryCta": "I’ve completed this, continue",
+      "secondaryCta": "Let me do this later",
+      "hasImage": true,
+      "smoke": true
+    },
+    {
+      "category": "Use mini-exercises for your body",
+      "listTitle": "Upper Body",
+      "listSubtitle": "For More Vim and Vigour",
+      "type": "EXERCISE",
+      "detailHeading": "For More Vim and Vigour",
+      "detailBodyContains": [
+        "1. Sit upright on a chair.\n\n2. Hold your hands as if you were reaching out for yourself, and then stretch your arms out directly in front of you.\n\n3. Take a deep breath in and then lift your arms up vertically. Hold this position for two to three breaths.\n\n4. After a few breaths, slowly bring your arms down whilst exhaling.\n\nRelax for a moment, and then repeat this exercise two more times. And then, we hope you have a lovely day!"
+      ],
+      "primaryCta": "I’ve completed this, continue",
+      "secondaryCta": "Let me do this later",
+      "hasImage": true,
+      "smoke": false
+    },
+    {
+      "category": "Use mini-exercises for your body",
+      "listTitle": "Eyes",
+      "listSubtitle": "For Relaxed Eyes",
+      "type": "EXERCISE",
+      "detailHeading": "Relaxing Your Eyes",
+      "detailBodyContains": [
+        "1. Without moving your head, look up, then left, then down, and then right.\n\n2. Repeat this three times, and enjoy a brief moment of wellness for your eyes.\n\nAfterwards turn your attention to your day feeling refreshed."
+      ],
+      "primaryCta": "I’ve completed this, continue",
+      "secondaryCta": "Let me do this later",
+      "hasImage": true,
+      "smoke": false
+    },
+    {
+      "category": "Use mini-exercises for your body",
+      "listTitle": "Upper Body",
+      "listSubtitle": "Release the Tension from Your Neck and Shoulders",
+      "type": "EXERCISE",
+      "detailHeading": "Release the Tension from Your Neck and Shoulders",
+      "detailBodyContains": [
+        "1. Take a seat in an upright position.\n\n2. Move your left arm until (almost) fully stretched infront of the right side of your chest and right shoulder.\n\n3. Grip onto your left upper arm with your right hand and apply light pressure. Hold this position for 15 seconds.\n\n4. - 6. Change sides and repeat the first three steps.\n\nAnd now you can continue your day with less tension in this region!"
+      ],
+      "primaryCta": "I’ve completed this, continue",
+      "secondaryCta": "Let me do this later",
+      "hasImage": true,
+      "smoke": false
+    },
+    {
+      "category": "Use mini-exercises for your body",
+      "listTitle": "Upper Body",
+      "listSubtitle": "For a Relaxed and Relieved Lower Back",
+      "type": "EXERCISE",
+      "detailHeading": "For a Relaxed and Relieved Lower Back",
+      "detailBodyContains": [
+        "1. Move your office chair away from the desk so that you have enough space for this exercise. Sit on the chair with your feet well on the floor and make sure that the angle between your thighs and lower legs is about 90°.\n\n2. Now bend down slowly until your upper body rests on your thighs. Your head and arms will hang down comfortably.\n\n3. Stay in this position and breathe in and out slowly and deeply through your abdomen five times.\n\n4. Slowly straighten yourself up vertebrae by vertebra by resting your hands on your knees and slowly pushing yourself up. The head remains lowered until you are back on top.\n\nAnd now you can continue your day relaxed and energized!"
+      ],
+      "primaryCta": "I’ve completed this, continue",
+      "secondaryCta": "Let me do this later",
+      "hasImage": true,
+      "smoke": false
+    },
+    {
+      "category": "Use mini-exercises for your body",
+      "listTitle": "Breathing Exercise",
+      "listSubtitle": "For more Concentration and Inner Peace",
+      "type": "EXERCISE",
+      "detailHeading": "For more Concentration and Inner Peace",
+      "detailBodyContains": [
+        "1. Put a hand on your stomach.\n\n2. Take a deep breath through your nose.\n\n3. Consciously feel your abdomen expand as you inhale and feel your hand lift with the abdominal wall.\n\n4. As you exhale, the hand lowers to the abdominal wall and the abdomen contracts slightly.\n\nContinue for 30 seconds and take that new peace and quiet with you into your day."
+      ],
+      "primaryCta": "I’ve completed this, continue",
+      "secondaryCta": "Let me do this later",
+      "hasImage": true,
+      "smoke": false
+    },
+    {
+      "category": "Use mini-exercises for your body",
+      "listTitle": "Eyes",
+      "listSubtitle": "For the Immediate Recovery of Tired Eyes",
+      "type": "EXERCISE",
+      "detailHeading": "For the Immediate Recovery of Tired Eyes",
+      "detailBodyContains": [
+        "1. Rub the palms of your hands together until you feel warm.\n\n2. Place your palms over your closed eyes, feel the warmth, breathe in and out through your stomach five times slowly and deeply and enjoy this little wellness for your eyes."
+      ],
+      "primaryCta": "I’ve completed this, continue",
+      "secondaryCta": "Let me do this later",
+      "hasImage": true,
+      "smoke": false
+    },
+    {
+      "category": "Use mini-exercises for your body",
+      "listTitle": "Upper Body",
+      "listSubtitle": "For Immediate Relaxation of the Neck",
+      "type": "EXERCISE",
+      "detailHeading": "For Immediate Relaxation of the Neck",
+      "detailBodyContains": [
+        "1. Put both hands on the back of your head, cross them slightly.\n\n2. Then pull your chin toward your chest.\n\n3. Apply light pressure to the back of the head with your hands while your chin remains on your chest. Do it correctly if you feel a slight pull in the neck.\n\n4. Hold the position for about 5 to 10 seconds, then slowly lift your head back to the starting position.\n\nRepeat the exercise twice and return to your day tension-free!"
+      ],
+      "primaryCta": "I’ve completed this, continue",
+      "secondaryCta": "Let me do this later",
+      "hasImage": true,
+      "smoke": false
+    },
+    {
+      "category": "Use mini-exercises for your body",
+      "listTitle": "Wellbeing",
+      "listSubtitle": "For more happy moments",
+      "type": "EXERCISE",
+      "detailHeading": "For more happy moments",
+      "detailBodyContains": [
+        "Take three deep breaths, and then exhale.\n\n1. The first time you exhale, exhale with a slight smile.\n\n2. At the second exhale - with a broad grin.\n\n3. ...and on the third exhalation, allow yourself a soft, easy laugh. Feel the warmth that spreads through your body and take that warm feeling with you into your day!"
+      ],
+      "primaryCta": "I’ve completed this, continue",
+      "secondaryCta": "Let me do this later",
+      "hasImage": true,
+      "smoke": false
+    },
+    {
+      "category": "Use mini-exercises for your body",
+      "listTitle": "Hand and arm",
+      "listSubtitle": "For loosening tight wrists for PC user",
+      "type": "EXERCISE",
+      "detailHeading": "For Loosening Tight Wrists of PC Users",
+      "detailBodyContains": [
+        "1. Extend your arm and form a fist with your hand - your fingers enclose your thumb.\n\n2. Tilt your hand slightly down first and hold your hand in this position for three seconds.\n\n3. Then tilt your hand up and hold it there for three seconds.\n\n4. Now make a slow circular motion with your hand.\n\n Repeat this exercise three times and return to your day tension-free!"
+      ],
+      "primaryCta": "I’ve completed this, continue",
+      "secondaryCta": "Let me do this later",
+      "hasImage": true,
+      "smoke": false
+    },
+    {
+      "category": "Use mini-exercises for your body",
+      "listTitle": "Sleep",
+      "listSubtitle": "For a better sleep and more restful night",
+      "type": "EXERCISE",
+      "detailHeading": "For a better sleep and more restful night: 5 helpful tricks",
+      "detailBodyContains": [
+        "1. Air your bedroom well and make sure that there is an optimal sleeping temperature (16 to 18° C are ideal).\n\n2. Do not eat heavy meals in the evening because increased gastrointestinal activity can make sleep more restless.\n\n3. If possible, try to go to bed and get up at the same time, even on weekends - your body will adopt this rhythm and your well-being will increase as a result.\n\n4. Before going to bed, don't watch TV, smartphone and tablet. They make you restless and disturb your night's sleep. The blue light components also prevent the production of the sleep hormone melatonin.\n\n5. Introduce a personal sleep ritual, such as drinking a cup of herbal tea, relaxation techniques or meditation. This way you give your body and your psyche a clear signal: it's soon bedtime.\n\nThis is the best way to always start the day well rested and refreshed!"
+      ],
+      "primaryCta": "I’ve completed this, continue",
+      "secondaryCta": "Let me do this later",
+      "hasImage": true,
+      "smoke": false
+    },
+    {
+      "category": "Use mini-exercises for your body",
+      "listTitle": "Knowledge",
+      "listSubtitle": "What cognitive impairments are",
+      "type": "KNOWLEDGE",
+      "detailHeading": "What cognitive impairments are",
+      "detailBodyContains": [
+        "In the course of our lives, we notice that our mental capacity in particular declines over time. This is usually a normal part of the ageing process. However, when this deterioration limits our performance more than normal, we speak of a cognitive impairment. Unlike dementia, however, these impairments do not lead to significant limitations in everyday life (1).\n \n Mild cognitive impairment (MCI) is one of the most common neurodegenerative diseases (2). \n Cognitive decline should be distinguished from dementia, although diagnosis is not always clear-cut and the overlap between age-related cognitive decline, spinal cord injury and dementia can be fluid. \n Cognitive decline and Alzheimer's dementia are thus common diseases of old age. Preventive measures are all the more important here, as are general diagnostics to detect or rule out other causes at an early stage. Stabilisation of the general state of health plays a central role here, taking into account other diseases.\n \n Science has shown that diverse mental, physical and social activities are important to counteract these diseases of old age.\n \n Take the time today to increase your ability to concentrate with short exercises from our NeuroBoosters and to activate your brain performance in a variety of ways!\n \n \n \n Sources\n (1) Gauthier et al. (2006), \"Mild cognitive impairment\", SEMINAR| Volume 367, Issue 9518, P1262-1270,2, doi: https://doi.org/10.1016/S0140-6736(06)68542-5\n (2) Yim et al. (2020), \"Mild cognitive impairment, dementia, and cognitive dysfunction screening using machine learning\", Journal of International Medical Research, Volume: 48 issue: 7, doi: 10.1177/0300060520936881"
+      ],
+      "primaryCta": "I’ve completed this, continue",
+      "secondaryCta": "Let me do this later",
+      "hasImage": true,
+      "smoke": false
+    },
+    {
+      "category": "Use mini-exercises for your body",
+      "listTitle": "Knowledge",
+      "listSubtitle": "How cognitive impairments are recognised and treated",
+      "type": "KNOWLEDGE",
+      "detailHeading": "How cognitive impairments are recognised and treated",
+      "detailBodyContains": [
+        "Due to the high degree of individual variation, it is currently still difficult to diagnose cognitive decline with certainty. In addition, depending on the patient, individual-specific patterns emerge, which can change over the course of the disease (1). This makes it difficult to diagnose mild cognitive impairment and to distinguish it from other diseases such as dementia. \n Since no standardised test procedures exist yet, a diagnosis is based on orienting examinations of cognitive performance, especially memory performance. However, these criteria should not be considered in isolation, but always in connection with other cognitive functions, as well as the mental state and general behaviour.\n \n During primary care, special attention should be paid to subjective cognitive complaints. Here, a structured history can check for possible cognitive deterioration and, if necessary, identify treatable causes of impairment. These include somatic conditions (e.g. thyroid disease), medication side effects, modifiable cerebrovascular risk factors (e.g. diabetes, hypercholesterolaemia and hypertension), psychiatric conditions (e.g. depression) and vitamin deficiencies (e.g. B12 and folic acid) (3). Regular follow-up is recommended here, as many of these conditions can also be risk factors for dementia and other neurodegenerative diseases.\n \n Currently, there is no approved drug for the treatment of mild cognitive impairment. However, studies have shown that lifestyle changes, such as diet, physical exercise, but also cognitive stimulation can lead to an improvement in symptoms (4). In our NeuroBoosters you will find some effective exercises for relaxation but also exercises to increase the ability to concentrate. In addition to changes in lifestyle, the German Society for Neurology (DGN), the Society for Neuropsychology e.V. (GNP), as well as the German Alzheimer Society (DAG) recommend specific cognitive training, as well as electronic memory aids (5).\n \n Have you already taken a little time out today to recharge your batteries? Follow our NeuroBoosters for improved mental performance and energy in everyday life! \n \n Source (1) Anusha A S, Uma Ranjan, Medha Sharma, Siddharth Dutt (2020), \"Identification of Patterns of Cognitive Impairment for Early Detection of Dementia\", Annu Int Conf IEEE Eng Med Biol Soc 2020:5498-5501. doi: 10.1109/EMBC44109.2020.9175495. (2) Guidelines for Diagnostics and Therapy in Neurology of the German Society of Neurology (DGN) (2020), AWMF register number: 030/124. (3) B. Winblad et al. (2004), \"Mild cognitive impairment - beyond controversies, towards a consensus: report of the International Working Group on Mild Cognitive Impairment\", Intern Med;256(3):240-6. doi: 10.1111/j.1365-2796.2004.01380.x. (4) Angela M Sanford (2017), \"Mild Cognitive Impairment\", Review Clin Geriatr Med;33(3):325-337. doi: 10.1016/j.cger.2017.02.005. (5) \"What can I do? Tips and information on the onset of dementia\" Deutsche Alzheimer Gesellschaft e.V. Selbsthilfe Demenz, 6th edition 2018, ISSN 2363-4693."
+      ],
+      "primaryCta": "I’ve completed this, continue",
+      "secondaryCta": "Let me do this later",
+      "hasImage": true,
+      "smoke": true
+    },
+    {
+      "category": "Use mini-exercises for your body",
+      "listTitle": "Knowledge",
+      "listSubtitle": "How to stay fit over the long term",
+      "type": "KNOWLEDGE",
+      "detailHeading": "How to stay fit over the long term",
+      "detailBodyContains": [
+        "No single cause is known for cognitive decline. Neither genetic predispositions, lifestyle characteristics, nor psychosocial factors could be determined as explicit causes (1). Since the health condition can improve as well as deteriorate, this impaired mental performance is a relatively unstable condition, which makes diagnosing the causes difficult. Rather, various health and lifestyle factors can contribute to a deterioration in cognitive performance. In general, a decline in mental performance can be observed with advancing age. Symptoms can remain stable for years, change to Alzheimer's symptoms or another type of dementia, or even improve.\n \n Research has defined various risk factors that can lead to cognitive decline (2). These include age, vascular risk factors and neuropsychological factors. Lifestyle factors such as smoking, obesity or lack of physical activity are also considered risk factors. \n \n In general, changes in certain areas of the brain have been found to occur as cognitive decline progresses. Recent research here shows that in some, but not all, cases, mild cognitive impairment may develop from the same types of cellular brain changes as dementia or Alzheimer's disease (3).\n \n Counteract these risk factors now. Get better and more restful sleep today with our NeuroBooster exercises to restore and refresh your mind.\n \n \n Source\n (1) B. Winblad et al. (2004), \"Mild cognitive impairment - beyond controversies, towards a consensus: report of the International Working Group on Mild Cognitive Impairment\", Intern Med;256(3):240-6. doi: 10.1111/j.1365-2796.2004.01380.x.\n (2) Rosebud Roberts, David S. Knopman (2013), \"Classification and Epidemiology of MCI\", Clin Geriatr Med; 29(4): 10.1016/j.cger.2013.07.003.\n (3) Mayo Foundation for Medical Education and Research (2020), \"Mild cognitive impairment (MCI)\", https://www.mayoclinic.org/diseases-conditions/mild-cognitive-impairment/symptoms-causes/syc-20354578"
+      ],
+      "primaryCta": "I’ve completed this, continue",
+      "secondaryCta": "Let me do this later",
+      "hasImage": true,
+      "smoke": false
+    },
+    {
+      "category": "Use mini-exercises for your body",
+      "listTitle": "Knowledge",
+      "listSubtitle": "Cognitive training as therapy",
+      "type": "KNOWLEDGE",
+      "detailHeading": "Cognitive training as therapy",
+      "detailBodyContains": [
+        "Therapy measures during neurological rehabilitation are individual and depend on both the severity of the cognitive impairment and the extent of the patient's insight into the disease, as well as whether other cognitive functions are impaired (Guidelines for Diagnostics and Therapy in Neurology). According to the Federal Working Group on Rehabilitation (BAR), neurological rehabilitation is divided into a phase model, which differs according to the patient's need for help. The primary goal here is to return the patient to independence in their everyday life and gainful employment.\n \n Computer-assisted cognitive procedures are a frequently used form of therapy. Common methods are primarily aimed at memory function. Multi-domain exercises, such as NeuroNation Med, however, address all cognitive domains while performing the exercises and thus offer a holistic approach to neurological rehabilitation through cognitive stimulation. Studies have shown that cognitive intervention through targeted cognitive exercises can significantly improve mental abilities (1). \n Furthermore, a combination of physical and cognitive exercises is used in neurological rehabilitation, as there is currently no systematic evidence for the effectiveness of cognitive intervention alone (2).\n \n Therefore, always remember to take sufficient rest breaks during your cognitive training. Long periods of concentrated work on a computer screen quickly strain our eyes and tire us out. Why not take the time today to relax your eyes after your exercises? You can find instructions on how to do this in our NeuroBooster library.\n \n \n Sources\n (1) Bundesarbeitsgemeinschaft für Rehabilitation e.V. (BAR), https://www.bar-frankfurt.de/\n (2) Dr George W. Rebok et al. (2014), \"Ten-Year Effects of the ACTIVE Cognitive Training Trial on Cognition and Everyday Functioning in Older Adults\", J Am Geriatr Soc. 2014 Jan; 62(1): 16-24., doi: 10.1111/jgs.12607\n (3) Nicole T.M. Hill et al, \"Computerized Cognitive Training in Older Adults With Mild Cognitive Impairment or Dementia: A Systematic Review and Meta-Analysis\", The American Journal of Psychiatry Volume 174. Issue 4, Pages 329-340; https://doi.org/10.1176/appi.ajp.2016.16030360"
+      ],
+      "primaryCta": "I’ve completed this, continue",
+      "secondaryCta": "Let me do this later",
+      "hasImage": true,
+      "smoke": false
+    },
+    {
+      "category": "Use mini-exercises for your body",
+      "listTitle": "Knowledge",
+      "listSubtitle": "What cognitive training can improve",
+      "type": "KNOWLEDGE",
+      "detailHeading": "What cognitive training can improve",
+      "detailBodyContains": [
+        "In modern brain training, not just one specific area of the brain is activated, as in a crossword puzzle, but rather many different areas, such as memory, thinking speed or attention. This can lead not only to a general improvement in performance in the exercises, but also to subjectively perceived improvements in everyday life (1). These so-called \"transfer effects\" can usually only be achieved with science-based and personalised training (2).\n \n NeuroNation MED offers a holistic training approach for seven main domains:\n \n (a) Working memory\n (b) Verbal memory (c) Attention\n (d) Processing speed\n (e) Reasoning ability\n (f) Executive functions (g) Episodic memory\n \n One of the most important domains is working memory. This is responsible for the temporary storage, processing and transmission of information (1). During your training, exercises such as \"mnemonic flow\" focus on this cognitive domain. General memory and retentiveness are important domains here, which you can train with targeted memory exercises such as \"double memorisation\".\n \n Particular limitations in everyday life can occur due to impairments in the cognitive domains for reasoning and processing speed. In this case, exercises for deductive problem-solving such as \"Solitaria\", in which you have to find the appropriate solution quickly by logical deduction, are helpful.\n \n A challenge in cognitive training, especially for mild cognitive impairments, is directed attention (focus) and the functions for directed motor execution of the exercises. Especially fast exercises, such as \"Colorado\", train these skills and can thus improve reaction speed.\n \n Finally, in everyday life we often find ourselves at a loss for words. Here, exercises such as \"word miracle\" can improve language skills. \n When training these cognitive domains, rest breaks for both body and mind are essential. Switch off for a moment today from our NeuroBooster exercises and relax for a bit.\n \n \n Sources\n (1) Tilo Strobach, Lynn Huestegge (2017), \"Evaluating the Effectiveness of Commercial Brain Game Training with Working-Memory Tasks\", J Cogn Enhanc; https://doi.org/10.1007/s41465-017-0053-0\n (2) Nicole T.M. Hill et al. (2016), \"Computerized Cognitive Training in Older Adults With Mild Cognitive Impairment or Dementia: A Systematic Review and Meta-Analysis\", The American Journal of Psychiatry, Volume 174, Issue 4; https://doi.org/10.1176/appi.ajp.2016.16030360"
+      ],
+      "primaryCta": "I’ve completed this, continue",
+      "secondaryCta": "Let me do this later",
+      "hasImage": true,
+      "smoke": false
+    },
+    {
+      "category": "Use mini-exercises for your body",
+      "listTitle": "Knowledge",
+      "listSubtitle": "How cognitive reserves protect your brain",
+      "type": "KNOWLEDGE",
+      "detailHeading": "How cognitive reserves protect your brain",
+      "detailBodyContains": [
+        "Cognitive reserve (1) is a theoretical concept (2) that describes the discrepancy between observable changes in brain pathology, e.g. due to ageing, and the functional or cognitive deficits that would be expected as a result (3).\n \n It is a so-called active model, in which the functional deterioration of cognitive abilities cannot be related to measurable performance characteristics of the brain's anatomy.\n \n It is based on the premise that personal cognitive processes determine the extent to which the affected person is functionally impaired by, for example, mild cognitive impairment or cognitive decline.\n \n These cognitive processes are shaped by individual life experiences and are defined by cognitive efficiency, capacity and flexibility (2). In essence, this means that current neural performance is shaped by the different cognitive activities throughout our lifespans. Thus, negative changes due to brain pathology can be reduced to thinking performance through active neural stimulation (3).\n \n The cognitive reserve is to be understood here as a neuronal network, which is composed of acquired knowledge and one's own intelligence quotient, but also school education and engagement in social activities (2).\n \n Currently, however, there is not a uniform scientific consensus as to what exactly influences cognitive reserves over our lifespans. However, it is generally accepted that cognitive training can help increase the capacity of cognitive reserve and reduce vulnerability to brain changes (2). In this way, symptoms can be prevented and existing clinical symptoms can be alleviated. \n Researchers have found that, above all, playful cognitive training can increase cognitive reserve and thus improve general cognitive performance. NeuroNation Med makes use of this type of training to specifically train this reserve and thus counteract the ageing of the brain. \n Depending on your posture, long training sessions on a computer or smartphone can lead to tension, especially in the shoulder and neck area. In our NeuroBooster library, we have compiled exercises for you that will help you refresh not only your mind but also your body between training sessions! Why not treat yourself to this little break from everyday life.\n \n \n Source (1) Yaakov Stern (2013), \"Cognitive reserve in ageing and Alzheimer's disease\", Lancet Neurol. 2012 Nov; 11(11): 1006-1012.; doi: 10.1016/S1474-4422(12)70191-6\n (2) Yaakov Stern, Daniel Barulli (2019), \" Handbook of Clinical Neurology\" , Chapter 11 - Cognitive reserve; Volume 167, 2019, Pages 181-190; https://doi.org/10.1016/B978-0-12-804766-8.00011-X\n (3) Daniel Barulli, Yaakov Stern (2013), \"Efficiency, capacity, compensation, maintenance, plasticity: emerging concepts in cognitive reserve\"; Trends Cogn Sci. 2013 October ; 17(10): .doi:10.1016/j.tics.2013.08.012.\n (4) Anja Soldana et al. (2017), \"Cognitive reserve and long-term change in cognition in aging and preclinical Alzheimer's disease\"; Neurobiol Aging. 2017 December ; 60: 164-172. doi:10.1016/j.neurobiolaging.2017.09.002."
+      ],
+      "primaryCta": "I’ve completed this, continue",
+      "secondaryCta": "Let me do this later",
+      "hasImage": true,
+      "smoke": false
+    },
+    {
+      "category": "Use mini-exercises for your body",
+      "listTitle": "Knowledge",
+      "listSubtitle": "Tips and tricks for your memory",
+      "type": "KNOWLEDGE",
+      "detailHeading": "Tips and tricks for your memory",
+      "detailBodyContains": [
+        "In order to train memory performance in everyday life and to increase its potential, a wide variety of systems exist to store the required information and to retrieve it when needed. One of the best-known methods is the LOCI method, which is a chain method that consists of associative sequences of information. This method was scientifically proven as early as 1968 (1) and its efficiency has since been demonstrated in numerous studies.\n \n In this method, the terms or information to be remembered are filed along a visual-spatial route familiar to the user. During encoding, the information to be remembered is visualised at prominent points along this route, which in turn are mentally retraced during recall (2). This also has the advantage that the information can always be recalled in the correct order.\n \n The LOCI method belongs to the generic term of mnemonic learning methods and association techniques. An extension of this method is the \"memory palace\". This is used to store knowledge with various methods of visual-spatial storage in an imaginary palace construct. In this way, as much information as possible can be stored, linked and retrieved (3).\n \n Another mnemonic learning method is the alphabet method, in which information is linked to the letters of the alphabet. \n Studies on mnemonic training have shown that changes in functional comprehension can be observed after only six weeks (4). It was found that memory in the brain itself is not only regionally limited, but encompasses a network of domains. NeuroNation Med makes use of this to train several brain areas at once with targeted exercises.\n \n The special exercises in our NeuroBooster are also designed to make your mnemonic training even more efficient. Integrate these short exercises into your everyday life to permanently increase your ability to concentrate.\n \n \n Source (1) A. R. Luria and L. S. Tsvetkova (1968), \"The Mechanism of 'Dynamic Aphasia'\", Foundations of Language; Vol. 4, No. 3 pp. 296-307\n (2) James B. Worthen, R. Reed Hunt (2011), \"Mnemonology - Mnemonics for the 21st Century\", Psychology Press; ISBN 9780203834107\n (3) Anco Peeters, Miguel Segundo-Ortin (2019), \"Misplacing memories? An enactive approach to the virtual memory palace\", Review Conscious Cogn;76:102834. doi: 10.1016/j.concog.2019.102834\n (4) Martin Dresler et al. (2017), \"Mnemonic Training Reshapes Brain Networks to Support Superior Memory\", Cell; Volume 93, Issue 5 P1227-1235.E6; https://doi.org/10.1016/j.neuron.2017.02.003"
+      ],
+      "primaryCta": "I’ve completed this, continue",
+      "secondaryCta": "Let me do this later",
+      "hasImage": true,
+      "smoke": false
+    },
+    {
+      "category": "Use mini-exercises for your body",
+      "listTitle": "Knowledge",
+      "listSubtitle": "How friends and family can help you to stay fit",
+      "type": "KNOWLEDGE",
+      "detailHeading": "How friends and family can help you to stay fit",
+      "detailBodyContains": [
+        "Cognitive decline leads to a change in everyday life. This can become a burden for the person affected. In such cases, it can help to turn to friends and relatives who can not only support and motivate the person affected, but also remind them to exercise regularly. Studies have also shown that engagement in cognitively stimulating activities within social networks is a protective factor against mild cognitive impairment and the deterioration of cognitive abilities (1).\n \n Engagement in social groups, as well as training together, can lead to subjective improvements in daily life, as well as increase motivation, which leads to greater training success.\n \n In addition, it has been shown that training in groups can lead to greater improvement in working memory and thus improvement in cognitive decline (2). With NeuroNation Med you can measure your training success against the average success of your comparison group. The easy-to-understand evaluation of individual cognitive abilities can also be used for a direct comparison with friends and family members to motivate and spur each other on. Thus, daily training can be done together in a fun and motivating way.\n \n Organisations such as the German Alzheimer Society (Deutsche Alzheimer Gesellschaft e.V.) emphasise the importance of support from friends and family and offer an exchange forum for both those affected, as well as relatives (3).\n \n Why not relax today with friends or family members in between your exercises? Our NeuroBooster exercises will give you the perfect guidance to enjoy the break together!\n \n \n Sources\n (1) Chiara F Tagliabue et al. (2018), \"A group study on the effects of a short multi-domain cognitive training in healthy elderly Italian people\"; BMC Geriatr. 2018 Dec 27;18(1):321.;doi: 10.1186/s12877-018-1014-x.\n (2) Seongryu Bae et al. (2018), \"The effect of a multicomponent intervention to promote community activity on cognitive function in older adults with mild cognitive impairment: a randomized controlled trial\"; Complement Ther Med. 2019 Feb;42:164-169. doi: 10.1016/j.ctim.2018.11.011\n (3) \"What can I do? Tips and information on the onset of dementia\" Deutsche Alzheimer Gesellschaft e.V. Selbsthilfe Demenz, 6th edition 2018, ISSN 2363-4693."
+      ],
+      "primaryCta": "I’ve completed this, continue",
+      "secondaryCta": "Let me do this later",
+      "hasImage": true,
+      "smoke": false
+    },
+    {
+      "category": "Cognitive Health",
+      "listTitle": "Cognitive Health",
+      "listSubtitle": "Psychoeducational",
+      "type": "COGNITIVE_HEALTH",
+      "nbId": 200,
+      "detailHeading": "Cognitive Health in Parkinson's Disease",
+      "detailBodyContains": [
+        "You may have noticed lately that some things take longer than they used to. You have trouble remembering several pieces of information at once, or a task requires more concentration. This can be unsettling What we’d like to show you today: These changes can be understood. And there are specific things you can do to actively support your mental health."
+      ],
+      "primaryCta": "Continue to video and quiz",
+      "secondaryCta": "Let me do this later",
+      "hasImage": true,
+      "smoke": true,
+      "quiz": {
+        "questionCount": 5,
+        "questions": [
+          {
+            "prompt": "What does cognition mean?",
+            "answers": [
+              {
+                "text": "Cognition encompasses all abilities related to thinking (e.g., remembering, paying attention, planning).",
+                "correct": true,
+                "explanation": "Explanation: Correct. Cognition describes all the mental abilities we need in everyday life."
+              },
+              {
+                "text": "Cognition describes specific areas of the brain.",
+                "correct": false,
+                "explanation": "Explanation: Cognition does not refer to specific areas of the brain, but rather to mental processes such as thinking and remembering."
+              },
+              {
+                "text": "Cognition simply means memorizing things",
+                "correct": false,
+                "explanation": "Explanation: Memory is only one part of cognition, not the whole thing."
+              },
+              {
+                "text": "Cognition primarily describes body movement and muscle strength.",
+                "correct": false,
+                "explanation": "Explanation: Cognition has nothing to do with physical movement, but with thinking."
+              }
+            ]
+          },
+          {
+            "prompt": "What best describes a “mild cognitive impairment”?",
+            "answers": [
+              {
+                "text": "Tests show initial abnormalities, but daily life can still be managed independently.",
+                "correct": true,
+                "explanation": "Explanation: That is exactly what describes mild cognitive impairment."
+              },
+              {
+                "text": "In daily life, problems are so severe that help is needed.",
+                "correct": false,
+                "explanation": "Explanation: That fits more with dementia."
+              },
+              {
+                "text": "You notice changes, but tests show no abnormalities.",
+                "correct": false,
+                "explanation": "Explanation: That describes subjective changes."
+              },
+              {
+                "text": "Only the body is affected, not thinking.",
+                "correct": false,
+                "explanation": "Explanation: This is about changes in thinking."
+              }
+            ]
+          },
+          {
+            "prompt": "What is correct regarding exercise?",
+            "answers": [
+              {
+                "text": "Regular exercise, for example 30 minutes of brisk walking three days a week, has been shown to improve cognitive function.",
+                "correct": true,
+                "explanation": "Explanation: Correct. Even moderate, regular exercise has a positive effect on the brain."
+              },
+              {
+                "text": "Exercise only affects physical fitness, but not the brain or cognitive function.",
+                "correct": false,
+                "explanation": "Explanation: Exercise also supports important brain functions."
+              },
+              {
+                "text": "Only very intense exercise, such as performance training, can improve cognitive performance.",
+                "correct": false,
+                "explanation": "Explanation: Even moderate exercise is effective."
+              },
+              {
+                "text": "Exercise can impair thinking because it places additional strain on the brain.",
+                "correct": false,
+                "explanation": "Explanation: Exercise has an overall positive effect on cognitive performance."
+              }
+            ]
+          },
+          {
+            "prompt": "What is particularly important in cognitive training?",
+            "answers": [
+              {
+                "text": "It is important to train regularly",
+                "correct": true,
+                "explanation": "Explanation: Correct. Learning requires repetition. Frequent repetition not only changes the body’s structure; the brain also becomes stronger and reshapes itself. This process is called neuroplasticity."
+              },
+              {
+                "text": "It is sufficient to train intensively just once to achieve long-term effects.",
+                "correct": false,
+                "explanation": "Explanation: A single training session is not sufficient."
+              },
+              {
+                "text": "You should train for as long as possible and without breaks to achieve the greatest effect.",
+                "correct": false,
+                "explanation": "Explanation: Breaks are important for learning success."
+              },
+              {
+                "text": "Cognitive training has no effect on everyday thinking.",
+                "correct": false,
+                "explanation": "Explanation: Training can specifically support cognitive function."
+              }
+            ]
+          },
+          {
+            "prompt": "What measures can help support cognitive function in Parkinson’s disease?",
+            "answers": [
+              {
+                "text": "Regular exercise, cognitive training, social activity, and structured daily routines can collectively support cognitive function.",
+                "correct": true,
+                "explanation": "Explanation: Correct. These four areas work together and are particularly effective."
+              },
+              {
+                "text": "Only medication can improve cognitive function; one’s own behavior has no influence.",
+                "correct": false,
+                "explanation": "Explanation: Lifestyle also plays an important role."
+              },
+              {
+                "text": "It is sufficient to take it easy and be as mentally and physically inactive as possible.",
+                "correct": false,
+                "explanation": "Explanation: Activity is important for the brain."
+              },
+              {
+                "text": "A single measure, such as exercise, is sufficient—other factors do not matter.",
+                "correct": false,
+                "explanation": "Explanation: The combination of several areas is particularly effective."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "category": "Cognitive Health",
+      "listTitle": "Cognitive Health",
+      "listSubtitle": "Reflection and MKT",
+      "type": "COGNITIVE_HEALTH",
+      "nbId": 201,
+      "detailHeading": "Thinking About Thinking",
+      "detailBodyContains": [
+        "Perhaps you’ve noticed lately that some things take longer than they used to. You have trouble remembering multiple pieces of information at once, or a task requires more concentration. This can be unsettling What we’d like to show you today: These changes can be understood. And there are specific things you can do to actively support your mental health"
+      ],
+      "primaryCta": "Continue to video and quiz",
+      "secondaryCta": "Let me do this later",
+      "hasImage": true,
+      "smoke": false,
+      "quiz": {
+        "questionCount": 2,
+        "questions": [
+          {
+            "prompt": "What does “metacognition” mean?",
+            "answers": [
+              {
+                "text": "Metacognition means consciously perceiving your own thoughts and reflecting on them.",
+                "correct": true,
+                "explanation": "Correct. Metacognition means “thinking about thinking.” It is a form of cognitive behavioral therapy and is one of the methods recommended by the German Society of Neurology."
+              },
+              {
+                "text": "Metacognition means that you have to control your thoughts and change them immediately.",
+                "correct": false,
+                "explanation": "It is not about controlling or changing thoughts, but rather about first becoming aware of them."
+              },
+              {
+                "text": "Metacognition means not thinking about your thoughts at all, if possible.",
+                "correct": false,
+                "explanation": "The exact opposite is meant—thoughts should be consciously perceived."
+              },
+              {
+                "text": "Metacognition means thinking faster and not making mistakes.",
+                "correct": false,
+                "explanation": "It’s not about speed, but about how you handle thoughts."
+              }
+            ]
+          },
+          {
+            "prompt": "In a situation, you think: “I can’t keep up anymore.” Which of the following thoughts is the most helpful alternative?",
+            "answers": [
+              {
+                "text": "“It’s harder for me right now; I need a little more time, and I’m going to take it.”",
+                "correct": true,
+                "explanation": "This thought is realistic and supportive. It reduces pressure and gives you room to maneuver."
+              },
+              {
+                "text": "“This is probably going to happen more and more often now; I just have to get used to it.”",
+                "correct": false,
+                "explanation": "At first glance, this thought seems accepting, but it is very definitive and can be discouraging."
+              },
+              {
+                "text": "“I used to be able to do this without any problems; now it just doesn’t work as well anymore.”",
+                "correct": false,
+                "explanation": "This thought compares the present to the past and intensifies frustration without offering any help."
+              },
+              {
+                "text": "“I have to concentrate extra hard now and can’t afford to make any mistakes.”",
+                "correct": false,
+                "explanation": "This sounds solution-oriented, but it increases the pressure and can make the situation worse."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "category": "Cognitive Health",
+      "listTitle": "Cognitive Health",
+      "listSubtitle": "Motivation and Intentions Task",
+      "type": "COGNITIVE_HEALTH",
+      "nbId": 202,
+      "detailHeading": "Structure Helps Your Cognitive Function",
+      "detailBodyContains": [
+        "You may have noticed lately that some things take longer than they used to. You have trouble remembering multiple pieces of information at once, or a task requires more concentration. This can be unsettling What we’d like to show you today: These changes can be understood. And there are specific things you can do to actively support your mental health."
+      ],
+      "primaryCta": "Continue to video and quiz",
+      "secondaryCta": "Let me do this later",
+      "hasImage": true,
+      "smoke": false,
+      "quiz": {
+        "questionCount": 2,
+        "questions": [
+          {
+            "prompt": "Why is structure in daily life particularly helpful for Parkinson’s?",
+            "answers": [
+              {
+                "text": "Structure relieves the brain because there’s less to plan and decide at once.",
+                "correct": true,
+                "explanation": "Structure and daily planning help you sort through your thoughts and make decisions. This means you don’t have to keep thinking about what to do next, reducing the “executive function” required. This provides security and frees up mental space for other things."
+              },
+              {
+                "text": "Structure ensures that you think faster than before.",
+                "correct": false,
+                "explanation": "Structure doesn’t make thinking faster, but simpler and clearer."
+              },
+              {
+                "text": "Structure prevents stress from arising in the first place.",
+                "correct": false,
+                "explanation": "Stress cannot be completely avoided, but structure can help reduce it."
+              },
+              {
+                "text": "Structure directly improves intelligence.",
+                "correct": false,
+                "explanation": "Structure does not change intelligence, but helps make better use of existing abilities."
+              }
+            ]
+          },
+          {
+            "prompt": "What strategy helps structure daily life?",
+            "answers": [
+              {
+                "text": "If possible, create a list of my tasks and goals and hang it on the fridge to keep track of everything.",
+                "correct": true,
+                "explanation": "Visible planning provides security, saves energy, and helps you orient yourself better."
+              },
+              {
+                "text": "Complete as many tasks as possible at the same time to save time.",
+                "correct": false,
+                "explanation": "Multitasking increases stress and makes it harder to maintain structure."
+              },
+              {
+                "text": "Complete tasks spontaneously without planning fixed routines.",
+                "correct": false,
+                "explanation": "A lack of structure can increase stress."
+              },
+              {
+                "text": "Avoid breaks to finish faster.",
+                "correct": false,
+                "explanation": "Breaks are important for the brain to recover."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "category": "Drive and motivation",
+      "listTitle": "Drive and Motivation",
+      "listSubtitle": "Psychoeducational",
+      "type": "COGNITIVE_HEALTH",
+      "nbId": 203,
+      "detailHeading": "Drive and Motivation in Parkinson's Disease",
+      "detailBodyContains": [
+        "Today we're discussing the topic of drive and motivation. Perhaps you're familiar with moments like these: You know what you should be doing: going for a walk, taking a shower, preparing your medication, calling friends or family—but somehow you just can't get started…as if the ignition has failed and the engine won't start. Many people with Parkinson’s experience exactly these kinds of situations. The important thing to remember is: This has nothing to do with laziness or a lack of willpower."
+      ],
+      "primaryCta": "Continue to video and quiz",
+      "secondaryCta": "Let me do this later",
+      "hasImage": true,
+      "smoke": false,
+      "quiz": {
+        "questionCount": 5,
+        "questions": [
+          {
+            "prompt": "How can “apathy” (lack of motivation) manifest itself?",
+            "answers": [
+              {
+                "text": "A decreased interest in hobbies or activities that used to bring joy.",
+                "correct": true,
+                "explanation": "This is typical of the lack of energy caused by apathy; interest and drive diminish."
+              },
+              {
+                "text": "One is particularly emotional and is easily moved by small things.",
+                "correct": false,
+                "explanation": "With apathy, it is often the opposite—things affect one less than they used to."
+              },
+              {
+                "text": "You have a lot of energy and start many new activities at the same time.",
+                "correct": false,
+                "explanation": "Apathy tends to manifest as a lack of drive, not as increased activity."
+              },
+              {
+                "text": "You have a strong desire for new experiences.",
+                "correct": false,
+                "explanation": "Apathy tends to manifest as a lack of interest in new things."
+              }
+            ]
+          },
+          {
+            "prompt": "Why can motivation be harder to come by with Parkinson’s?",
+            "answers": [
+              {
+                "text": "Because neurotransmitters in the brain—which also control motivation and energy—are altered.",
+                "correct": true,
+                "explanation": "These changes make it harder to start an activity."
+              },
+              {
+                "text": "Because people with Parkinson’s simply exert less effort.",
+                "correct": false,
+                "explanation": "It’s not about willpower or laziness, but about changes in the brain."
+              },
+              {
+                "text": "Because you have too few tasks.",
+                "correct": false,
+                "explanation": "The difficulty lies in getting started, not in a lack of tasks."
+              },
+              {
+                "text": "Because Parkinson’s only affects movement, not thinking or feeling.",
+                "correct": false,
+                "explanation": "Parkinson’s can also influence motivation and thinking."
+              }
+            ]
+          },
+          {
+            "prompt": "What helps when it’s hard to get started on an activity?",
+            "answers": [
+              {
+                "text": "Start with the smallest, manageable step.",
+                "correct": true,
+                "explanation": "That first small step helps get things going—after that, it often gets easier."
+              },
+              {
+                "text": "Wait for the right moment until you have enough motivation.",
+                "correct": false,
+                "explanation": "Motivation often comes after you start, not always before."
+              },
+              {
+                "text": "Putting off the task until you feel ready.",
+                "correct": false,
+                "explanation": "That can make getting started even harder."
+              },
+              {
+                "text": "Set a big goal right away to motivate yourself.",
+                "correct": false,
+                "explanation": "Big goals can feel overwhelming and make getting started harder."
+              }
+            ]
+          },
+          {
+            "prompt": "Why can routines help with starting activities instead of willpower?",
+            "answers": [
+              {
+                "text": "Because you have to think less, lose less “executive energy,” and getting started becomes easier as a result.",
+                "correct": true,
+                "explanation": "The brain gets used to routines, making it easier to get started."
+              },
+              {
+                "text": "Because it forces you to think and plan more.",
+                "correct": false,
+                "explanation": "Routines reduce the need for thinking and planning."
+              },
+              {
+                "text": "Because it puts more pressure on you.",
+                "correct": false,
+                "explanation": "Routines tend to relieve pressure rather than create it."
+              },
+              {
+                "text": "Because it makes you try to do everything at once.",
+                "correct": false,
+                "explanation": "Routines help you do things clearly and one after another."
+              }
+            ]
+          },
+          {
+            "prompt": "You want to go for a walk, but you find it hard to get started on your own. Which strategy can help you best?",
+            "answers": [
+              {
+                "text": "I’ll ask someone if we can go for a short walk together.",
+                "correct": true,
+                "explanation": "Support from others provides a “boost” and makes it easier to get started. People are more likely to keep appointments with others than with themselves."
+              },
+              {
+                "text": "I have to do this on my own; I don’t want to ask anyone for help.",
+                "correct": false,
+                "explanation": "This thought can create pressure and prevent you from taking advantage of helpful support."
+              },
+              {
+                "text": "I’ll wait until I feel more motivated, then maybe I’ll go out.",
+                "correct": false,
+                "explanation": "Motivation often comes after you start, not before."
+              },
+              {
+                "text": "I’ll wait until someone approaches me.",
+                "correct": false,
+                "explanation": "If you just wait around, nothing might happen. Actively asking for support often helps you get started more quickly."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "category": "Drive and motivation",
+      "listTitle": "Drive and Motivation",
+      "listSubtitle": "Reflection and Marketing",
+      "type": "COGNITIVE_HEALTH",
+      "nbId": 204,
+      "detailHeading": "Turning Thoughts into Action",
+      "detailBodyContains": [
+        "Today we're discussing the topic of drive and motivation. Perhaps you're familiar with moments like these: You know what you should be doing: going for a walk, taking a shower, preparing your medication, calling friends or family—but somehow you just can't get started…as if the ignition has failed and the engine won't start. Many people with Parkinson’s experience exactly these kinds of situations. The important thing to remember is: This has nothing to do with laziness or a lack of willpower."
+      ],
+      "primaryCta": "Continue to video and quiz",
+      "secondaryCta": "Let me do this later",
+      "hasImage": true,
+      "smoke": false,
+      "quiz": {
+        "questionCount": 2,
+        "questions": [
+          {
+            "prompt": "For our metacognitive training: Choose the most helpful alternative to the following thought: “I won’t be able to do this today anyway.”",
+            "answers": [
+              {
+                "text": "“I can tell it’s hard for me today—I’ll start with a small, manageable step.”",
+                "correct": true,
+                "explanation": "This thought is realistic and makes it easier to get started."
+              },
+              {
+                "text": "“Then I’d rather skip it today and try again tomorrow.”",
+                "correct": false,
+                "explanation": "That sounds reasonable, but it tends to lead to procrastination rather than getting started."
+              },
+              {
+                "text": "“I just have to pull myself together and see it through.”",
+                "correct": false,
+                "explanation": "This thought is motivating, but it creates intense pressure and can be overwhelming."
+              },
+              {
+                "text": "“If I can’t do it right, I shouldn’t even start.”",
+                "correct": false,
+                "explanation": "This thought blocks the start because it demands perfection."
+              }
+            ]
+          },
+          {
+            "prompt": "What can help you when a negative thought prevents you from getting started?",
+            "answers": [
+              {
+                "text": "Ask yourself: “Is this thought really true, and what would I say to a good friend?”",
+                "correct": true,
+                "explanation": "Right. These questions help you examine the thought and find a more helpful perspective."
+              },
+              {
+                "text": "Accept the thought immediately as true, don’t question it, and act on it right away.",
+                "correct": false,
+                "explanation": "Thoughts aren’t always facts and should be examined."
+              },
+              {
+                "text": "Consciously push the thought aside, ignore it, and distract yourself immediately.",
+                "correct": false,
+                "explanation": "Thoughts can’t simply be turned off—examining them is more helpful."
+              },
+              {
+                "text": "Take the thought seriously and conclude that it probably doesn’t make sense to start today.",
+                "correct": false,
+                "explanation": "Here, the thought is treated as a fact instead of being questioned."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "category": "Drive and motivation",
+      "listTitle": "Drive and Motivation",
+      "listSubtitle": "Motivation and Intentions Exercise",
+      "type": "COGNITIVE_HEALTH",
+      "nbId": 205,
+      "detailHeading": "Small Start, Big Impact",
+      "detailBodyContains": [
+        "Today’s topic is drive and motivation. Perhaps you’ve experienced moments like these: You know what you should do: go for a walk, take a shower, prepare your medication, call friends or family—but somehow you just can’t get started…as if the ignition is failing and the engine won’t start."
+      ],
+      "primaryCta": "Continue to video and quiz",
+      "secondaryCta": "Let me do this later",
+      "hasImage": true,
+      "smoke": false,
+      "quiz": {
+        "questionCount": 2,
+        "questions": [
+          {
+            "prompt": "What is the goal of today’s exercise?",
+            "answers": [
+              {
+                "text": "To start with a very small first step instead of tackling the entire task all at once.",
+                "correct": true,
+                "explanation": "Correct. The point is to get started—not to finish everything right away."
+              },
+              {
+                "text": "To complete the task as quickly and thoroughly as possible.",
+                "correct": false,
+                "explanation": "It’s not about speed or completeness, but about getting started."
+              },
+              {
+                "text": "Waiting to start until there’s enough motivation or energy.",
+                "correct": false,
+                "explanation": "Motivation often comes only after the first step."
+              },
+              {
+                "text": "Planning the task until you feel ready.",
+                "correct": false,
+                "explanation": "Too much planning can delay the start."
+              }
+            ]
+          },
+          {
+            "prompt": "A task feels very big right now (e.g., going for a walk). What would be a good first step?",
+            "answers": [
+              {
+                "text": "“I’ll just step outside the front door for now.”",
+                "correct": true,
+                "explanation": "Right. A very small, concrete step makes it easier to get started."
+              },
+              {
+                "text": "“I’m going to go for a 30-minute walk right now.”",
+                "correct": false,
+                "explanation": "That can seem too big and make it harder to get started."
+              },
+              {
+                "text": "“I’ll wait until I feel more motivated.”",
+                "correct": false,
+                "explanation": "Motivation often only comes once you’ve started."
+              },
+              {
+                "text": "“I’ll postpone the walk until tomorrow.”",
+                "correct": false,
+                "explanation": "Procrastinating usually doesn’t make it any easier to get started."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "category": "Mood",
+      "listTitle": "Mood",
+      "listSubtitle": "Psychoeducational",
+      "type": "COGNITIVE_HEALTH",
+      "nbId": 206,
+      "detailHeading": "Mood and Parkinson's Disease",
+      "detailBodyContains": [
+        "Does this sound familiar? You're sitting at breakfast, the sun is shining outside—and yet everything feels somehow gloomy. You don't feel like facing the day. You feel little joy. Maybe you think, “I should pull myself together.” Today, you'll learn what you can do about it."
+      ],
+      "primaryCta": "Continue to video and quiz",
+      "secondaryCta": "Let me do this later",
+      "hasImage": true,
+      "smoke": false,
+      "quiz": {
+        "questionCount": 5,
+        "questions": [
+          {
+            "prompt": "How often do people with Parkinson’s experience mood changes?",
+            "answers": [
+              {
+                "text": "About one in two people with Parkinson’s experiences mood changes.",
+                "correct": true,
+                "explanation": "Correct. Mood changes are very common in Parkinson’s because the disease affects not only movement but also the neurotransmitters in the brain that regulate mood."
+              },
+              {
+                "text": "Mood changes are very rare in Parkinson’s and affect only a few people.",
+                "correct": false,
+                "explanation": "Parkinson’s affects neurotransmitters like dopamine and serotonin—and this affects many people with the disease, not just a few."
+              },
+              {
+                "text": "Only older patients over the age of 80 are affected.",
+                "correct": false,
+                "explanation": "Mood changes result from neurological changes in the brain, not from age alone."
+              },
+              {
+                "text": "Mood changes only occur in people who are not taking medication.",
+                "correct": false,
+                "explanation": "People taking medication can also experience mood changes—mood can even fluctuate with the effects of the medication."
+              }
+            ]
+          },
+          {
+            "prompt": "Which neurotransmitters are particularly important for mood in Parkinson’s disease?",
+            "answers": [
+              {
+                "text": "Dopamine and serotonin, because they help regulate emotional balance.",
+                "correct": true,
+                "explanation": "Correct. Serotonin regulates mood, sleep, and well-being—dopamine controls motivation and drive. When levels of both decrease, emotional balance suffers."
+              },
+              {
+                "text": "Adrenaline and cortisol, because they are responsible for stress responses.",
+                "correct": false,
+                "explanation": "Adrenaline and cortisol are stress hormones. Dopamine and serotonin are particularly crucial for mood regulation in Parkinson’s disease."
+              },
+              {
+                "text": "No neurotransmitters influence mood.",
+                "correct": false,
+                "explanation": "The neurotransmitters dopamine and serotonin are very important for emotional balance."
+              },
+              {
+                "text": "Insulin and melatonin regulate mood in Parkinson’s disease.",
+                "correct": false,
+                "explanation": "Insulin controls blood sugar, melatonin the sleep-wake cycle. Dopamine and serotonin are the key neurotransmitters for mood regulation."
+              }
+            ]
+          },
+          {
+            "prompt": "What is a typical sign of mood changes in Parkinson’s disease?",
+            "answers": [
+              {
+                "text": "Less enjoyment of things that used to be enjoyable, and withdrawal from other people.",
+                "correct": true,
+                "explanation": "Correct. Mood changes often manifest in the fact that things that used to bring joy no longer do so, and one prefers to withdraw—often out of a feeling of being a burden to others."
+              },
+              {
+                "text": "Frequent mood swings and excessive enthusiasm for everyday things.",
+                "correct": false,
+                "explanation": "Typical mood changes in Parkinson’s manifest as low mood and listlessness—not as excessive enthusiasm or euphoria."
+              },
+              {
+                "text": "Increased desire for social activities and more energy than usual.",
+                "correct": false,
+                "explanation": "Mood changes in Parkinson’s disease are more likely to be accompanied by withdrawal and reduced energy—not by increased drive or social activity."
+              },
+              {
+                "text": "Physical pain and insomnia as the only symptoms.",
+                "correct": false,
+                "explanation": "Physical pain alone is not a typical sign of mood changes. Rather, persistent low mood, lack of joy, and social withdrawal are characteristic."
+              }
+            ]
+          },
+          {
+            "prompt": "What is recommended if you notice mood changes?",
+            "answers": [
+              {
+                "text": "Talk to your doctor about it, because mood changes are a medical symptom.",
+                "correct": true,
+                "explanation": "Correct. Mood changes in Parkinson’s disease have neurological causes and therefore require medical treatment—you don’t have to cope with this alone."
+              },
+              {
+                "text": "Wait until your mood improves on its own.",
+                "correct": false,
+                "explanation": "Mood changes in Parkinson’s disease often have neurological causes and do not necessarily improve on their own—targeted support is important."
+              },
+              {
+                "text": "Keep the situation to yourself and don’t burden anyone with it.",
+                "correct": false,
+                "explanation": "Talking things through—whether with your doctor, family, or a support group—is an important part of coping."
+              },
+              {
+                "text": "Avoid exercise at all costs until your mood improves.",
+                "correct": false,
+                "explanation": "Physical activity has been proven to help improve mood—so exercise should not be avoided, but encouraged."
+              }
+            ]
+          },
+          {
+            "prompt": "How does regular exercise affect mood?",
+            "answers": [
+              {
+                "text": "Regular exercise—even short walks—has been proven to have a positive impact on mood.",
+                "correct": true,
+                "explanation": "Correct. Physical activity has a direct positive effect on your mood—every small step counts and is already a sense of accomplishment."
+              },
+              {
+                "text": "Exercise only helps if you move for more than an hour every day.",
+                "correct": false,
+                "explanation": "Even short walks already have a positive effect—it doesn’t have to be intense training to improve your mood."
+              },
+              {
+                "text": "Exercise only improves physical fitness but has no effect on mood.",
+                "correct": false,
+                "explanation": "Physical activity not only affects the body but has also been proven to have a positive effect on emotional well-being."
+              },
+              {
+                "text": "When feeling down, you should take it easy and avoid exercise.",
+                "correct": false,
+                "explanation": "Exercise is particularly helpful when you’re feeling down—withdrawal and rest tend to intensify low mood rather than alleviate it."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "category": "Mood",
+      "listTitle": "Mood",
+      "listSubtitle": "Reflection and Marketing",
+      "type": "COGNITIVE_HEALTH",
+      "nbId": 207,
+      "detailHeading": "Influencing Mood Through Thoughts",
+      "detailBodyContains": [
+        "Does this sound familiar? You’re sitting down to breakfast, the sun is shining outside—and yet everything still feels kind of gloomy. You don’t feel like facing the day. You’re not feeling very happy. Maybe you think, “I really need to pull myself together.” Today, you’ll learn what you can do about it."
+      ],
+      "primaryCta": "Continue to video and quiz",
+      "secondaryCta": "Let me do this later",
+      "hasImage": true,
+      "smoke": false,
+      "quiz": {
+        "questionCount": 2,
+        "questions": [
+          {
+            "prompt": "You wanted to go for a walk today, but had to turn back after ten minutes. Your first thought was: “That was a total failure. I can’t even manage a simple walk anymore.” Which alternative thought would be more helpful here?",
+            "answers": [
+              {
+                "text": "“I walked for ten minutes today—that’s ten minutes more than nothing. My body showed me its limits today, and I respected them.”",
+                "correct": true,
+                "explanation": "Correct. The “all-or-nothing thinking” pattern was successfully avoided here. The helpful thought assesses the situation realistically: It acknowledges what was accomplished anyway, without falling into extremes."
+              },
+              {
+                "text": "“I should have just kept walking, no matter how exhausted I was. Next time, I’ll push past my limits.”",
+                "correct": false,
+                "explanation": "This thought creates additional pressure and judges one’s own decision as wrong, even though it was right to listen to the body."
+              },
+              {
+                "text": "“I used to run for hours—now I can’t do anything at all.”",
+                "correct": false,
+                "explanation": "This thought only compares with the past and allows for no middle ground—it is just as unhelpful as the original thought."
+              },
+              {
+                "text": "“There’s no point in even trying anymore. I might as well not try at all. Then I won’t be disappointed if it doesn’t work out.”",
+                "correct": false,
+                "explanation": "This thought draws a far-reaching conclusion from a difficult moment and takes away the motivation to try again next time."
+              }
+            ]
+          },
+          {
+            "prompt": "At dinner, you were shaking and spilled something. Your daughter saw it. Your first thought was: “This is just going to get worse and worse. Eventually, I won’t be able to do anything on my own.” What alternative thought would be more helpful?",
+            "answers": [
+              {
+                "text": "“Today was a difficult moment. That doesn’t mean things will only go downhill from here—bad moments are part of life, but so are good ones.”",
+                "correct": true,
+                "explanation": "Correct. The “generalizations” pattern was successfully avoided here. A single difficult moment says nothing about how all future situations will be. Every person is made up of many different moments."
+              },
+              {
+                "text": "“This is happening to me all the time now. I just have to get used to not being able to do anything anymore.”",
+                "correct": false,
+                "explanation": "This thought generalizes just like the original one—a single experience is applied to all future situations."
+              },
+              {
+                "text": "“Today was a bad day—tomorrow will surely be the same.",
+                "correct": false,
+                "explanation": "This thought sounds understandable, but it draws a conclusion about the future from a single difficult evening—a bad moment doesn’t mean that all subsequent moments will be the same."
+              },
+              {
+                "text": "I should eat alone so no one sees me.”",
+                "correct": false,
+                "explanation": "This thought leads to withdrawal and social isolation—the opposite of what’s good for your mood."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "category": "Mood",
+      "listTitle": "Mood",
+      "listSubtitle": "Motivation and Intentions Exercise",
+      "type": "COGNITIVE_HEALTH",
+      "nbId": 208,
+      "detailHeading": "Discovering Your Own Strengths",
+      "detailBodyContains": [
+        "Many of us eventually notice that our mood is changing. Not just briefly, but over a longer period of time. This happens more often than you might think. About one in two people with Parkinson’s disease experiences such mood changes. And yet, it’s rarely talked about. Sometimes people think, “That’s just part of being sick.” Or, “I don’t want to complain.”"
+      ],
+      "primaryCta": "Continue to video and quiz",
+      "secondaryCta": "Let me do this later",
+      "hasImage": true,
+      "smoke": false,
+      "quiz": {
+        "questionCount": 2,
+        "questions": [
+          {
+            "prompt": "What should you do in this exercise?",
+            "answers": [
+              {
+                "text": "Write down three strengths and read the note every morning.",
+                "correct": true,
+                "explanation": "Correct. The exercise involves writing down your own strengths and reminding yourself every day of who you are as a person—regardless of the disease."
+              },
+              {
+                "text": "Write down every morning everything you need to accomplish that day.",
+                "correct": false,
+                "explanation": "It’s not about daily goals, but about personal qualities that define you as a person."
+              },
+              {
+                "text": "Write down three people you like.",
+                "correct": false,
+                "explanation": "It’s not about your social circle, but about personal qualities that define you as a person."
+              },
+              {
+                "text": "Write down three things you’re grateful for.",
+                "correct": false,
+                "explanation": "Gratitude is a different exercise. Here, the goal is to recognize and record your own character traits."
+              }
+            ]
+          },
+          {
+            "prompt": "Which of the following traits would be a suitable strength for the exercise?",
+            "answers": [
+              {
+                "text": "Being patient, caring, or humorous.",
+                "correct": true,
+                "explanation": "Correct. Personal traits like these define you as a person—they remain constant regardless of the illness."
+              },
+              {
+                "text": "Being able to drive well in the past.",
+                "correct": false,
+                "explanation": "That is a physical ability, not a personal trait. The exercise focuses on character traits that are independent of physical condition."
+              },
+              {
+                "text": "Having lots of nice clothes.",
+                "correct": false,
+                "explanation": "That describes material possessions, not a character trait. We’re looking for traits that define a person’s personality."
+              },
+              {
+                "text": "Never having been sick in the past.",
+                "correct": false,
+                "explanation": "That describes a past state, not a personal strength. Strengths are traits that are part of who a person is, regardless of health or illness."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "category": "Dealing with anxieties about the future",
+      "listTitle": "Dealing with Anxiety About the Future",
+      "listSubtitle": "Psychoeducational",
+      "type": "COGNITIVE_HEALTH",
+      "nbId": 209,
+      "detailHeading": "Anxiety About the Future and Parkinson's Disease",
+      "detailBodyContains": [
+        "It’s perfectly natural to worry Parkinson’s is a disease whose progression cannot be accurately predicted. This allows for flexibility, but it also creates uncertainty. And uncertainty raises questions. How quickly will the disease progress? What symptoms can I expect in the future? What does this mean for my family? Will I still be able to do the things that matter to me?"
+      ],
+      "primaryCta": "Continue to video and quiz",
+      "secondaryCta": "Let me do this later",
+      "hasImage": true,
+      "smoke": false,
+      "quiz": {
+        "questionCount": 5,
+        "questions": [
+          {
+            "prompt": "What do experts call the fear of a chronic illness progressing?",
+            "answers": [
+              {
+                "text": "Fear of disease progression—the fear that the disease will worsen.",
+                "correct": true,
+                "explanation": "Correct. Fear of progression describes the fear of how a chronic disease such as Parkinson’s might develop, and it is a common phenomenon among many people affected by the disease."
+              },
+              {
+                "text": "Future blindness – the inability to look positively toward the future.",
+                "correct": false,
+                "explanation": "This term does not exist in this context. The technical term for this type of fear is fear of progression."
+              },
+              {
+                "text": "Time phobia – the general fear of the passage of time.",
+                "correct": false,
+                "explanation": "This term does not exist in this context. The technical term for this type of fear is fear of progression."
+              },
+              {
+                "text": "Diagnosis shock – the immediate reaction to a serious diagnosis.",
+                "correct": false,
+                "explanation": "Diagnosis shock describes the first moment after a diagnosis, not the long-term fear of the disease’s progression."
+              }
+            ]
+          },
+          {
+            "prompt": "Worries about the future following a Parkinson’s diagnosis are a sign of weakness. Is that true?",
+            "answers": [
+              {
+                "text": "No, worries are a completely natural reaction to uncertainty and occur in many people with the condition.",
+                "correct": true,
+                "explanation": "Correct. Worries signal that something important is on our minds—that is human and normal, not a sign of weakness."
+              },
+              {
+                "text": "Yes, those who cope well with the diagnosis don’t worry.",
+                "correct": false,
+                "explanation": "Coping well with a diagnosis does not mean having no worries. Worries are a natural reaction that many people with the condition experience."
+              },
+              {
+                "text": "Yes, worries show that you haven’t informed yourself enough.",
+                "correct": false,
+                "explanation": "Even well-informed people worry—uncertainty about the course of the disease remains, no matter how much you know."
+              },
+              {
+                "text": "No, worries about the future aren’t a sign of weakness, but a sign of getting older.",
+                "correct": false,
+                "explanation": "Worries about the future can affect anyone with the condition, regardless of age."
+              }
+            ]
+          },
+          {
+            "prompt": "What distinguishes helpful worries from burdensome worries?",
+            "answers": [
+              {
+                "text": "Helpful worries prompt us to take action—burdensome worries go in circles without leading to a solution",
+                "correct": true,
+                "explanation": "Correct. The difference lies not in whether you worry, but in what you do when worries arise"
+              },
+              {
+                "text": "Helpful worries feel pleasant; burdensome worries feel unpleasant.",
+                "correct": false,
+                "explanation": "Both types of worry can feel unpleasant—the difference lies in whether they lead to meaningful action or not."
+              },
+              {
+                "text": "Burdening worries always concern more serious issues than helpful worries.",
+                "correct": false,
+                "explanation": "It’s not about the subject of the worry, but whether it motivates us or paralyzes us."
+              },
+              {
+                "text": "Helpful worries are rare; burdening worries occur more frequently.",
+                "correct": false,
+                "explanation": "Frequency is not a decisive factor—what matters is whether the worry leads to active action or drains energy."
+              }
+            ]
+          },
+          {
+            "prompt": "Why is it better to ask professionals for information instead of searching for it yourself online?",
+            "answers": [
+              {
+                "text": "Because information found online often doesn’t apply to your specific situation or is unreliable, and can unnecessarily increase your anxiety.",
+                "correct": true,
+                "explanation": "That’s right. Reliable information from professionals helps put fears into perspective—uncontrolled online research can have the opposite effect."
+              },
+              {
+                "text": "Because the internet is too complicated and written in a way that’s hard to understand.",
+                "correct": false,
+                "explanation": "The language isn’t the problem—it’s that information on the internet often doesn’t apply to your specific situation and can unnecessarily amplify fears."
+              },
+              {
+                "text": "Because you can’t find any information about Parkinson’s on the internet.",
+                "correct": false,
+                "explanation": "There is certainly information about Parkinson’s on the internet—the problem is its quality and reliability, not its availability."
+              },
+              {
+                "text": "Because searching the internet takes too much time and is distracting.",
+                "correct": false,
+                "explanation": "It’s not the time spent that’s the problem, but the quality and relevance of the information found."
+              }
+            ]
+          },
+          {
+            "prompt": "What is recommended to better cope with worries about the future?",
+            "answers": [
+              {
+                "text": "Voice your concerns or write them down on a piece of paper, get reliable information from experts, and stay in the here and now.",
+                "correct": true,
+                "explanation": "Correct. These three steps help reduce worries—what is spoken aloud has less power, experts help put fears into perspective, and focusing on today takes some of the power away from worries about the future."
+              },
+              {
+                "text": "Research as much as possible online to be well-informed.",
+                "correct": false,
+                "explanation": "Online research can unnecessarily amplify worries because the information often doesn’t apply to one’s own situation or is overly negative."
+              },
+              {
+                "text": "Keep your worries to yourself and wait for them to disappear on their own.",
+                "correct": false,
+                "explanation": "What remains unspoken holds more power—actively addressing or writing down your worries is an important first step."
+              },
+              {
+                "text": "Think only about the future and prepare well.",
+                "correct": false,
+                "explanation": "Worries about the future concern things that haven’t happened yet. It’s recommended to stay in the here and now and see what you can do today."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "category": "Dealing with anxieties about the future",
+      "listTitle": "Dealing with Concerns About the Future",
+      "listSubtitle": "Reflection and MKT",
+      "type": "COGNITIVE_HEALTH",
+      "nbId": 210,
+      "detailHeading": "Dealing with Concerns About the Future",
+      "detailBodyContains": [
+        "Worrying is completely natural Parkinson’s disease is a condition whose progression cannot be predicted with certainty. This allows for flexibility, but also creates uncertainty. And uncertainty raises questions. How quickly is the disease progressing? What symptoms can I expect in the future? What does this mean for my family? Will I still be able to do the things that are important to me?"
+      ],
+      "primaryCta": "Continue to video and quiz",
+      "secondaryCta": "Let me do this later",
+      "hasImage": true,
+      "smoke": false,
+      "quiz": {
+        "questionCount": 2,
+        "questions": [
+          {
+            "prompt": "You’re worried about how Parkinson’s will progress for you. Your first thought is: “I need to know what’s going to happen. Only then can I feel more at ease.” What thought would be more helpful?",
+            "answers": [
+              {
+                "text": "“I don’t know what’s coming. But so far, I’ve been able to cope with many things I couldn’t have imagined before—and I won’t be alone in this.”",
+                "correct": true,
+                "explanation": "Correct. The pattern of “struggling to tolerate uncertainty” has been successfully avoided. The helpful thought accepts the uncertainty instead of trying to dismiss it—and reminds you that you’ve already demonstrated strength and have support."
+              },
+              {
+                "text": "“If I do enough research, I’ll eventually have all the answers.”",
+                "correct": false,
+                "explanation": "The uncertainty surrounding Parkinson’s cannot be researched away—trying to answer every question tends to make your thoughts go in circles and leaves you exhausted."
+              },
+              {
+                "text": "“I should just stop thinking about the future.”",
+                "correct": false,
+                "explanation": "Thoughts cannot simply be turned off."
+              },
+              {
+                "text": "“Once I know what’s coming, I can plan better and worry less.”",
+                "correct": false,
+                "explanation": "This thought, too, attempts to gain control over something that cannot be controlled—which tends to amplify worries rather than reduce them."
+              }
+            ]
+          },
+          {
+            "prompt": "You notice that you have a distressing thought about the future. Which three questions help you question this thought?",
+            "answers": [
+              {
+                "text": "“Am I jumping straight from today to the worst possible future?” – “Am I trying to control something that can’t be controlled?” – “What is helpful?”",
+                "correct": true,
+                "explanation": "Right. These three questions help identify catastrophic thinking, recognize the urge to control, and distinguish between real knowledge and assumptions."
+              },
+              {
+                "text": "“Why do I feel this way?” – “What can others do for me?” – “How often have I had this thought before?”",
+                "correct": false,
+                "explanation": "These questions go in circles without truly questioning or reevaluating the stressful thought."
+              },
+              {
+                "text": "“How can I make sure the worst doesn’t happen?” – “What do others going through this say?” – “When will things get better?”",
+                "correct": false,
+                "explanation": "These questions attempt to gain control or seek answers to things that cannot be predicted—which tends to amplify worries rather than reduce them."
+              },
+              {
+                "text": "“Am I in a good mood today?” – “Have I experienced something nice today?” – “What else can I get done today?”",
+                "correct": false,
+                "explanation": "While these questions aren’t harmful, they don’t help in specifically questioning and reevaluating a stressful thought about the future."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "category": "Dealing with anxieties about the future",
+      "listTitle": "Dealing with Worries About the Future",
+      "listSubtitle": "Motivation and Intention Exercise",
+      "type": "COGNITIVE_HEALTH",
+      "nbId": 211,
+      "detailHeading": "Your Time for Worries",
+      "detailBodyContains": [
+        "Worrying is completely natural Parkinson’s disease is a condition whose progression cannot be predicted with certainty. This allows for flexibility, but also creates uncertainty. And uncertainty raises questions. How quickly is the disease progressing? What symptoms can I expect in the future? What does this mean for my family? Will I still be able to do the things that are important to me?"
+      ],
+      "primaryCta": "Continue to video and quiz",
+      "secondaryCta": "Let me do this later",
+      "hasImage": true,
+      "smoke": false,
+      "quiz": {
+        "questionCount": 2,
+        "questions": [
+          {
+            "prompt": "What is the principle behind “worry time”?",
+            "answers": [
+              {
+                "text": "Worries are given a set time of day so that they leave you in peace for the rest of the day—and especially at night.",
+                "correct": true,
+                "explanation": "That’s right. By giving worries a set time, they often lose some of their power—the brain knows they won’t be forgotten."
+              },
+              {
+                "text": "People try to push worries out of their minds as quickly as possible.",
+                "correct": false,
+                "explanation": "When people try to suppress thoughts, they often end up thinking about them even more frequently—Worry Time works exactly the opposite way: worries are consciously given space."
+              },
+              {
+                "text": "You deal with your worries all day long so that you don’t forget anything.",
+                "correct": false,
+                "explanation": "Worry Time is deliberately limited to about 15 minutes—mulling over worries all day drains energy and keeps thoughts going in circles."
+              },
+              {
+                "text": "You talk to a doctor about your worries every day.",
+                "correct": false,
+                "explanation": "Worry Time is an exercise you do on your own—alone, at a set time, without needing a professional."
+              }
+            ]
+          },
+          {
+            "prompt": "It’s nighttime and a worry pops up. What does the exercise recommend at that moment?",
+            "answers": [
+              {
+                "text": "Tell yourself: “I’ll deal with this during my Worry Time”—jot down the worry briefly and then let it go.",
+                "correct": true,
+                "explanation": "Correct. This step reassures the brain that the worry won’t be forgotten—and helps you let it go until Worry Time."
+              },
+              {
+                "text": "Thinking the worry through immediately so you can sleep afterward.",
+                "correct": false,
+                "explanation": "Worries always feel urgent—but this feeling is usually deceptive. Thinking them through immediately often prolongs the rumination instead of ending it."
+              },
+              {
+                "text": "Discuss the worry directly with someone.",
+                "correct": false,
+                "explanation": "Worry time works precisely because worries are postponed to a specific time—they don’t have to be resolved immediately."
+              },
+              {
+                "text": "Try to ignore the worry and go back to sleep.",
+                "correct": false,
+                "explanation": "Thoughts can’t simply be ignored—those who suppress them often end up thinking about them even more frequently. It’s more helpful to briefly jot down the worry and consciously postpone it until worry time."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "category": "Changes in relationships and roles",
+      "listTitle": "Changes in Relationships and Roles",
+      "listSubtitle": "Psychoeducational",
+      "type": "COGNITIVE_HEALTH",
+      "nbId": 212,
+      "detailHeading": "Changes in Relationships and Roles",
+      "detailBodyContains": [
+        "Imagine this: Your partner asks three times a day if everything is okay. They mean well. But you feel watched, patronized, and no longer like an equal partner. Or conversely: You say everything is fine because you don’t want to burden anyone. But inside, you’re carrying the whole burden alone. Many people with chronic illnesses are familiar with moments like these. And it’s important to talk about them."
+      ],
+      "primaryCta": "Continue to video and quiz",
+      "secondaryCta": "Let me do this later",
+      "hasImage": true,
+      "smoke": false,
+      "quiz": {
+        "questionCount": 5,
+        "questions": [
+          {
+            "prompt": "What is an important insight about relationships when dealing with chronic illnesses?",
+            "answers": [
+              {
+                "text": "Relationships change, but how they evolve depends on how people interact with one another.",
+                "correct": true,
+                "explanation": "That’s right. A diagnosis brings changes. But change doesn’t automatically mean a decline. What matters is how both partners treat each other, how openly they communicate, and how they perceive each other as people."
+              },
+              {
+                "text": "Relationships automatically get worse because of Parkinson’s.",
+                "correct": false,
+                "explanation": "That’s not true. Changes are inevitable, but they don’t have to mean a decline. Couples and families who talk openly about changes actually report deeper and more honest relationships than before."
+              },
+              {
+                "text": "Relationships stay exactly the same as before if you act as if nothing has changed.",
+                "correct": false,
+                "explanation": "Changes can’t simply be ignored. Roles shift, responsibilities are redistributed—and that inevitably affects how you interact with each other. If you pretend everything is as it used to be, you risk misunderstandings and distance building up."
+              },
+              {
+                "text": "Relationships depend solely on how severe the symptoms are.",
+                "correct": false,
+                "explanation": "Symptoms play a role, but they alone do not determine the quality of a relationship."
+              }
+            ]
+          },
+          {
+            "prompt": "What is the difference between genuine help and patronizing behavior?",
+            "answers": [
+              {
+                "text": "With genuine help, the other person asks first and leaves room for what you can and want to do yourself.",
+                "correct": true,
+                "explanation": "That’s right. Genuine support means offering help without pushing—and asking before simply taking action. Patronizing behavior often stems from well-meaning concern, for example when a partner automatically takes over the shopping even though you still wanted to do it yourself. The result: You don’t feel relieved, but rather restricted in your independence. Let those around you know what you’d like to do yourself."
+              },
+              {
+                "text": "Paternalism is always easy to spot because it has malicious intent.",
+                "correct": false,
+                "explanation": "Paternalism almost always stems from good intentions—from care and the desire to help. That is precisely why it is so hard to recognize and address."
+              },
+              {
+                "text": "When someone helps without asking, it is always a sign of respect.",
+                "correct": false,
+                "explanation": "Not necessarily. Those who act without asking take away the other person’s ability to decide for themselves. Respect also means taking the other person’s independence seriously and asking before taking over."
+              },
+              {
+                "text": "Real help means taking over everything for the person who is ill.",
+                "correct": false,
+                "explanation": "The opposite is often helpful. Real support leaves room for what you can and want to do yourself. Taking over everything also takes away the other person’s self-determination and the feeling that they can still contribute."
+              }
+            ]
+          },
+          {
+            "prompt": "What can happen if you don’t share how you’re really feeling?",
+            "answers": [
+              {
+                "text": "It can lead to distance, even though both sides mean well.",
+                "correct": true,
+                "explanation": "That’s right. Those who stay silent to avoid burdening others mean well—but those around them don’t realize what’s truly needed. Silence creates misunderstandings and distance, even when both sides want to be there for each other. Try dropping brief hints to those around you and address your needs and wishes. Difficult, longer conversations about changes go better when both are well-rested and have time. It’s better to do this in the morning rather than in the evening, when mental energy has been less taxed"
+              },
+              {
+                "text": "Silence protects the relationship because it avoids conflict.",
+                "correct": false,
+                "explanation": "This may seem effective in the short term, but it is not a solution in the long run. Research clearly shows: couples and families who talk openly about changes have a better quality of relationship in the long term."
+              },
+              {
+                "text": "If you remain silent, others will automatically sense what you need.",
+                "correct": false,
+                "explanation": "Those around you cannot know what you need unless you say it. Loved ones often act based on assumptions. The more specifically you state what you want, the easier it is for others to truly help."
+              },
+              {
+                "text": "Silence prevents anything from changing in the relationship.",
+                "correct": false,
+                "explanation": "Changes happen regardless of whether you talk about them or not. The difference is: Those who communicate openly can actively help shape how the relationship develops."
+              }
+            ]
+          },
+          {
+            "prompt": "What communication tip helps avoid misunderstandings?",
+            "answers": [
+              {
+                "text": "Speak in “I” statements—that is, express your own experience without blaming the other person.",
+                "correct": true,
+                "explanation": "Correct. The difference between “You always take on everything” and “I realize that it’s important to me to handle this myself” is crucial. “I” statements convey your own experience without making accusations, and that makes it much easier for the other person to listen and understand."
+              },
+              {
+                "text": "Waiting until the other person initiates the conversation on their own.",
+                "correct": false,
+                "explanation": "Paying attention to the right timing makes sense, but that doesn’t mean waiting passively. Important conversations go better when you approach them proactively."
+              },
+              {
+                "text": "Keep your wording as general as possible so the other person can figure out for themselves what you mean.",
+                "correct": false,
+                "explanation": "Vague statements like “I need more support” overwhelm those around you. Being specific provides clarity."
+              },
+              {
+                "text": "Don’t speak until you have a solution ready.",
+                "correct": false,
+                "explanation": "You don’t need to have a ready-made solution to start a conversation. Sometimes it helps just to say how you feel and what you need right now."
+              }
+            ]
+          },
+          {
+            "prompt": "What specific steps can you take to strengthen your relationships in everyday life?",
+            "answers": [
+              {
+                "text": "Be as specific as possible about what you need—for example, whether you’d like help or would rather do something yourself.",
+                "correct": true,
+                "explanation": "That’s right. The more specifically you can describe what you want, the easier it is for the other person to truly help. Those around you often can’t know unless you say it out loud."
+              },
+              {
+                "text": "Trying to handle everything on your own so as not to burden anyone.",
+                "correct": false,
+                "explanation": "That sounds considerate, but it can lead to feeling overwhelmed and creating emotional distance. People with chronic illnesses who clearly communicate what they want to handle themselves and where they need support report greater well-being and more independence—not less."
+              },
+              {
+                "text": "Wait until the situation improves on its own.",
+                "correct": false,
+                "explanation": "Without active communication, problems rarely resolve themselves. Relationships require effort."
+              },
+              {
+                "text": "Try to always appear strong and not show your feelings.",
+                "correct": false,
+                "explanation": "This is an understandable impulse, but it can prevent closeness. Studies show that family members suffer less from exhaustion when there is open communication."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "category": "Changes in relationships and roles",
+      "listTitle": "Changes in Relationships and Roles",
+      "listSubtitle": "Reflection and MKT",
+      "type": "COGNITIVE_HEALTH",
+      "nbId": 213,
+      "detailHeading": "Changes in Relationships and Roles",
+      "detailBodyContains": [
+        "Imagine this: Your partner asks three times a day if everything is okay. They mean well. But you feel watched, patronized, and no longer like an equal partner. Or conversely: You say everything is fine because you don’t want to burden anyone. But inside, you’re carrying the whole burden alone. Many people with chronic illnesses are familiar with moments like these. And it’s important to talk about them."
+      ],
+      "primaryCta": "Continue to video and quiz",
+      "secondaryCta": "Let me do this later",
+      "hasImage": true,
+      "smoke": false,
+      "quiz": {
+        "questionCount": 2,
+        "questions": [
+          {
+            "prompt": "“I need to get more done,” “I should still be able to do that”—how do these “must” and “should” statements affect our emotions?",
+            "answers": [
+              {
+                "text": "Negative, because they are internal demands that feel like obligations and can trigger feelings of guilt if you don’t meet them.",
+                "correct": true,
+                "explanation": "Correct. These thoughts arise automatically and feel like facts. Anyone who doesn’t meet them feels guilty—even if the expectation was unrealistic from the start."
+              },
+              {
+                "text": "Positive, because they help motivate you and achieve more.",
+                "correct": false,
+                "explanation": "“Must” and “should” statements usually create pressure instead of helpful motivation—they weigh on your mood rather than propel you forward."
+              },
+              {
+                "text": "Positive, because they show that you have the situation well under control.",
+                "correct": false,
+                "explanation": "These thoughts signal inner tension rather than control. A realistic view of your own situation is more helpful than a strict internal demand."
+              },
+              {
+                "text": "Negative, because they can only arise in particularly difficult situations.",
+                "correct": false,
+                "explanation": "“Must” and “should” statements can arise at any time and completely automatically—often without you even noticing them as thoughts. That makes them particularly stressful in everyday life."
+              }
+            ]
+          },
+          {
+            "prompt": "When we think we know what others are thinking without asking them, that’s called mind reading. What would be a helpful way to deal with the thought: “It will be too much for my partner to accompany me to the doctor today. I’d better not ask.”?",
+            "answers": [
+              {
+                "text": "Realize that you don’t really know—and instead ask directly: “Do you have time today to accompany me to the doctor?”",
+                "correct": true,
+                "explanation": "Correct. A guess is not knowledge. Asking creates clarity, avoids misunderstandings—and strengthens the relationship."
+              },
+              {
+                "text": "Tell yourself: “Maybe it’s too much for my partner—I’d better ask another time.”",
+                "correct": false,
+                "explanation": "That sounds considerate, but it remains an assumption. You withdraw without really asking—and may miss out on genuine support."
+              },
+              {
+                "text": "Accept the thought and go to the doctor alone.",
+                "correct": false,
+                "explanation": "Those who act on the basis of an assumption withdraw unnecessarily—and the pattern of mind-reading remains unchanged."
+              },
+              {
+                "text": "Distract yourself and hope the thought goes away on its own.",
+                "correct": false,
+                "explanation": "Unquestioned thoughts continue to trigger uncertainty. It’s more helpful to consciously pause: Is this a fact—or an assumption?"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "category": "Changes in relationships and roles",
+      "listTitle": "Changes in Relationships and Roles",
+      "listSubtitle": "Motivation and Intentions Assignment",
+      "type": "COGNITIVE_HEALTH",
+      "nbId": 214,
+      "detailHeading": "Changes in Relationships and Roles",
+      "detailBodyContains": [
+        "Imagine this: Your partner asks three times a day if everything is okay. They mean well. But you feel watched, patronized, and no longer like an equal partner. Or conversely: You say everything is fine because you don’t want to burden anyone. But inside, you’re carrying the whole burden alone. Many people with chronic illnesses are familiar with moments like these. And it’s important to talk about them."
+      ],
+      "primaryCta": "Continue to video and quiz",
+      "secondaryCta": "Let me do this later",
+      "hasImage": true,
+      "smoke": false,
+      "quiz": {
+        "questionCount": 2,
+        "questions": [
+          {
+            "prompt": "Why does writing down your needs help?",
+            "answers": [
+              {
+                "text": "Because it helps you clearly identify what’s important to you and gain clarity about your own desires and boundaries.",
+                "correct": true,
+                "explanation": "You may sense many things, but it’s only by writing them down that they become clear and tangible. Additionally, the list can be very helpful when communicating with family and friends."
+              },
+              {
+                "text": "Because it allows you to solve your problems immediately.",
+                "correct": false,
+                "explanation": "Writing things down helps with clarity, but it doesn’t automatically solve all problems."
+              },
+              {
+                "text": "Because it means you have to think less.",
+                "correct": false,
+                "explanation": "On the contrary—it encourages you to consciously reflect on your own needs."
+              },
+              {
+                "text": "Because it helps you better explain what others need.",
+                "correct": false,
+                "explanation": "That sounds reasonable, but the main point here is to understand your own needs, not those of others."
+              }
+            ]
+          },
+          {
+            "prompt": "What is the assignment for today’s session?",
+            "answers": [
+              {
+                "text": "Write two lists: one with things you want to do yourself, and one with areas where you’d like support.",
+                "correct": true,
+                "explanation": "Right. Writing things down helps you recognize your own needs and boundaries more clearly—because only once you’re clear about them can you communicate them to others."
+              },
+              {
+                "text": "Write a list of everything you haven’t been able to do yourself since your diagnosis.",
+                "correct": false,
+                "explanation": "It’s not about listing losses, but about what’s important to you—both what you want to keep in your own hands and where you’d like help."
+              },
+              {
+                "text": "Just think about what you need without writing it down.",
+                "correct": false,
+                "explanation": "Writing things down is an important part of the exercise. While you may sense many things, it is only by putting them into concrete words that true clarity about your own needs emerges."
+              },
+              {
+                "text": "Write down three things for which you would like support.",
+                "correct": false,
+                "explanation": "This is only part of the task. The goal is to create two lists: one with things you want to handle yourself, and one with areas where you would like support."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "category": "The effects of medication",
+      "listTitle": "Self-Perception",
+      "listSubtitle": "Psychoeducational",
+      "type": "COGNITIVE_HEALTH",
+      "nbId": 215,
+      "detailHeading": "Self-Perception",
+      "detailBodyContains": [
+        "Perhaps you have asked yourself this question before. And perhaps your answer before the diagnosis was different from what it is today. Many people with a mental health condition report that this answer shifts over time. And suddenly, the answer to “Who am I?” revolves almost entirely around the diagnosis. In this video, you’ll learn: What self-concept is and why it can shift following a diagnosis. What modern psychology has to say about it. And what concrete steps you can take to positively strengthen your self-image."
+      ],
+      "primaryCta": "Continue to video and quiz",
+      "secondaryCta": "Let me do this later",
+      "hasImage": true,
+      "smoke": false,
+      "quiz": {
+        "questionCount": 5,
+        "questions": [
+          {
+            "prompt": "What best describes “self-concept”?",
+            "answers": [
+              {
+                "text": "The image we have of ourselves—that is, what we think, feel, and believe about ourselves.",
+                "correct": true,
+                "explanation": "Explanation: Self-concept includes, for example, what kind of person you are, what you are capable of, and what is important to you."
+              },
+              {
+                "text": "The physical abilities you have in everyday life.",
+                "correct": false,
+                "explanation": "Explanation: These can be part of your self-image, but they do not constitute your entire self-concept."
+              },
+              {
+                "text": "The diagnosis and symptoms of an illness.",
+                "correct": false,
+                "explanation": "Explanation: The illness is only one part of life, not the entire self-image."
+              },
+              {
+                "text": "Other people’s opinions about who you are.",
+                "correct": false,
+                "explanation": "Explanation: Other people’s opinions can influence your self-image, but self-concept arises primarily from your own beliefs."
+              }
+            ]
+          },
+          {
+            "prompt": "Your self-concept can change due to an illness. What is an approach from Acceptance and Commitment Therapy (ACT) that can help with this?",
+            "answers": [
+              {
+                "text": "You are more than your symptoms and limitations. You are the person who has experienced all of this and who can decide how to deal with it.",
+                "correct": true,
+                "explanation": "Explanation: ACT emphasizes that the illness is only a part—not the whole person."
+              },
+              {
+                "text": "You should try to ignore the symptoms as much as possible.",
+                "correct": false,
+                "explanation": "Explanation: ACT is not about ignoring symptoms, but about accepting them while recognizing that you are more than your symptoms."
+              },
+              {
+                "text": "You should focus on getting back to the way you used to be.",
+                "correct": false,
+                "explanation": "Explanation: This can lead to frustration because it does not take current reality into account."
+              },
+              {
+                "text": "You should learn to focus on the positive despite the symptoms.",
+                "correct": false,
+                "explanation": "Explanation: That sounds helpful, but ACT isn’t just about positive thinking; it’s about accepting your own situation and seeing yourself as more than just your thoughts and symptoms."
+              }
+            ]
+          },
+          {
+            "prompt": "What does the “new starting point” mean in everyday life?",
+            "answers": [
+              {
+                "text": "Use your current capacity as a benchmark and plan from there.",
+                "correct": true,
+                "explanation": "Explanation: Correct. If you can go for a 30-minute walk today, that’s the new 100 percent. From this point, you plan, act, and shape your daily life—not based on past standards."
+              },
+              {
+                "text": "Setting goals that are just as high as they used to be.",
+                "correct": false,
+                "explanation": "Explanation: Anyone who measures themselves against what was possible in the past will almost inevitably fall short—because the standard hasn’t adapted to current reality. This creates the feeling of no longer being enough."
+              },
+              {
+                "text": "Focusing only on what you can no longer do.",
+                "correct": false,
+                "explanation": "Explanation: The new starting point doesn’t look at what has been lost, but at what is possible today—and makes exactly that the foundation for daily life."
+              },
+              {
+                "text": "Gradually working your way back toward past achievements.",
+                "correct": false,
+                "explanation": "Explanation: That sounds sensible, but it maintains the old standard. This approach flips that on its head: The standard isn’t the past—but what is realistically possible today."
+              }
+            ]
+          },
+          {
+            "prompt": "Which question helps actively strengthen one’s self-image?",
+            "answers": [
+              {
+                "text": "“What kind of person am I—regardless of what I’m currently capable of?”",
+                "correct": true,
+                "explanation": "Explanation: This question consciously directs attention toward one’s own qualities and values—and away from what the illness has changed. Character and personality remain intact, even if abilities shift."
+              },
+              {
+                "text": "“What could I do better in the past than I can today?”",
+                "correct": false,
+                "explanation": "Explanation: This question reinforces the comparison with your former self and the feeling of no longer being enough—instead of focusing on what is still there today."
+              },
+              {
+                "text": "“How can I continue to handle as many tasks as possible just as I did before?”",
+                "correct": false,
+                "explanation": "Explanation: This question maintains the old standard and can lead to feeling overwhelmed, rather than creating a realistic starting point."
+              },
+              {
+                "text": "“Which tasks can I still handle well right now?”",
+                "correct": false,
+                "explanation": "Explanation: This is a helpful way to look at one’s own capabilities, but it doesn’t go as deep as the question of one’s character and personal values—which exist independently of one’s performance."
+              }
+            ]
+          },
+          {
+            "prompt": "What happens when you measure yourself daily against what you used to be able to do?",
+            "answers": [
+              {
+                "text": "You almost inevitably fall short because the standard hasn’t adapted to current reality.",
+                "correct": true,
+                "explanation": "Explanation: If you cook, but less elaborately than before, or go for walks, but not as far—this comparison creates the feeling that you’re no longer enough. Not because you’re worth less, but because the standard is set incorrectly."
+              },
+              {
+                "text": "You motivate yourself to get back to your former level of performance.",
+                "correct": false,
+                "explanation": "Explanation: This comparison usually creates pressure instead of motivation because it ignores current reality and maintains an unrealistic standard."
+              },
+              {
+                "text": "You gain a better sense of how much you still accomplish despite your illness.",
+                "correct": false,
+                "explanation": "Explanation: Comparing yourself to the past usually highlights what’s missing, not what’s possible. It’s more helpful to focus on your new starting point."
+              },
+              {
+                "text": "You maintain a realistic view of yourself.",
+                "correct": false,
+                "explanation": "Explanation: A realistic self-image isn’t formed by comparing yourself to the past, but by focusing on your current capabilities, values, and qualities."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "category": "The effects of medication",
+      "listTitle": "Self-Perception",
+      "listSubtitle": "Reflection and MKT",
+      "type": "COGNITIVE_HEALTH",
+      "nbId": 216,
+      "detailHeading": "Self-Perception",
+      "detailBodyContains": [
+        "Perhaps you have asked yourself this question before. And perhaps your answer before the diagnosis was different from what it is today. Many people with a mental health condition report that this answer shifts over time. And suddenly, the answer to “Who am I?” revolves almost entirely around the diagnosis. In this video, you’ll learn: What self-concept is and why it can shift following a diagnosis. What modern psychology has to say about it. And what concrete steps you can take to positively strengthen your self-image."
+      ],
+      "primaryCta": "Continue to video and quiz",
+      "secondaryCta": "Let me do this later",
+      "hasImage": true,
+      "smoke": false,
+      "quiz": {
+        "questionCount": 2,
+        "questions": [
+          {
+            "prompt": "Immediately dismissing a compliment is a sign of the “rejecting the positive” mindset. Choose a helpful alternative for the following example: Your friends compliment your new haircut. You think: “Oh, they’re just saying that to make me feel better.”",
+            "answers": [
+              {
+                "text": "“My friends think my haircut looks nice, and I’m allowed to accept that.”",
+                "correct": true,
+                "explanation": "This thought allows the positive in and accepts the compliment."
+              },
+              {
+                "text": "“That’s nice of them, but it’s really nothing special.”",
+                "correct": false,
+                "explanation": "It sounds modest, but it still devalues the positive."
+              },
+              {
+                "text": "“My hair used to look better than it does now.”",
+                "correct": false,
+                "explanation": "Comparing it to the past distracts from the positive moment."
+              },
+              {
+                "text": "“They just want to cheer me up, so I’m not taking it seriously.”",
+                "correct": false,
+                "explanation": "That is exactly the rejection of the positive."
+              }
+            ]
+          },
+          {
+            "prompt": "When a single moment is taken as proof of who you are as a person, it’s called “generalization to the self.” Choose a helpful alternative to the following thought: “I didn’t manage to go for my walk today. I’m no longer the kind of person who exercises regularly.”",
+            "answers": [
+              {
+                "text": "“Exercising was hard for me today. That doesn’t mean I’m someone who can’t exercise anymore.”",
+                "correct": true,
+                "explanation": "This thought separates a single moment from your own identity."
+              },
+              {
+                "text": "“I should have tried harder today.”",
+                "correct": false,
+                "explanation": "This thought creates pressure and isn’t helpful."
+              },
+              {
+                "text": "“Maybe I should just stop going for walks altogether if it’s not working out anymore.”",
+                "correct": false,
+                "explanation": "That reinforces withdrawal and generalization."
+              },
+              {
+                "text": "“Today was difficult; I can’t do what I used to be able to do anymore.”",
+                "correct": false,
+                "explanation": "That’s more helpful, but it doesn’t address the false generalization about oneself as directly."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "category": "The effects of medication",
+      "listTitle": "Self-Perception",
+      "listSubtitle": "Motivation and Intentions Assignment",
+      "type": "COGNITIVE_HEALTH",
+      "nbId": 217,
+      "detailHeading": "Self-Perception",
+      "detailBodyContains": [
+        "Perhaps you have asked yourself this question before. And perhaps your answer before the diagnosis was different from what it is today. Many people with a mental health condition report that this answer shifts over time. And suddenly, the answer to “Who am I?” revolves almost entirely around the diagnosis. In this video, you’ll learn: What self-concept is and why it can shift following a diagnosis. What modern psychology has to say about it. And what concrete steps you can take to positively strengthen your self-image."
+      ],
+      "primaryCta": "Continue to video and quiz",
+      "secondaryCta": "Let me do this later",
+      "hasImage": true,
+      "smoke": false,
+      "quiz": {
+        "questionCount": 2,
+        "questions": [
+          {
+            "prompt": "Why is it sometimes so hard to recognize our own strengths?",
+            "answers": [
+              {
+                "text": "Because the brain is trained to notice mistakes and weaknesses more readily.",
+                "correct": true,
+                "explanation": "Explanation: Our brain often automatically focuses on the negative—we need practice and repetition to learn to notice the positive more consciously."
+              },
+              {
+                "text": "Because we don’t have enough time in our daily lives to think about it.",
+                "correct": false,
+                "explanation": "Explanation: Time can play a role, but it’s not the main reason."
+              },
+              {
+                "text": "Because you don’t need to improve your strengths, but should only work on your weaknesses.",
+                "correct": false,
+                "explanation": "Explanation: Both are important—the problem is more a matter of one-sided perception."
+              },
+              {
+                "text": "Because you can only recognize your strengths when everything is going well.",
+                "correct": false,
+                "explanation": "Explanation: That sounds reasonable, but strengths also show up in small things—not just on good days."
+              }
+            ]
+          },
+          {
+            "prompt": "What is your task for the next seven days?",
+            "answers": [
+              {
+                "text": "Write down every day what you did well that day—one sentence is enough.",
+                "correct": true,
+                "explanation": "Explanation: Correct. The exercise consciously focuses attention on what is there—not on what was possible in the past or what someone else might have done. Writing it down helps you notice strengths that the brain would otherwise easily overlook."
+              },
+              {
+                "text": "Write down three things every day that you’re grateful for.",
+                "correct": false,
+                "explanation": "Explanation: Gratitude is a different approach. This exercise asks a very specific question: “What did I do well today?”—the focus is on your own strengths and achievements of the day."
+              },
+              {
+                "text": "At the end of the week, look back and write down what went well over the past seven days.",
+                "correct": false,
+                "explanation": "Explanation: This exercise is intended as a daily routine—not as a weekly review. This is the only way to train yourself to regularly notice the positive aspects of the day."
+              },
+              {
+                "text": "Write down what you’d like to do better tomorrow.",
+                "correct": false,
+                "explanation": "Explanation: This exercise doesn’t look ahead, but consciously focuses on today. The question is: “What did I do well today?”—not what should be better tomorrow."
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

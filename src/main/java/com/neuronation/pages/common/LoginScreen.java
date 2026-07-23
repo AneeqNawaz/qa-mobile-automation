@@ -72,7 +72,20 @@ public class LoginScreen extends BaseScreen {
 
     @Step("Wait for Login Form")
     public void waitForLoginForm() {
-        waitForVisible(emailInput);
+        // The credential/passkey chooser (Samsung Pass, GMS, Pixel CM) can render LATE — after the
+        // pre-tap dismiss poll in submitLoginForm — and cover the login form, so a passive wait would
+        // just time out on it. Keep dismissing it on every poll until the email field is reachable.
+        try {
+            new org.openqa.selenium.support.ui.WebDriverWait(
+                    driver, java.time.Duration.ofSeconds(30), java.time.Duration.ofMillis(500))
+                    .until(d -> {
+                        if (isDisplayed(emailInput)) return true;
+                        dismissPasswordManagerOverlay();
+                        return isDisplayed(emailInput);
+                    });
+        } catch (Exception e) {
+            waitForVisible(emailInput); // final attempt → throws the standard timeout if still hidden
+        }
     }
 
     /** Short-timeout wait used in dismiss-poll loop. Throws if not visible within 3s. */
@@ -210,24 +223,32 @@ public class LoginScreen extends BaseScreen {
                     }
                 }
                 // 2. Named dismiss buttons (Samsung uses "Cancel"). Exact text() — fast.
+                //    IMPORTANT: on Samsung's passkey chooser (com.android.credentialmanager) the "Cancel"
+                //    TextView AND its Button parent are BOTH clickable="false" — the only clickable node is
+                //    a wrapping View. So element.click() (an a11y CLICK on the non-clickable text) no-ops;
+                //    we must COORDINATE-tap the element's centre, which lands on the clickable ancestor.
                 for (String label : new String[]{"Cancel", "No thanks", "Not now", "Dismiss"}) {
                     var b = driver.findElements(AppiumBy.androidUIAutomator(
                             "new UiSelector().text(\"" + label + "\")"));
                     if (!b.isEmpty()) {
-                        b.get(0).click();
-                        log.info("Dismissed credential chooser via '{}'", label);
+                        tapElementCenter(b.get(0));
+                        log.info("Dismissed credential chooser via '{}' (coordinate tap)", label);
                         waitCredentialChooserGone();
                         return true;
                     }
                 }
-                // 3. Confirm it IS a chooser (chooser-only "Sign-in options" text) before a back press,
-                //    so we never navigate away from a non-chooser screen. Exact text() — fast.
-                if (!driver.findElements(AppiumBy.androidUIAutomator(
-                        "new UiSelector().text(\"Sign-in options\")")).isEmpty()) {
-                    driver.navigate().back();
-                    log.info("Dismissed credential chooser via back press");
-                    waitCredentialChooserGone();
-                    return true;
+                // 3. Confirm it IS a chooser before a back press, so we never navigate away from a
+                //    non-chooser screen. Any of these chooser-only texts qualifies (Samsung's passkey
+                //    sheet shows "More saved sign-ins" / "Choose a saved passkey", not "Sign-in options").
+                for (String sig : new String[]{"Sign-in options", "More saved sign-ins",
+                        "Choose a saved passkey", "Choose a saved sign-in"}) {
+                    if (!driver.findElements(AppiumBy.androidUIAutomator(
+                            "new UiSelector().textContains(\"" + sig + "\")")).isEmpty()) {
+                        driver.navigate().back();
+                        log.info("Dismissed credential chooser via back press (matched '{}')", sig);
+                        waitCredentialChooserGone();
+                        return true;
+                    }
                 }
                 return false;
             } else {
@@ -248,6 +269,23 @@ public class LoginScreen extends BaseScreen {
             log.debug("No password manager overlay detected: {}", e.getMessage());
         }
         return false;
+    }
+
+    /** Coordinate-tap an element's centre via a W3C pointer gesture. Needed for controls whose own
+     *  node is {@code clickable="false"} (e.g. Samsung's passkey-chooser "Cancel", which is a
+     *  non-clickable TextView inside a non-clickable Button) — a normal element.click() would issue
+     *  an accessibility CLICK on the non-clickable node and do nothing, whereas a pixel tap lands on
+     *  the clickable ancestor. */
+    private void tapElementCenter(WebElement el) {
+        org.openqa.selenium.Rectangle r = el.getRect();
+        int x = r.getX() + r.getWidth() / 2;
+        int y = r.getY() + r.getHeight() / 2;
+        var finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
+        var tap = new Sequence(finger, 0);
+        tap.addAction(finger.createPointerMove(Duration.ZERO, PointerInput.Origin.viewport(), x, y));
+        tap.addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()));
+        tap.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
+        driver.perform(Collections.singletonList(tap));
     }
 
     /** After tapping a chooser's dismiss control, wait briefly for the login form to come back

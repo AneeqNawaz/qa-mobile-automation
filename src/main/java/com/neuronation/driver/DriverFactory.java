@@ -138,6 +138,12 @@ public class DriverFactory {
         // 5 minutes — must survive IMAP email polling (60-90s) without session timeout
         options.setNewCommandTimeout(Duration.ofSeconds(300));
 
+        // NOTE on iOS speed: setting waitForIdleTimeout=0 (skip XCUITest's per-command quiescence
+        // wait) sped up scrolling but BROKE the video→quiz→result flow (commands fired mid-animation
+        // → empty result score, stuck on the result screen). Reverted. The real iOS speedup comes from
+        // the monotonic scan (no scroll-to-top oscillation on deep sections). If more speed is needed,
+        // tune waitForIdleTimeout to a MODEST value (e.g. 1-2s) — never 0 — and re-validate the quiz.
+
         try {
             URL url = new URL(isBrowserStack
                     ? "https://hub-cloud.browserstack.com/wd/hub"

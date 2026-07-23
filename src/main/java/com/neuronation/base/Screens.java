@@ -4,6 +4,7 @@ import com.neuronation.pages.common.*;
 import com.neuronation.pages.med.registration.*;
 import com.neuronation.pages.med.onboarding.*;
 import com.neuronation.pages.med.profile.*;
+import com.neuronation.pages.med.extras.*;
 
 /**
  * Playwright-style fixture container for all screen page objects.
@@ -51,6 +52,13 @@ public class Screens {
     private ScheduleReviewScreen scheduleReview;
     private NeuroBoosterScreen neuroBooster;
     private PromiseScreen promise;
+
+    // === MED — Extras (Neurobooster) ===
+    private ExtrasScreen extras;
+    private NeuroBoosterDetailScreen neuroBoosterDetail;
+    private NeuroBoosterVideoScreen neuroBoosterVideo;
+    private NeuroBoosterQuizScreen neuroBoosterQuiz;
+    private NeuroBoosterQuizResultScreen neuroBoosterQuizResult;
 
     // --- Common ---
     public LaunchScreen launch() {
@@ -209,6 +217,32 @@ public class Screens {
         return promise;
     }
 
+    // --- MED Extras (Neurobooster) ---
+    public ExtrasScreen extras() {
+        if (extras == null) extras = new ExtrasScreen();
+        return extras;
+    }
+
+    public NeuroBoosterDetailScreen neuroBoosterDetail() {
+        if (neuroBoosterDetail == null) neuroBoosterDetail = new NeuroBoosterDetailScreen();
+        return neuroBoosterDetail;
+    }
+
+    public NeuroBoosterVideoScreen neuroBoosterVideo() {
+        if (neuroBoosterVideo == null) neuroBoosterVideo = new NeuroBoosterVideoScreen();
+        return neuroBoosterVideo;
+    }
+
+    public NeuroBoosterQuizScreen neuroBoosterQuiz() {
+        if (neuroBoosterQuiz == null) neuroBoosterQuiz = new NeuroBoosterQuizScreen();
+        return neuroBoosterQuiz;
+    }
+
+    public NeuroBoosterQuizResultScreen neuroBoosterQuizResult() {
+        if (neuroBoosterQuizResult == null) neuroBoosterQuizResult = new NeuroBoosterQuizResultScreen();
+        return neuroBoosterQuizResult;
+    }
+
     /**
      * Reset all cached screens. Called between tests so stale driver references don't leak.
      */
@@ -223,5 +257,7 @@ public class Screens {
         exerciseInGame = null; ageGroup = null; evaluation = null;
         trainingComplexity = null; specialNeeds = null; trainingTime = null;
         scheduleReview = null; neuroBooster = null; promise = null;
+        extras = null; neuroBoosterDetail = null; neuroBoosterVideo = null;
+        neuroBoosterQuiz = null; neuroBoosterQuizResult = null;
     }
 }

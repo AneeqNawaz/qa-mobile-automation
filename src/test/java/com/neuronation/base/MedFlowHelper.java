@@ -811,8 +811,14 @@ public class MedFlowHelper {
 
     @Step("Complete FULL E2E flow to dashboard using config: {flowName}")
     public void completeFullFlow(String flowName) {
+        completeFullFlow(flowName, false); // false = MCI (unchanged default)
+    }
+
+    /** Condition-aware full onboarding. parkinson=true registers a Parkinson's account. */
+    @Step("Complete full onboarding flow: {flowName} (parkinson={parkinson})")
+    public void completeFullFlow(String flowName, boolean parkinson) {
         loadFlow(flowName);
-        generateFreshMciCode();
+        if (parkinson) generateFreshParkinsonCode(); else generateFreshMciCode();
 
         completeRegistration();
         completeEmailVerification();
