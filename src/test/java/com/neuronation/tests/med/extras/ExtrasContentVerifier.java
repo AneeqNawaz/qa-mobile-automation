@@ -146,10 +146,11 @@ public class ExtrasContentVerifier {
         screens.extras().dismissHelpTooltip();
 
         // each tile IN ORDER: one locate (read initial + open) → detail → complete.
-        // NOTE: the count is NOT read per tile — that forced a climb back UP to the section header
-        // after every tile (the header sits above all of a section's tiles; worst for the last section
-        // whose tiles are at the list bottom → repeated up/down round trips). It is read ONCE below,
-        // after the whole section; each tile's discovered state is separately confirmed by the tick sweep.
+        // The count is NOT read per tile (that forced a climb back UP to the section header every
+        // time); it is read ONCE below. The tick is NOT read per tile either: the app DRAWS the
+        // checkmark immediately (visible to a human) but only exposes it as an ACCESSIBILITY NODE —
+        // all Appium can read — when the list RELOADS. So per-tile in-session reads fail (measured:
+        // ~11/19 fresh body tiles undetectable); the tick is verified in one refreshed sweep below.
         for (Tile tile : tiles) {
             ExtrasScreen.TileCard card = "COGNITIVE_HEALTH".equals(tile.type)
                     ? openVerifyCompleteCognitive(tile, true)
@@ -164,28 +165,16 @@ public class ExtrasContentVerifier {
     }
 
     /**
-     * Assert a tile's PRISTINE pre-open listing snapshot: title, subtitle, no tick. The listing
-     * THUMBNAIL is intentionally not asserted here — it lazy-loads as the tile scrolls in and is
-     * unreliable mid-scroll; the tile's image is verified authoritatively on the detail screen
-     * (see {@link #verifyDetail}), where it is settled.
-     */
-    private void verifyInitialListing(ExtrasScreen.TileCard card, Tile t, String section) {
-        String where = "[" + section + " / " + t.listSubtitle + "]";
-        softAssert.assertEquals(card.title, t.listTitle, "listing title " + where);
-        softAssert.assertEquals(card.subtitle, t.listSubtitle, "listing subtitle " + where);
-        softAssert.assertFalse(card.discovered, "tile NOT discovered before completion (no tick) " + where);
-    }
-
-    /**
-     * Verify every completed tile now shows a tick — in ONE sweep after a listing REFRESH (leave to
-     * the Training tab and back). The app repaints a tile's checkmark only when the list reloads, so
-     * reading it per-tile in-session fails; the progress count (asserted per tile above) is the live
-     * completion signal, and this sweep confirms the persisted discovered state.
+     * Verify every completed tile shows a tick — in ONE sweep after a listing REFRESH (leave to the
+     * Training tab and back). The app DRAWS the checkmark immediately (visible to a human), but only
+     * exposes it as an ACCESSIBILITY node — all Appium can read — when the list RELOADS; measured
+     * ~11/19 fresh body ticks undetectable in-session. So this refreshed sweep is required to read
+     * the persisted discovered state (per-tile in-session reads fail, not because the tick is absent).
      */
     @Step("Verify all completed tiles show a tick (refreshed sweep): {sections}")
     private void verifyAllTicks(List<String> sections) {
         screens.dashboard().tapTrainingTab();   // leave Extras
-        screens.dashboard().tapExtrasTab();      // re-enter → list reloads, ticks repaint
+        screens.dashboard().tapExtrasTab();      // re-enter → list reloads, ticks repaint as a11y nodes
         screens.extras().waitForScreen();
         applySectionOrder();
         Map<String, String> cap = screens.extras().captureContent();
@@ -213,6 +202,20 @@ public class ExtrasContentVerifier {
             }
         }
     }
+
+    /**
+     * Assert a tile's PRISTINE pre-open listing snapshot: title, subtitle, no tick. The listing
+     * THUMBNAIL is intentionally not asserted here — it lazy-loads as the tile scrolls in and is
+     * unreliable mid-scroll; the tile's image is verified authoritatively on the detail screen
+     * (see {@link #verifyDetail}), where it is settled.
+     */
+    private void verifyInitialListing(ExtrasScreen.TileCard card, Tile t, String section) {
+        String where = "[" + section + " / " + t.listSubtitle + "]";
+        softAssert.assertEquals(card.title, t.listTitle, "listing title " + where);
+        softAssert.assertEquals(card.subtitle, t.listSubtitle, "listing subtitle " + where);
+        softAssert.assertFalse(card.discovered, "tile NOT discovered before completion (no tick) " + where);
+    }
+
 
     // ══════════════════════════════════════════════════
     //  Completion mechanics (shared)
