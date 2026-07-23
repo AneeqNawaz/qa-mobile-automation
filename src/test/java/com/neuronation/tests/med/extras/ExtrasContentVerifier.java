@@ -190,19 +190,25 @@ public class ExtrasContentVerifier {
         applySectionOrder();
         Map<String, String> cap = screens.extras().captureContent();
 
-        // subtitle -> discovered ("true"/"false"), across all captured sections
-        Map<String, String> discovered = new HashMap<>();
+        // (sectionTitle -> (subtitle -> discovered)). Keyed by SECTION too: cognitive subtitles
+        // ("Psychoeducational", "Reflection and MKT", …) REPEAT across sections, so a flat
+        // subtitle->discovered map collapses them and every section's tick resolves to whichever
+        // section was captured last (the flow3 false "tick not found" bug).
+        Map<String, Map<String, String>> bySection = new HashMap<>();
         int catCount = Integer.parseInt(cap.getOrDefault("categoryCount", "0"));
         for (int i = 0; i < catCount; i++) {
+            String secTitle = cap.get("category[" + i + "].title");
+            Map<String, String> m = bySection.computeIfAbsent(secTitle, k -> new HashMap<>());
             int tc = Integer.parseInt(cap.getOrDefault("category[" + i + "].tileCount", "0"));
             for (int j = 0; j < tc; j++) {
                 String b = "category[" + i + "].tile[" + j + "]";
-                discovered.put(cap.get(b + ".subtitle"), cap.getOrDefault(b + ".discovered", "false"));
+                m.put(cap.get(b + ".subtitle"), cap.getOrDefault(b + ".discovered", "false"));
             }
         }
         for (String sec : sections) {
+            Map<String, String> m = bySection.getOrDefault(sec, java.util.Map.of());
             for (Tile t : tilesOf(sec)) {
-                softAssert.assertEquals(discovered.get(t.listSubtitle), "true",
+                softAssert.assertEquals(m.get(t.listSubtitle), "true",
                         "tile shows a tick after completion [" + sec + " / " + t.listSubtitle + "]");
             }
         }

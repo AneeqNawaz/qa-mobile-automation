@@ -689,7 +689,8 @@ public class ExtrasScreen extends BaseScreen {
             if (!bottom.equals(lastBottom) || f.hasCategory(FIRST_CATEGORY)) stagnant = 0;
             else if (++stagnant >= 3) return null;   // bottom reached without a hit
             lastBottom = bottom;
-            scanSwipeUp();                            // DOWN only — never reverse
+            // Big swipe while far from the section; precise overlapping swipe once in/near its window.
+            if (inWindow || nearSection(f, category)) scanSwipeUp(); else swipeUp();  // DOWN only
         }
         return null;
     }
@@ -815,6 +816,25 @@ public class ExtrasScreen extends BaseScreen {
         return scanDownToCategory(category) || scanUpToCategory(category);
     }
 
+    /**
+     * True when we're close enough to a target section to switch from FAST big swipes to PRECISE
+     * overlapping ones: a currently-visible header is the section just before the target (or the
+     * target itself). Lets a deep-section scan cover the long run through body + earlier sections
+     * with big {@code swipeUp}s (Android lands back at the top after every tile, so each last-section
+     * tile otherwise re-scans the whole list with small swipes — ~90 swipes/tile), then approach the
+     * header precisely so it is never skipped. Returns true (always precise) if the order is unknown.
+     */
+    private boolean nearSection(FrameSnapshot f, String category) {
+        if (sectionPlanner == null) return true;
+        int target = sectionPlanner.indexOf(category);
+        if (target < 0) return true;
+        for (YText h : f.headers) {
+            int idx = sectionPlanner.indexOf(h.text);
+            if (idx >= 0 && idx >= target - 1) return true;
+        }
+        return false;
+    }
+
     /** Swipe down (scroll the list UP) until the category header appears or the top is reached. */
     private boolean scanUpToCategory(String category) {
         String lastTop = "";
@@ -847,7 +867,9 @@ public class ExtrasScreen extends BaseScreen {
             if (!bottom.equals(lastBottom) || f.hasCategory(FIRST_CATEGORY)) stagnant = 0;
             else if (++stagnant >= 3) return false; // bottom reached without finding it
             lastBottom = bottom;
-            scanSwipeUp(); // overlapping scan swipe → don't skip the target category header
+            // Big swipe to cover ground while still far; small overlapping swipe once near the target
+            // header so it is never skipped between frames.
+            if (nearSection(f, category)) scanSwipeUp(); else swipeUp();
         }
         return false;
     }
