@@ -155,7 +155,7 @@ public class ExtrasContentVerifier {
             verifyInitialListing(card, t, t.category);
             if (!fail) discovered.add(t);   // a failed quiz leaves the tile un-discovered
         }
-        verifyTicksFor(discovered);
+        verifyTicksAndProgress(discovered);
     }
 
     private int indexOfSection(String title) {
@@ -164,30 +164,55 @@ public class ExtrasContentVerifier {
         return Integer.MAX_VALUE;
     }
 
-    /** Deferred tick sweep for SPECIFIC tiles: reload the listing (Training→Extras) so checkmarks
-     *  repaint as a11y nodes, then assert each given tile is discovered. Keyed by section+subtitle
-     *  because cognitive subtitles repeat across sections. */
-    private void verifyTicksFor(List<Tile> tiles) {
-        if (tiles.isEmpty()) return;
+    /**
+     * ONE deferred sweep after a listing reload (Training→Extras, so checkmarks repaint as a11y nodes),
+     * verifying — for EVERY section in catalog order — both:
+     *   (a) each completed tile in the section shows a tick, and
+     *   (b) the section's "X / N discovered" progress: X == the number of representative tiles COMPLETED
+     *       in that section (0 for untouched sections; a FAILED quiz does not count), N == its tile count.
+     * Both read from the SAME {@link ExtrasScreen#captureContent()} — no extra scrolling, no per-tile
+     * getCategoryProgress re-read (that was the flaky "category not found"). Keyed by section because
+     * cognitive subtitles repeat across sections.
+     */
+    private void verifyTicksAndProgress(List<Tile> discovered) {
         screens.dashboard().tapTrainingTab();
         screens.dashboard().tapExtrasTab();
         screens.extras().waitForScreen();
         applySectionOrder();
         Map<String, String> cap = screens.extras().captureContent();
-        Map<String, Map<String, String>> bySection = new HashMap<>();
+
+        Map<String, String> progressBySection = new HashMap<>();
+        Map<String, Map<String, String>> tickBySection = new HashMap<>();
         int catCount = Integer.parseInt(cap.getOrDefault("categoryCount", "0"));
         for (int i = 0; i < catCount; i++) {
             String secTitle = cap.get("category[" + i + "].title");
-            Map<String, String> m = bySection.computeIfAbsent(secTitle, k -> new HashMap<>());
+            progressBySection.put(secTitle, cap.getOrDefault("category[" + i + "].progress", ""));
+            Map<String, String> m = tickBySection.computeIfAbsent(secTitle, k -> new HashMap<>());
             int tc = Integer.parseInt(cap.getOrDefault("category[" + i + "].tileCount", "0"));
             for (int j = 0; j < tc; j++) {
                 String b = "category[" + i + "].tile[" + j + "]";
                 m.put(cap.get(b + ".subtitle"), cap.getOrDefault(b + ".discovered", "false"));
             }
         }
-        for (Tile t : tiles) {
-            softAssert.assertEquals(bySection.getOrDefault(t.category, java.util.Map.of()).get(t.listSubtitle),
-                    "true", "tile shows a tick after completion [" + t.category + " / " + t.listSubtitle + "]");
+
+        // In catalog (top-to-bottom) order: progress first, then the section's completed ticks.
+        for (Category c : catalog.categories) {
+            String sec = c.title;
+            int expDiscovered = (int) discovered.stream().filter(t -> sec.equals(t.category)).count();
+            int expTiles = tilesOf(sec).size();
+            String prog = progressBySection.get(sec);
+            softAssert.assertNotNull(prog, "section captured [" + sec + "]");
+            if (prog != null) {
+                softAssert.assertEquals(discoveredCount(prog), expDiscovered, "discovered count [" + sec + "]");
+                softAssert.assertEquals(denominator(prog), expTiles, "section tile count N [" + sec + "]");
+            }
+            Map<String, String> ticks = tickBySection.getOrDefault(sec, java.util.Map.of());
+            for (Tile t : discovered) {
+                if (sec.equals(t.category)) {
+                    softAssert.assertEquals(ticks.get(t.listSubtitle), "true",
+                            "tile shows a tick after completion [" + sec + " / " + t.listSubtitle + "]");
+                }
+            }
         }
     }
 
