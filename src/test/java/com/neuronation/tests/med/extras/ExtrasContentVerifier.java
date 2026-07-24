@@ -124,6 +124,73 @@ public class ExtrasContentVerifier {
         verifyAllTicks(sectionTitles);
     }
 
+    /**
+     * Smoke: verify a curated set of representative tiles the RELIABLE (regression) way. Processes
+     * them in catalog top-to-bottom order via the shared open→verify-detail→complete path (the SAME
+     * engine the per-flow regression uses), then confirms ticks for the discovered tiles in ONE
+     * refreshed sweep.
+     *
+     * <p>Deliberately does NOT read {@code getCategoryProgress} per tile nor check the tick in-session
+     * — both flake: the post-completion count re-read races the re-rendering listing ("category not
+     * found: Use mini-exercises for your body"), and a tile's tick a11y node only appears on reload.
+     * The old per-tile {@link #completeSimple}/{@link #completeCognitive} did exactly those and were
+     * the source of the build #81 smoke flakiness.
+     *
+     * <p>{@code failTiles} are completed with a FAILING quiz (a failed quiz does NOT mark the tile
+     * discovered, so those are excluded from the tick sweep).
+     */
+    @Step("Smoke: verify representative tiles (reliable, in order)")
+    public void verifySmokeTiles(List<Tile> tiles, java.util.Set<Tile> failTiles) {
+        applySectionOrder();
+        List<Tile> ordered = new ArrayList<>(tiles);
+        ordered.sort(java.util.Comparator
+                .comparingInt((Tile t) -> indexOfSection(t.category))
+                .thenComparingInt(t -> catalog.tiles.indexOf(t)));
+        List<Tile> discovered = new ArrayList<>();
+        for (Tile t : ordered) {
+            boolean fail = failTiles.contains(t);
+            ExtrasScreen.TileCard card = "COGNITIVE_HEALTH".equals(t.type)
+                    ? openVerifyCompleteCognitive(t, !fail)
+                    : openVerifyCompleteSimple(t);
+            verifyInitialListing(card, t, t.category);
+            if (!fail) discovered.add(t);   // a failed quiz leaves the tile un-discovered
+        }
+        verifyTicksFor(discovered);
+    }
+
+    private int indexOfSection(String title) {
+        for (int i = 0; i < catalog.categories.size(); i++)
+            if (catalog.categories.get(i).title.equals(title)) return i;
+        return Integer.MAX_VALUE;
+    }
+
+    /** Deferred tick sweep for SPECIFIC tiles: reload the listing (Training→Extras) so checkmarks
+     *  repaint as a11y nodes, then assert each given tile is discovered. Keyed by section+subtitle
+     *  because cognitive subtitles repeat across sections. */
+    private void verifyTicksFor(List<Tile> tiles) {
+        if (tiles.isEmpty()) return;
+        screens.dashboard().tapTrainingTab();
+        screens.dashboard().tapExtrasTab();
+        screens.extras().waitForScreen();
+        applySectionOrder();
+        Map<String, String> cap = screens.extras().captureContent();
+        Map<String, Map<String, String>> bySection = new HashMap<>();
+        int catCount = Integer.parseInt(cap.getOrDefault("categoryCount", "0"));
+        for (int i = 0; i < catCount; i++) {
+            String secTitle = cap.get("category[" + i + "].title");
+            Map<String, String> m = bySection.computeIfAbsent(secTitle, k -> new HashMap<>());
+            int tc = Integer.parseInt(cap.getOrDefault("category[" + i + "].tileCount", "0"));
+            for (int j = 0; j < tc; j++) {
+                String b = "category[" + i + "].tile[" + j + "]";
+                m.put(cap.get(b + ".subtitle"), cap.getOrDefault(b + ".discovered", "false"));
+            }
+        }
+        for (Tile t : tiles) {
+            softAssert.assertEquals(bySection.getOrDefault(t.category, java.util.Map.of()).get(t.listSubtitle),
+                    "true", "tile shows a tick after completion [" + t.category + " / " + t.listSubtitle + "]");
+        }
+    }
+
     @Step("Section '{section}': header + every tile initial→detail→complete→count")
     private void verifySectionLifecycle(String section) {
         Category cat = category(section);

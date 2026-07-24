@@ -13,6 +13,7 @@ import org.testng.annotations.Test;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Fast Extras (Neurobooster) smoke — one representative of EVERY case in a SINGLE
@@ -51,24 +52,22 @@ public class MedExtrasSmokeTest extends BaseTest {
     @Severity(SeverityLevel.CRITICAL)
     @Story("Smoke: sections+tiles structure, then exercise, knowledge, quiz pass & fail — full verification")
     public void testExtras_smoke_allCases() {
-        // 1)+2) Structure: every section present in JSON top-to-bottom order, and every
-        //        tile's title / subtitle correct.
-        verifier.verifyStructure();
-
-        // Two distinct cognitive tiles with filled quiz content (fewest questions first = fastest).
+        // Representative tiles: 1 body EXERCISE, 1 body KNOWLEDGE, and 2 cognitive (one PASS, one FAIL).
+        Tile exercise  = CatalogProvider.firstSmokeOfType(catalog, "EXERCISE");
+        Tile knowledge = CatalogProvider.firstSmokeOfType(catalog, "KNOWLEDGE");
         List<Tile> cognitive = CatalogProvider.tiles(catalog, t -> t.quiz != null && t.quiz.isFilled());
-        cognitive.sort(Comparator.comparingInt(t -> t.quiz.questionCount));
+        cognitive.sort(Comparator.comparingInt(t -> t.quiz.questionCount)); // fewest questions first = fastest
         if (cognitive.size() < 2)
             throw new SkipException("Need >= 2 cognitive tiles with filled quiz content");
         Tile passTile = cognitive.get(0);
         Tile failTile = cognitive.get(1);
 
-        // 3a) EXERCISE  3b) KNOWLEDGE — detail (title/image/content/button) -> complete -> tick + count
-        verifier.completeSimple(CatalogProvider.firstSmokeOfType(catalog, "EXERCISE"));
-        verifier.completeSimple(CatalogProvider.firstSmokeOfType(catalog, "KNOWLEDGE"));
-        // 3c) VIDEO + QUIZ — one PASS, one FAIL (detail + video content + quiz + result score/content)
-        verifier.completeCognitive(passTile, true);
-        verifier.completeCognitive(failTile, false);
+        // Reliable ordered traversal — the SAME engine as the per-flow content regression: each tile
+        // open → verify detail → complete (body = CTA; cognitive = video + quiz pass/fail), then ONE
+        // refreshed tick sweep. No per-tile getCategoryProgress or in-session tick read (those flaked
+        // — build #81), and NO verifyStructure() full-list scroll-to-bottom (which is what broke the
+        // body-section lookup on the walk back up).
+        verifier.verifySmokeTiles(List.of(exercise, knowledge, passTile, failTile), Set.of(failTile));
 
         softAssert.assertAll();
     }
