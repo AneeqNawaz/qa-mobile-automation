@@ -63,20 +63,14 @@ public class OnboardingVideoScreen extends BaseScreen {
     public void revealControls() {
         log.info("Tapping screen to reveal video controls");
         if (isIOS()) {
-            // iOS: tap the Video element directly
-            try {
-                driver.findElement(io.appium.java_client.AppiumBy.accessibilityId("Video")).click();
-            } catch (Exception e) {
-                // Fallback to center tap
-                var dimensions = driver.manage().window().getSize();
-                PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
-                Sequence tap = new Sequence(finger, 0);
-                tap.addAction(finger.createPointerMove(Duration.ZERO,
-                        PointerInput.Origin.viewport(), dimensions.getWidth() / 2, dimensions.getHeight() / 2));
-                tap.addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()));
-                tap.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
-                driver.perform(Collections.singletonList(tap));
-            }
+            // Reveal the AVPlayer controls with a REAL TOUCH tap in a neutral UPPER area — the SAME
+            // approach the cognitive video's revealControlsIOS uses (and which works there). The old
+            // `driver.findElement("Video").click()` is an ACCESSIBILITY-synthesised tap that AVPlayer
+            // IGNORES on BrowserStack: the controls never appear, so "Skip Forward" is never found and
+            // the skip loop bails while the video keeps playing (the iOS "failed to reveal → video not
+            // skipped" bug). Upper 0.22h avoids the centre Play/Pause and the top-right CloseButtonBlack.
+            var dimensions = driver.manage().window().getSize();
+            tapAt(dimensions.getWidth() / 2, (int) (dimensions.getHeight() * 0.22));
         } else {
             PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
             Sequence tap = new Sequence(finger, 0);
