@@ -132,27 +132,44 @@ public class NeuroBoosterVideoScreen extends BaseScreen {
     @Step("Fast-forward NeuroBooster video to the end")
     public void fastForwardToEnd() {
         if (isIOS()) { fastForwardToEndIOS(); return; }
-        waitForVideoLoaded();
-        ensurePaused(); // pin the controller open so the forward control stays put for the rapid taps
-        int duration = getDurationSeconds();
-        int position = Math.max(0, getPositionSeconds());
-        int need = duration > 0
-                ? (int) Math.ceil(Math.max(0, duration - position) / (double) SKIP_SECONDS)
-                : DEFAULT_FORWARD_TAPS;
-        WebElement fwd = findControl(ID_FORWARD, DESC_FORWARD);
-        if (fwd == null) { revealControls(); fwd = findControl(ID_FORWARD, DESC_FORWARD); }
-        if (fwd == null) { log.warn("Android forward control not found — cannot fast-forward"); return; }
-        var loc = fwd.getLocation(); var sz = fwd.getSize();
-        int fx = loc.getX() + sz.getWidth() / 2, fy = loc.getY() + sz.getHeight() / 2;
-        log.info("Android video duration={}s position={}s → {} rapid forward taps at ({},{})",
-                duration, position, need, fx, fy);
-        // All needed +15s seeks as ONE gesture (single round-trip) — not one findElement+click per tap.
-        tapAtRepeated(fx, fy, need, 250);
-        // The last seek lands on the end boundary; a tap or two more fires ExoPlayer ENDED → quiz.
-        int extra = 0;
-        while (extra < 4 && !driver.findElements(AppiumBy.id(ID_PLAYER)).isEmpty()) { tapAt(fx, fy); extra++; }
-        log.info("Android fast-forward: {} taps (+{} to trigger end), player present={}",
-                need, extra, !driver.findElements(AppiumBy.id(ID_PLAYER)).isEmpty());
+        // A PLAYING video is NEVER idle, so UiAutomator2's default waitForIdleTimeout (10s) blocks
+        // EVERY find/tap ~10s — far longer than the ExoPlayer controller's ~1.7s visible window, so
+        // the reveal→find→pause races the auto-hide and always loses ("Could not confirm the video is
+        // paused" / "forward control not found"; build #81 flow3). Drop it to 0 for the video only
+        // (finds → ~25-55ms, well inside the window), and RESTORE the default afterwards — 0 set
+        // GLOBALLY makes the dashboard/onboarding waits flaky, so it must be scoped here.
+        setIdleTimeout(0);
+        try {
+            waitForVideoLoaded();
+            ensurePaused(); // pin the controller open so the forward control stays put for the rapid taps
+            int duration = getDurationSeconds();
+            int position = Math.max(0, getPositionSeconds());
+            int need = duration > 0
+                    ? (int) Math.ceil(Math.max(0, duration - position) / (double) SKIP_SECONDS)
+                    : DEFAULT_FORWARD_TAPS;
+            WebElement fwd = findControl(ID_FORWARD, DESC_FORWARD);
+            if (fwd == null) { revealControls(); fwd = findControl(ID_FORWARD, DESC_FORWARD); }
+            if (fwd == null) { log.warn("Android forward control not found — cannot fast-forward"); return; }
+            var loc = fwd.getLocation(); var sz = fwd.getSize();
+            int fx = loc.getX() + sz.getWidth() / 2, fy = loc.getY() + sz.getHeight() / 2;
+            log.info("Android video duration={}s position={}s → {} rapid forward taps at ({},{})",
+                    duration, position, need, fx, fy);
+            // All needed +15s seeks as ONE gesture (single round-trip) — not one findElement+click per tap.
+            tapAtRepeated(fx, fy, need, 250);
+            // The last seek lands on the end boundary; a tap or two more fires ExoPlayer ENDED → quiz.
+            int extra = 0;
+            while (extra < 4 && !driver.findElements(AppiumBy.id(ID_PLAYER)).isEmpty()) { tapAt(fx, fy); extra++; }
+            log.info("Android fast-forward: {} taps (+{} to trigger end), player present={}",
+                    need, extra, !driver.findElements(AppiumBy.id(ID_PLAYER)).isEmpty());
+        } finally {
+            setIdleTimeout(10000); // restore UiAutomator2 default for the quiz + rest of the flow
+        }
+    }
+
+    /** Toggle UiAutomator2's implicit "wait for idle" (ms). Android only; no-op / ignored elsewhere. */
+    private void setIdleTimeout(long ms) {
+        try { ((io.appium.java_client.AppiumDriver) driver).setSetting("waitForIdleTimeout", ms); }
+        catch (Exception ignored) { /* setting unsupported (e.g. iOS) — harmless */ }
     }
 
     /** Click the +15s button up to {@code taps} times (stops early once the video ends). */
@@ -272,22 +289,23 @@ public class NeuroBoosterVideoScreen extends BaseScreen {
      * device: paused, 14/14 taps advanced +15s to the end → quiz). This is the manual
      * "pause, then fast-forward" workaround.
      *
-     * <p><b>Reveal without toggling.</b> The play/pause button sits dead-centre, so the old
-     * approach revealed the controller with a CENTRE tap — which, once the controller was
-     * already up, hit play/pause. Racing the ~2s auto-hide, a mis-read "hidden" then did a
-     * reveal+centre-tap that RESUMED an already-paused video, so the state oscillated
-     * paused↔playing and never confirmed (the CI "Could not confirm the video is paused after
-     * 4 attempts" flake — build #81 flow3). Now we reveal with an OFF-CENTRE tap (upper area,
-     * like {@link #revealControlsIOS}) which only ever shows the controller, read the button's
-     * state, and tap play/pause ONLY when it reports playing. A pinned-controller fallback
-     * confirms pause even if the content-desc never flips (a playing video auto-hides the
-     * controller within ~2s; a paused one keeps it open).
+     * <p><b>Single reveal, then read.</b> On this ExoPlayer a CENTRE tap on a HIDDEN controller
+     * only SHOWS it (it does not toggle play/pause — see {@link #revealControls}); a centre tap on
+     * a SHOWN controller hits the dead-centre play/pause. The old bug was the "hidden" branch doing
+     * an unconditional reveal+centre-tap ({@code tapAtTwice}): if the video was already paused (but
+     * the controller had auto-hidden), the 2nd tap RESUMED it, so the state oscillated paused↔playing
+     * and never confirmed ("Could not confirm the video is paused" — build #81). Fix: reveal with a
+     * SINGLE centre tap, READ the button state, and tap play/pause ONLY when it reports playing —
+     * never a blind second tap. (An earlier off-centre reveal attempt missed the player entirely on
+     * some devices → controls never showed; the centre tap is the device-proven reveal.) A pinned-
+     * controller fallback confirms pause even if the content-desc never flips (a playing video auto-
+     * hides the controller within ~2s; a paused one keeps it open).
      */
     private void ensurePaused() {
         for (int attempt = 0; attempt < 6; attempt++) {
             WebElement pp = findControl(ID_PLAY_PAUSE, null);
-            if (pp == null) {                       // controller hidden → reveal WITHOUT toggling play/pause
-                revealControlsOffCentre();
+            if (pp == null) {                       // controller hidden → a SINGLE centre tap only SHOWS it
+                tapScreenCenter();                  //   (first tap on a hidden controller reveals, no toggle)
                 pp = waitForControl(ID_PLAY_PAUSE);
                 if (pp == null) continue;           // reveal missed this frame — retry
             }
@@ -299,14 +317,6 @@ public class NeuroBoosterVideoScreen extends BaseScreen {
         // keeps the controller PINNED open, a playing one auto-hides it within ~2s.
         if (controllerStaysOpen()) { log.info("Video confirmed paused (controller pinned open)"); return; }
         log.warn("Could not confirm the video is paused after 6 attempts — continuing");
-    }
-
-    /** Reveal the controller with an OFF-CENTRE tap (upper area) so it only shows controls and
-     *  never toggles the dead-centre play/pause — the Android mirror of {@link #revealControlsIOS}. */
-    private void revealControlsOffCentre() {
-        if (driver.findElements(AppiumBy.id(ID_PLAYER)).isEmpty()) return;
-        var size = driver.manage().window().getSize();
-        tapAt(size.getWidth() / 2, (int) (size.getHeight() * 0.28)); // upper area (avoid centre + corners)
     }
 
     /** The play/pause button reports paused when it offers "Play" (and not "Pause"). */
@@ -330,7 +340,7 @@ public class NeuroBoosterVideoScreen extends BaseScreen {
 
     /** True if the controller stays open — a paused video pins it; a playing one auto-hides it in ~2s. */
     private boolean controllerStaysOpen() {
-        revealControlsOffCentre();
+        if (findControl(ID_PLAY_PAUSE, null) == null) tapScreenCenter(); // reveal if hidden (centre tap only shows)
         if (waitForControl(ID_PLAY_PAUSE) == null) return false;
         try {
             new WebDriverWait(driver, Duration.ofSeconds(3))

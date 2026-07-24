@@ -69,6 +69,11 @@ public class DriverFactory {
         // 5 minutes — must survive IMAP email polling (60-90s) without session timeout
         options.setNewCommandTimeout(Duration.ofSeconds(300));
 
+        // NOTE: do NOT set waitForIdleTimeout=0 globally — it makes the dashboard/onboarding waits
+        // flaky (main_toolbar_title never resolves during launch). It is toggled to 0 ONLY around the
+        // NeuroBooster video, where the never-idle playing video otherwise blocks every command ~10s
+        // and the controller auto-hides first — see NeuroBoosterVideoScreen.fastForwardToEnd().
+
         try {
             URL url = new URL(isBrowserStack
                     ? "https://hub-cloud.browserstack.com/wd/hub"
