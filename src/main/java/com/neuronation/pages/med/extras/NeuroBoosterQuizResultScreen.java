@@ -74,11 +74,23 @@ public class NeuroBoosterQuizResultScreen extends BaseScreen {
     @Step("Get quiz score label")
     public String getScoreLabel() {
         if (isIOS()) {
-            for (WebElement t : driver.findElements(AppiumBy.className("XCUIElementTypeStaticText"))) {
-                String n = t.getAttribute("name");
-                if (n != null && SCORE.matcher(n).find()) return n;
+            // The result screen plays a confetti / "tada" animation that keeps iOS from quiescing, so a
+            // single accessibility snapshot often returns BEFORE the score StaticText ("5/5 points") is
+            // settled in the tree (the confetti burst is right over the score ribbon) → empty read →
+            // false "result score present" even though the score is clearly visible (build #82 flow4).
+            // POLL until the score appears — the confetti thins within a few seconds — instead of
+            // reading once and racing the animation.
+            try {
+                return new WebDriverWait(driver, Duration.ofSeconds(10), Duration.ofMillis(400)).until(d -> {
+                    for (WebElement t : d.findElements(AppiumBy.className("XCUIElementTypeStaticText"))) {
+                        String n = t.getAttribute("name");
+                        if (n != null && SCORE.matcher(n).find()) return n;
+                    }
+                    return null;
+                });
+            } catch (Exception e) {
+                return "";
             }
-            return "";
         }
         return getTextByPlatformId(ID_SCORE, ID_SCORE);
     }
