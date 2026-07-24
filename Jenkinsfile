@@ -52,7 +52,11 @@ pipeline {
     }
 
     options {
-        timeout(time: 90, unit: 'MINUTES')
+        // Android + iOS run SEQUENTIALLY (BrowserStack Parallels=1). Full 4-flow coverage with Extras
+        // completion (video+quiz per cognitive tile) takes ~120min for both platforms, so the old
+        // 90min cap cut iOS off mid-flow3 (build #81). Raised to 180min as a stop-gap — revisit
+        // (split Android/iOS into separate jobs, or trim Extras completion) when we discuss it.
+        timeout(time: 180, unit: 'MINUTES')
         timestamps()
         disableConcurrentBuilds()
         buildDiscarder(logRotator(numToKeepStr: '30', artifactNumToKeepStr: '10'))
