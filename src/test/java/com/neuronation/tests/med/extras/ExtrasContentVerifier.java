@@ -209,7 +209,9 @@ public class ExtrasContentVerifier {
             Map<String, String> ticks = tickBySection.getOrDefault(sec, java.util.Map.of());
             for (Tile t : discovered) {
                 if (sec.equals(t.category)) {
-                    softAssert.assertEquals(ticks.get(t.listSubtitle), "true",
+                    boolean tick = "true".equals(ticks.get(t.listSubtitle));
+                    if (!tick) tick = screens.extras().isTileDiscovered(sec, t.listSubtitle, t.nbId); // targeted fallback
+                    softAssert.assertTrue(tick,
                             "tile shows a tick after completion [" + sec + " / " + t.listSubtitle + "]");
                 }
             }
@@ -257,11 +259,16 @@ public class ExtrasContentVerifier {
     }
 
     /**
-     * Verify every completed tile shows a tick — in ONE sweep after a listing REFRESH (leave to the
-     * Training tab and back). The app DRAWS the checkmark immediately (visible to a human), but only
-     * exposes it as an ACCESSIBILITY node — all Appium can read — when the list RELOADS; measured
-     * ~11/19 fresh body ticks undetectable in-session. So this refreshed sweep is required to read
-     * the persisted discovered state (per-tile in-session reads fail, not because the tick is absent).
+     * Verify every completed tile shows a tick — after a listing REFRESH (leave to the Training tab and
+     * back) so the app repaints the checkmark as an ACCESSIBILITY node. A single {@link
+     * ExtrasScreen#captureContent()} scroll-through is the FAST path, but on a slow device (BrowserStack)
+     * it can miss a tick two ways — the tile was never in a captured frame (deep section not reached →
+     * value {@code null}), or it was captured in a frame where its checkmark child wasn't rendered (a
+     * fast full-swipe skipped the tile's fully-visible frame → {@code false}). The {@code id/checkmark}
+     * node IS reliably present once discovered (verified live via Appium Inspector), so any tile the
+     * capture does not confirm falls back to a TARGETED read: {@link ExtrasScreen#isTileDiscovered}
+     * scrolls to that specific tile and polls for its checkmark. Keyed by SECTION because cognitive
+     * subtitles ("Psychoeducational", "Reflection and MKT", …) repeat across sections.
      */
     @Step("Verify all completed tiles show a tick (refreshed sweep): {sections}")
     private void verifyAllTicks(List<String> sections) {
@@ -271,10 +278,6 @@ public class ExtrasContentVerifier {
         applySectionOrder();
         Map<String, String> cap = screens.extras().captureContent();
 
-        // (sectionTitle -> (subtitle -> discovered)). Keyed by SECTION too: cognitive subtitles
-        // ("Psychoeducational", "Reflection and MKT", …) REPEAT across sections, so a flat
-        // subtitle->discovered map collapses them and every section's tick resolves to whichever
-        // section was captured last (the flow3 false "tick not found" bug).
         Map<String, Map<String, String>> bySection = new HashMap<>();
         int catCount = Integer.parseInt(cap.getOrDefault("categoryCount", "0"));
         for (int i = 0; i < catCount; i++) {
@@ -289,7 +292,13 @@ public class ExtrasContentVerifier {
         for (String sec : sections) {
             Map<String, String> m = bySection.getOrDefault(sec, java.util.Map.of());
             for (Tile t : tilesOf(sec)) {
-                softAssert.assertEquals(m.get(t.listSubtitle), "true",
+                boolean discovered = "true".equals(m.get(t.listSubtitle));
+                if (!discovered) {
+                    // Fast-path capture missed it (deep section unreached, or a frame without the
+                    // checkmark) — scroll to this specific tile and poll for its id/checkmark node.
+                    discovered = screens.extras().isTileDiscovered(sec, t.listSubtitle, t.nbId);
+                }
+                softAssert.assertTrue(discovered,
                         "tile shows a tick after completion [" + sec + " / " + t.listSubtitle + "]");
             }
         }
