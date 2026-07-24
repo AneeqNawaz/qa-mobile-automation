@@ -272,36 +272,73 @@ public class NeuroBoosterVideoScreen extends BaseScreen {
      * device: paused, 14/14 taps advanced +15s to the end → quiz). This is the manual
      * "pause, then fast-forward" workaround.
      *
-     * <p>The play/pause button sits dead-centre, so a centre touch tap reveals the
-     * controller (when hidden) or toggles play/pause (when shown). We read the button's
-     * reported state each round and tap until it reports paused — self-correcting for the
-     * ~2s auto-hide racing our taps.
+     * <p><b>Reveal without toggling.</b> The play/pause button sits dead-centre, so the old
+     * approach revealed the controller with a CENTRE tap — which, once the controller was
+     * already up, hit play/pause. Racing the ~2s auto-hide, a mis-read "hidden" then did a
+     * reveal+centre-tap that RESUMED an already-paused video, so the state oscillated
+     * paused↔playing and never confirmed (the CI "Could not confirm the video is paused after
+     * 4 attempts" flake — build #81 flow3). Now we reveal with an OFF-CENTRE tap (upper area,
+     * like {@link #revealControlsIOS}) which only ever shows the controller, read the button's
+     * state, and tap play/pause ONLY when it reports playing. A pinned-controller fallback
+     * confirms pause even if the content-desc never flips (a playing video auto-hides the
+     * controller within ~2s; a paused one keeps it open).
      */
     private void ensurePaused() {
-        var size = driver.manage().window().getSize();
-        int cx = size.getWidth() / 2, cy = size.getHeight() / 2; // play/pause sits dead-centre
-        for (int attempt = 0; attempt < 4; attempt++) {
-            String state = playPauseState();
-            if ("paused".equals(state)) { waitForControl(ID_FORWARD); return; }
-            if ("playing".equals(state)) {
-                tapAt(cx, cy);            // controls already shown → one centre tap hits play/pause → pause
-            } else {
-                // Hidden: replicate the manual action exactly — reveal, then pause within <1s,
-                // as ONE atomic gesture so no slow findElement slips between the two taps and
-                // lets the ~2s controller auto-hide turn the 2nd tap back into a reveal.
-                tapAtTwice(cx, cy, 500);  // tap (reveal) → 500ms → tap (centre play/pause → pause)
+        for (int attempt = 0; attempt < 6; attempt++) {
+            WebElement pp = findControl(ID_PLAY_PAUSE, null);
+            if (pp == null) {                       // controller hidden → reveal WITHOUT toggling play/pause
+                revealControlsOffCentre();
+                pp = waitForControl(ID_PLAY_PAUSE);
+                if (pp == null) continue;           // reveal missed this frame — retry
             }
+            if (isPaused(pp)) { waitForControl(ID_FORWARD); return; }
+            tapScreenCenter();                      // controls shown + playing → centre tap hits play/pause → pause
+            if (waitForPaused(Duration.ofSeconds(2))) { waitForControl(ID_FORWARD); return; }
         }
-        log.warn("Could not confirm the video is paused after 4 attempts — continuing");
+        // content-desc never flipped — fall back to the device-behaviour signal: a paused video
+        // keeps the controller PINNED open, a playing one auto-hides it within ~2s.
+        if (controllerStaysOpen()) { log.info("Video confirmed paused (controller pinned open)"); return; }
+        log.warn("Could not confirm the video is paused after 6 attempts — continuing");
     }
 
-    /** "paused" (button offers Play), "playing" (button offers Pause), or "hidden" (no controller). */
-    private String playPauseState() {
-        WebElement pp = findControl(ID_PLAY_PAUSE, null);
-        if (pp == null) return "hidden";
+    /** Reveal the controller with an OFF-CENTRE tap (upper area) so it only shows controls and
+     *  never toggles the dead-centre play/pause — the Android mirror of {@link #revealControlsIOS}. */
+    private void revealControlsOffCentre() {
+        if (driver.findElements(AppiumBy.id(ID_PLAYER)).isEmpty()) return;
+        var size = driver.manage().window().getSize();
+        tapAt(size.getWidth() / 2, (int) (size.getHeight() * 0.28)); // upper area (avoid centre + corners)
+    }
+
+    /** The play/pause button reports paused when it offers "Play" (and not "Pause"). */
+    private boolean isPaused(WebElement pp) {
         String d = pp.getAttribute("content-desc");
         d = d == null ? "" : d.toLowerCase();
-        return (d.contains("play") && !d.contains("pause")) ? "paused" : "playing";
+        return d.contains("play") && !d.contains("pause");
+    }
+
+    /** Poll up to {@code timeout} for the play/pause button to report paused. */
+    private boolean waitForPaused(Duration timeout) {
+        try {
+            return Boolean.TRUE.equals(new WebDriverWait(driver, timeout).until(d -> {
+                WebElement pp = findControl(ID_PLAY_PAUSE, null);
+                return pp != null && isPaused(pp);
+            }));
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /** True if the controller stays open — a paused video pins it; a playing one auto-hides it in ~2s. */
+    private boolean controllerStaysOpen() {
+        revealControlsOffCentre();
+        if (waitForControl(ID_PLAY_PAUSE) == null) return false;
+        try {
+            new WebDriverWait(driver, Duration.ofSeconds(3))
+                    .until(ExpectedConditions.invisibilityOfElementLocated(AppiumBy.id(ID_PLAY_PAUSE)));
+            return false; // disappeared → was auto-hiding → playing
+        } catch (Exception e) {
+            return true;  // never disappeared in 3s → pinned → paused
+        }
     }
 
     /** Poll up to 2s for a control (by resource-id) to be present; null if it doesn't appear. */
